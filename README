@@ -1,0 +1,7 @@
+# lattice-watering
+
+## Coding Conventions
+
+For C:
+- Use the included `clang-format` file.
+- Use the integer types `inttypes.h` provides.

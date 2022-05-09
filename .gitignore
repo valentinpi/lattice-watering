@@ -1,0 +1,10 @@
+documents/*/*.aux
+documents/*/*.fdb_latexmk
+documents/*/*.fls
+documents/*/*.log
+documents/*/*.nav
+documents/*/*.out
+documents/*/*.snm
+documents/*/*.synctex.gz
+documents/*/*.toc
+firmware/bin
