@@ -1,5 +1,14 @@
 {
     "[c]": {
         "editor.formatOnSave": true
+    },
+    "C_Cpp.default.includePath": [
+        "../RIOT/**"
+    ],
+    "files.associations": {
+        "led.h": "c",
+        "inttypes.h": "c",
+        "shell.h": "c",
+        "i2c.h": "c"
     }
 }
