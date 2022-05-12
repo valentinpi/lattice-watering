@@ -1,10 +1,11 @@
 {
     "[c]": {
-        "editor.formatOnSave": true
+        "editor.formatOnSave": true,
     },
     "C_Cpp.default.includePath": [
         "../RIOT/**"
     ],
+    "C_Cpp.default.compilerPath": "/usr/bin/gcc",
     "files.associations": {
         "led.h": "c",
         "inttypes.h": "c",
