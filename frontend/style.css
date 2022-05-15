@@ -1,0 +1,65 @@
+body {
+    background-color: ghostwhite;
+}
+
+/*
+.buttons {
+    display: grid;
+    grid-column: 2 / 3;
+    grid-gap: 10px;
+    grid-template-columns: 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr;
+}
+*/
+
+.topRow {
+    background-color: #DFFEE4;
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 16px;
+    font-weight: 400;
+    text-align: left;
+    border: 5px solid #00CC66;
+    color: #000000;
+    border-spacing: 0;
+    border-radius: 16px 16px 0px 0px;
+    padding: 0.75%;
+}
+
+    /* Title Field */
+    .topRow td:first-child {
+        font-size: 16px;
+        font-weight: 700;
+        text-align: left;
+    }
+
+    /* Time and Date field */
+    .topRow td:last-child {
+        font-size: 14px;
+        font-weight: 400;
+        text-align: right;
+    }
+
+.plantSelection {
+    background-color: beige;
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 16px;
+    font-weight: 400;
+    text-align: left;
+    border-right: 5px solid #00CC66;
+    border-left: 5px solid #00CC66;
+    color: #000000;
+    border-spacing: 0;
+    padding: 0.75%;
+}
+
+.botRow {
+    background-color: #DFFEE4;
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 12px;
+    font-weight: 400;
+    text-align: right;
+    border: 5px solid #00CC66;
+    color: #000000;
+    border-spacing: 0;
+    border-radius: 0px 0px 16px 16px;
+    padding: 0.75%;
+}
