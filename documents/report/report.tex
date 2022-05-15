@@ -3,6 +3,9 @@
 \usepackage[T1]{fontenc}
 \usepackage{fullpage}
 \usepackage[utf8]{inputenc}
+\usepackage{siunitx}
+\usepackage{tikz}
+\usepackage[europeanresistors]{circuitikz}
 
 \begin{document}
     \begin{center}
@@ -10,7 +13,11 @@
 
         \vspace{\baselineskip}
 
-        Valentin Pickel
+        Handout
+
+        \vspace{\baselineskip}
+
+        Christian Müller, Jonas Heinemann, Kaan Dönmez, Valentin Pickel
 
         \vspace{\baselineskip}
 
@@ -22,6 +29,34 @@
 
         \vspace{\baselineskip}
 
-        \today
+        \today{ }(latest version)
     \end{center}
+
+    \begin{figure}[htbp!]
+        \begin{center}
+            \begin{circuitikz}
+                \draw (0, 0) node[circ, inner sep=4pt] {}
+                to[R=$\qty{200}{\ohm}$, -*] (2, 0);
+                \draw (2, 0)
+                to[R=\(\qty{5}{\kilo\ohm}\)] (2, -2) node[ground] {};
+                \draw (4, 0) node[nmos] (mos) {}
+                (mos.source) node[anchor=north] {}
+                (mos.gate) node[anchor=east] {}
+                (mos.drain) node[anchor=south] {};
+                \draw (2, 0) -- (mos.gate);
+                \draw (mos.source) -- (4, -2) node[ground] {};
+                \draw (mos.drain) -- (4, 2) node[circle] {P};
+            \end{circuitikz}
+            \caption{Circuit for the pump P.}
+        \end{center}
+    \end{figure}
+
+    Thus, we obtain:
+    \[
+        I_2 = \frac{\qty{5}{\volt}}{\qty{200}{\ohm}} = \qty{25}{\milli\ampere}
+    \]
+    And:
+    \[
+        I_3 = \frac{\qty{5}{\volt}}{\qty{200}{\ohm}} = \qty{25}{\milli\ampere}
+    \]
 \end{document}
