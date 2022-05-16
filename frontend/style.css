@@ -42,14 +42,47 @@ body {
     background-color: beige;
     font-family: Arial, Helvetica, sans-serif;
     font-size: 16px;
-    font-weight: 400;
-    text-align: left;
+    font-weight: 700;
+    text-align: center;
     border-right: 5px solid #00CC66;
     border-left: 5px solid #00CC66;
     color: #000000;
     border-spacing: 0;
     padding: 0.75%;
 }
+
+div.scrollmenu {
+    overflow: auto;
+    white-space: nowrap;
+    display: inline-block;
+}
+
+    div.scrollmenu a {
+        display: inline-block;
+        color: blue;
+        text-align: center;
+        padding: 14px;
+        text-decoration: none;
+    }
+
+        div.scrollmenu a:hover {
+            color: dodgerblue;
+        }
+
+div.box {
+    border: 5px solid #00CC66;
+    border-radius: 16px;
+    width: 20%;
+    margin: 1%;
+}
+
+div.box img {
+    width: 9%;
+}
+
+    div.box hover {
+        background-color: bisque;
+    }
 
 .botRow {
     background-color: #DFFEE4;

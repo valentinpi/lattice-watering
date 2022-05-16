@@ -1,3 +1,4 @@
+
 function displayDate() {
     var today = new Date();
     var date = checkFormat(today.getDate()) + '.' + checkFormat((today.getMonth() + 1)) + '.' + today.getFullYear();
@@ -20,4 +21,24 @@ function showPlant(i) {
 
 function databaseAccess() {
     /* TODO - Setup small local database with plants and when they should be watered */
+    const mysql = require("mysql");
+
+    const db = mysql.createConnection({
+        host: "localhost",
+        user: "root",
+        password: "",
+        database: "test"
+    });
+
+    db.connect((err) => {
+        if (err) { throw err; }
+        console.log("DB connection OK");
+    });
+
+    // (C) QUERY
+    db.query("SELECT * FROM `plants`", (err, results) => {
+        if (err) { throw err; }
+        console.log(results);
+    });
+
 }
