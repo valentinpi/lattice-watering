@@ -39,10 +39,13 @@
                 to[R=$\qty{200}{\ohm}$, -*] (2, 0);
                 \draw (2, 0)
                 to[R=\(\qty{5}{\kilo\ohm}\)] (2, -2) node[ground] {};
-                \draw (4, 0) node[nigfete, bodydiode, tr circle] (mos) {}
+                \draw (4, 0) node[nigfete, tr circle] (mos) {}
                 (mos.source) node[anchor=north] {}
                 (mos.gate) node[anchor=east] {}
                 (mos.drain) node[anchor=south] {};
+                \draw (mos.inner up) -- (mos.body E out);
+                \draw (mos.body E out) -- (mos.body C out);
+                \draw (mos.body C out) -- (mos.body C in);
                 \draw (2, 0) -- (mos.gate);
                 \draw (mos.source) -- (4, -2) node[ground] {};
                 \draw (mos.drain) -- (4, 2) node[circle] {P};
