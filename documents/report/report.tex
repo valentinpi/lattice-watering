@@ -5,7 +5,7 @@
 \usepackage[utf8]{inputenc}
 \usepackage{siunitx}
 \usepackage{tikz}
-\usepackage[europeanresistors]{circuitikz}
+\usepackage[european]{circuitikz}
 
 \begin{document}
     \begin{center}
@@ -35,11 +35,11 @@
     \begin{figure}[htbp!]
         \begin{center}
             \begin{circuitikz}
-                \draw (0, 0) node[circ, inner sep=4pt] {}
+                \draw (0, 0) node[left] {\(\qty{92}{\milli\ampere}, \qty{3.8}{\volt}\)}
                 to[R=$\qty{200}{\ohm}$, -*] (2, 0);
                 \draw (2, 0)
                 to[R=\(\qty{5}{\kilo\ohm}\)] (2, -2) node[ground] {};
-                \draw (4, 0) node[nmos] (mos) {}
+                \draw (4, 0) node[nigfete, bodydiode, tr circle] (mos) {}
                 (mos.source) node[anchor=north] {}
                 (mos.gate) node[anchor=east] {}
                 (mos.drain) node[anchor=south] {};
