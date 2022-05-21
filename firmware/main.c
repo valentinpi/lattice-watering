@@ -8,6 +8,7 @@
 
 int main(void) {
     /* HDC1000 Initialization Code */
+    /*
     const hdc1000_params_t hdc1000_params = {// Only one device
                                              .addr = 64,
                                              // Only one bus
@@ -24,6 +25,7 @@ int main(void) {
     int16_t temp = 0, hum = 0;
     hdc1000_read(&hdc1000, &temp, &hum);
     printf(PREFIX "temperature: %" PRId16 "°C, humidity: %" PRId16 "\n", temp / 100, hum / 100);
+    */
 
     /* Networking Code */
 

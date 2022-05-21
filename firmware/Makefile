@@ -4,6 +4,8 @@ RIOTBASE ?= $(CURDIR)/../../RIOT
 
 QUIET ?= 1
 
+MAKEFLAGS += -j
+
 USEMODULE += hdc1000
 USEMODULE += shell
 USEMODULE += shell_commands

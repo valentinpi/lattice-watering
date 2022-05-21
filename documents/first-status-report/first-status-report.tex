@@ -1,39 +1,47 @@
 \documentclass[10pt, xcolor=svgnames]{beamer}
 
-% Inspired by: https://www.overleaf.com/latex/templates/beamer/ybffdrynfwjp
-
 \usepackage[T1]{fontenc}
 \usepackage[utf8]{inputenc}
 
-\usetheme{metropolis}
-
-\setbeamercolor{progress bar}{fg=Maroon!70!Coral} %These are the colours of the progress bar. Notice that the names used are the svgnames
-\setbeamercolor{title separator}{fg=DarkSalmon} %This is the line colour in the title slide
-\setbeamercolor{structure}{fg=black} %Colour of the text of structure, numbers, items, blah. Not the big text.
-\setbeamercolor{normal text}{fg=black!87} %Colour of normal text
-\setbeamercolor{alerted text}{fg=DarkRed!60!Gainsboro} %Color of the alert box
-\setbeamercolor{example text}{fg=Maroon!70!Coral} %Colour of the Example block text
-
-\setbeamercolor{palette primary}{bg=NavyBlue!50!DarkOliveGreen, fg=white} %These are the colours of the background. Being this the main combination and so one. 
-\setbeamercolor{palette secondary}{bg=NavyBlue!50!DarkOliveGreen, fg=white}
-\setbeamercolor{palette tertiary}{bg=NavyBlue!40!Black, fg= white}
-\setbeamercolor{section in toc}{fg=NavyBlue!40!Black} %Color of the text in the table of contents (toc)
-
-\setbeamercolor{background canvas}{bg=NavyBlue!50!DarkOliveGreen, fg=white}
-\setbeamercolor{normal text}{fg=white}
+\usetheme{Pittsburgh}
+\usecolortheme{dove}
 
 \title{Lattice Watering: First Status Report}
+
+\author{Christian Müller, Jonas Heinemann, Kaan Dönmez, Valentin Pickel}
+
+\institute{
+    Software Project on Internet Communication
+
+    Summer Term 2022
+    
+    Freie Universität Berlin
+
+    Institute for Computer Science
+}
+
+\date{\today{ }(newest version)}
 
 \begin{document}
 
 \maketitle
 
-\begin{frame}{Timeline}
+\begin{frame}{Recap on our Idea}
+    Hier kommt unsere Idee hin und so.
+\end{frame}
+
+\begin{frame}{A short Timeline}
     09.05.2022: Group formed.
 
-    11.05.2022: Received some hardware from Hauke.
+    \vspace*{0.25cm}
 
-    Weiterführen...
+    11.05.2022: Received some hardware from Hauke. Implemented the HDC1000 support on the same day.
+
+    \vspace*{0.25cm}
+
+    Independent work consisting of our wait for hardware, getting our communication and development infrastructure via Discord and GitHub ready, looking into the networking stack and frontend design, rethinking the project idea and doing other courses.
+
+    \vspace*{0.25cm}
 \end{frame}
 
 \begin{frame}
@@ -44,13 +52,26 @@
         \item HDC1000 Temperature and Humidity Sensor, soldered by us.
         \item Soil Moisture Sensor.
         \item Pumps. (ordered from Amazon)
+        \item Boards with integrated circuitry for connecting the pumps. (After attempting to build a circuit ourselves)
     \end{itemize}
 \end{frame}
 
 \begin{frame}
-    \frametitle{Results}
+    \frametitle{Firmware}
 
-    HOPEFULLY: Working pump.
+    \begin{itemize}
+        \item Implemented fetching data from the HDC1000 sensor via the RIOT driver.
+        \item The board comes with prebuilt 802.15.4 capabilities, so it is only natural to use low-power radio frequency communication.
+        \item Which protocols to use? For 802.15.4, the RIOT documentation only specifies the availability of the GNRC, OpenWSN and OpenThread stacks. We went with the GNRC stack, as the others seemingly implement features we will surely not use. We do not think we will require any other stacks, so this should suffice.
+    \end{itemize}
+\end{frame}
+
+\begin{frame}
+    \frametitle{Frontend}
+
+    \begin{itemize}
+        \item
+    \end{itemize}
 \end{frame}
 
 \end{document}

@@ -1,1 +1,2 @@
 - Execute `make print-versions` from the RIOTOS base directory for some information.
+- `git log --graph --pretty=oneline --abbrev-commit` gives a nice git output.
