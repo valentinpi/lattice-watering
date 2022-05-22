@@ -1,2 +1,7 @@
 - Execute `make print-versions` from the RIOTOS base directory for some information.
 - `git log --graph --pretty=oneline --abbrev-commit` gives a nice git output.
+- `nftables`:
+`sudo nft --handle list ruleset`
+`sudo nft add rule inet filter input udp dport 8000 accept`
+`sudo nft delete rule inet filter input handle <handle-id>`
+- `nc` testing: `nc -6 -u <ipv6-address` 8000`
