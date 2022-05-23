@@ -1,3 +1,9 @@
+/*************************************************************************************************************/
+/*  This firmware bundles a firmware for a board that is connected with a host PC serving a frontend along a */
+/*  conventional connection and the firmware that utilizes its sensors to water the plants.                  */
+/*  To switch between the firmwares, utilize the SERVER flag. E.g. by using make -DSERVER.                   */
+/*************************************************************************************************************/
+
 #include <hdc1000.h>
 #include <inttypes.h>
 #include <led.h>
@@ -12,27 +18,25 @@
 
 #define PREFIX "[LWFW] "
 
+// Controls the IN1 input pin of the motor board.
+static const gpio_t PUMP_PA13 = GPIO_PIN(0, 13);
+// Controls the EEP sleep mode pin of the motor board.
+static const gpio_t PUMP_PA28 = GPIO_PIN(0, 28);
+
+void pump_setup(void) {
+    gpio_init(PUMP_PA13, GPIO_OUT);
+    gpio_init(PUMP_PA28, GPIO_OUT);
+}
+
+void pump_toggle(void) {
+    gpio_toggle(PUMP_PA28);
+    gpio_toggle(PUMP_PA13);
+}
+
+#define SERVER
+
 int main(void) {
-    /* HDC1000 Initialization Code */
-    /*
-    const hdc1000_params_t hdc1000_params = {// Only one device
-                                             .addr = 64,
-                                             // Only one bus
-                                             .i2c = 0,
-                                             // In microseconds
-                                             .renew_interval = CONFIG_HDC1000_CONVERSION_TIME,
-                                             .res = HDC1000_14BIT};
-
-    hdc1000_t hdc1000;
-    int res = hdc1000_init(&hdc1000, &hdc1000_p arams);
-    if (res == HDC1000_OK) {
-        printf(PREFIX "HDC1000 configured\n");
-    }
-    int16_t temp = 0, hum = 0;
-    hdc1000_read(&hdc1000, &temp, &hum);
-    printf(PREFIX "temperature: %" PRId16 "°C, humidity: %" PRId16 "\n", temp / 100, hum / 100);
-    */
-
+#ifdef SERVER
     /* Networking Code */
     /*
     const char *HOST_STR = "2003:00ec:cfff:28ad:52a7:2bff:fede:c75e";
@@ -59,14 +63,10 @@ int main(void) {
     int err = gnrc_netif_send(netif, pkt);
     printf("%d\n", err);
     */
-
-    /* Pump Code */
-    gpio_t pa13 = GPIO_PIN(0, 13);
-    gpio_t pa28 = GPIO_PIN(0, 28);
-    gpio_init(pa13, GPIO_OUT);
-    gpio_init(pa28, GPIO_OUT);
-    // gpio_set(pa28);
-    // gpio_set(pa13);
+#else
+    /* Board initialization */
+    pump_setup();
+#endif
 
     /* Debug Shell */
     uint8_t *shell_buf[SHELL_DEFAULT_BUFSIZE];
