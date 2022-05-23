@@ -5,6 +5,7 @@
 #include <net/gnrc/nettype.h>
 #include <net/gnrc/sixlowpan.h>
 #include <net/gnrc/udp.h>
+#include <periph/gpio.h>
 #include <sched.h>
 #include <shell.h>
 #include <stdio.h>
@@ -33,6 +34,7 @@ int main(void) {
     */
 
     /* Networking Code */
+    /*
     const char *HOST_STR = "2003:00ec:cfff:28ad:52a7:2bff:fede:c75e";
     const uint16_t HOST_PORT = 8000;
     ipv6_addr_t host;
@@ -56,8 +58,17 @@ int main(void) {
     // int err = gnrc_netapi_dispatch_send(GNRC_NETTYPE_UDP, GNRC_NETREG_DEMUX_CTX_ALL, pkt);
     int err = gnrc_netif_send(netif, pkt);
     printf("%d\n", err);
+    */
 
-    // Debug shell
+    /* Pump Code */
+    gpio_t pa13 = GPIO_PIN(0, 13);
+    gpio_t pa28 = GPIO_PIN(0, 28);
+    gpio_init(pa13, GPIO_OUT);
+    gpio_init(pa28, GPIO_OUT);
+    // gpio_set(pa28);
+    // gpio_set(pa13);
+
+    /* Debug Shell */
     uint8_t *shell_buf[SHELL_DEFAULT_BUFSIZE];
     shell_run(NULL, (char *)shell_buf, SHELL_DEFAULT_BUFSIZE);
 
