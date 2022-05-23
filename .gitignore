@@ -7,4 +7,4 @@ doc/*/*.out
 doc/*/*.snm
 doc/*/*.synctex.gz
 doc/*/*.toc
-firmware/bin
+fw/bin
