@@ -67,7 +67,7 @@ int main(void) {
     gnrc_netif_hdr_print(pkt->data);
     pkt->next = tmp;
 
-    //  Send
+    // Send
     // int err = gnrc_netapi_dispatch_send(GNRC_NETTYPE_UDP, GNRC_NETREG_DEMUX_CTX_ALL, pkt);
     // int err = gnrc_netif_send(netif_ethernet, pkt);
     // printf(PREFIX "%d\n", err);
