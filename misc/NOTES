@@ -25,3 +25,4 @@ int16_t temp = 0, hum = 0;
 hdc1000_read(&hdc1000, &temp, &hum);
 printf(PREFIX "temperature: %" PRId16 "°C, humidity: %" PRId16 "\n", temp / 100, hum / 100);
 */
+- make list-ttys
