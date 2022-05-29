@@ -10,22 +10,22 @@ MAKEFLAGS += -j
 DEVELHELP ?= 1
 QUIET ?= 1
 
+# general
 USEMODULE += ps
 USEMODULE += shell
 USEMODULE += shell_commands
 USEMODULE += ztimer
 USEMODULE += ztimer_sec
+USEPKG += nanocbor
 
-USEMODULE += gnrc_sixlowpan_default
-USEMODULE += gnrc_nettype_udp
-USEMODULE += gnrc_udp
+# net
+USEMODULE += gnrc_sixlowpan
 USEMODULE += gnrc_ipv6
-#USEMODULE += gnrc_sixlowpan
-#USEMODULE += gnrc_netif_single
+USEMODULE += gnrc_ipv6_nib
 USEMODULE += auto_init_gnrc_netif
 USEMODULE += netdev_default
 
-# BR setup
+# br setup
 USEMODULE += stdio_ethos
 CFLAGS += '-DETHOS_UART=UART_DEV(0)' -DETHOS_BAUDRATE=115200
 
@@ -37,6 +37,6 @@ start_network:
 
 # Use this if you want to have a connection but not a shell, e.g. for starting a debugger
 setup_network:
-	$(RIOTTOOLS)/ethos/start_network.sh tap0 2001:db8::/64
+	$(RIOTTOOLS)/ethos/setup_network.sh tap0 2001:db8::/64
 
 include $(RIOTBASE)/Makefile.include
