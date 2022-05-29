@@ -8,3 +8,4 @@ documents/*/*.snm
 documents/*/*.synctex.gz
 documents/*/*.toc
 firmware/bin
+*.opendb
