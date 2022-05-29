@@ -42,6 +42,8 @@
     Independent work consisting of our wait for hardware, getting our communication and development infrastructure via Discord and GitHub ready, looking into the networking stack and frontend design, rethinking the project idea and doing other courses.
 
     \vspace*{0.25cm}
+
+
 \end{frame}
 
 \begin{frame}
@@ -49,9 +51,10 @@
 
     \begin{itemize}
         \item Atmel SAMR21 Xplained. \(\leadsto\) One of the available boards from Hauke. We chose this one since we planned to not use Wifi but the more energy efficient IEEE802.15.4.
-        \item HDC1000 Temperature and Humidity Sensor, soldered by us.
+        \item HDC1000 Temperature and Humidity Sensor, soldered by us. \(\leadsto\) Deemed unneeded.
         \item Soil Moisture Sensor.
         \item Pumps. (ordered from Amazon)
+        \item Resistors and Transistors, which did not lead to a working circuit. (ordered from Amazon)
         \item Boards with integrated circuitry for connecting the pumps. (After attempting to build a circuit ourselves)
     \end{itemize}
 \end{frame}
@@ -81,7 +84,19 @@
         \item git-Repository via GitHub
         \item Kanban-Board via GitHub
         \item C-tools such as `cppcheck` and `clang-format` and VS Code support
+        \item Paket snooping via Wireshark.
     \end{itemize}
+\end{frame}
+
+\begin{frame}
+    \frametitle{Network Challenges}
+
+    \begin{itemize}
+        \item Some info on the Network architecture: There is a host, a border router (br) and nodes. The host is connected to the border router and the border router talks to a 6LoWPAN network made up of plant watering nodes.
+        \item We are still discussing options for making the communication in the network more interesting.
+        \item Currently: NIB not working.
+    \end{itemize}
+
 \end{frame}
 
 \end{document}
