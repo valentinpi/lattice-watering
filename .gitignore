@@ -7,4 +7,5 @@ doc/*/*.out
 doc/*/*.snm
 doc/*/*.synctex.gz
 doc/*/*.toc
+br/bin
 fw/bin
