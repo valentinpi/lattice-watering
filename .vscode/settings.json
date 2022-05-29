@@ -10,6 +10,28 @@
         "led.h": "c",
         "inttypes.h": "c",
         "shell.h": "c",
-        "i2c.h": "c"
-    }
+        "i2c.h": "c",
+        "sched.h": "c",
+        "netreg.h": "c",
+        "pktbuf.h": "c",
+        "udp.h": "c",
+        "stdio.h": "c",
+        "ipv6.h": "c",
+        "addr.h": "c",
+        "ext.h": "c",
+        "hdr.h": "c",
+        "inet.h": "c",
+        "errno.h": "c",
+        "byteorder.h": "c",
+        "gnrc.h": "c",
+        "nettype.h": "c",
+        "array": "c",
+        "string": "c",
+        "string_view": "c",
+        "nanocbor.h": "c",
+        "*.ipp": "c",
+        "stdlib.h": "c",
+        "socket.h": "c"
+    },
+    "C_Cpp.errorSquiggles": "Disabled"
 }
