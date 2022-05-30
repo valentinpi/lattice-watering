@@ -1,8 +1,6 @@
-/*************************************************************************************************************/
-/*  This firmware bundles a firmware for a board that is connected with a host PC serving a frontend along a */
-/*  conventional connection and the firmware that utilizes its sensors to water the plants.                  */
-/*  To switch between the firmwares, utilize the SERVER flag. E.g. by using make -DSERVER.                   */
-/*************************************************************************************************************/
+/***************************/
+/*  Border Router Firmware */
+/***************************/
 
 #include <inttypes.h>
 #include <led.h>
@@ -25,12 +23,12 @@
 #define NODE_L2_STR "00:04:25:19:18:01:86:33"
 #define HOST_L2_STR "02:89:5c:e5:3d:10"
 
-static const char MAGIC_STR[4] = "CBOR";
+// static const char MAGIC_STR[4] = "CBOR";
 
-int main(void) {
-    // Collect network interfaces
-    gnrc_netif_t *netif_ethernet = NULL;
-    gnrc_netif_t *netif_ieee802154 = NULL;
+static gnrc_netif_t *netif_ethernet = NULL;
+static gnrc_netif_t *netif_ieee802154 = NULL;
+
+void init_netif(void) {
     while (netif_ethernet == NULL || netif_ieee802154 == NULL) {
         gnrc_netif_t *netif = gnrc_netif_iter(NULL);
         while (netif != NULL) {
@@ -44,9 +42,30 @@ int main(void) {
     }
     printf(PREFIX "Ethernet and IEEE802154 interfaces found\n");
 
-    // nanocbor_value_t value;
-    //  nanocbor_decoder_init(&value, )
+    ipv6_addr_t unicast_ip;
+    memset(unicast_ip.u64, 0, 8);
+    ipv6_addr_from_str(&unicast_ip, "fc00::1");
+    gnrc_netif_ipv6_addr_add(netif_ethernet, &unicast_ip, 121, 0);
+    gnrc_netif_ipv6_addr_add(netif_ieee802154, &unicast_ip, 121, 0);
+    printf(PREFIX "Added unicast address fc00::1 to both interfaces\n");
+}
 
+int main(void) {
+    init_netif();
+
+    while (true) {
+        size_t n = 0;
+        void *state = NULL;
+        gnrc_ipv6_nib_nc_t nce;
+        memset(&nce, 0, sizeof(gnrc_ipv6_nib_nc_t));
+        while (gnrc_ipv6_nib_nc_iter(0, &state, &nce)) {
+            n += 1;
+        }
+        printf("%d\n", n);
+        ztimer_sleep(ZTIMER_SEC, 1);
+    }
+
+    /*
     ipv6_addr_t node_ip, br_ip, host_ip;
     memset(node_ip.u64, 0, 8);
     memset(br_ip.u64, 0, 8);
@@ -61,13 +80,6 @@ int main(void) {
     node_l2_len = gnrc_netif_addr_from_str(NODE_L2_STR, node_l2);  // TODO: Obtain MAC automatically
     host_l2_len = gnrc_netif_addr_from_str(HOST_L2_STR, host_l2);
 
-    (void)node_l2;
-    (void)node_l2_len;
-    (void)br_l2;
-    (void)br_l2_len;
-    (void)host_l2;
-    (void)host_l2_len;
-
     {
         gnrc_pktsnip_t *pkt = NULL;
 
@@ -79,6 +91,10 @@ int main(void) {
         nanocbor_encoder_init(&enc, buf, 32);
         nanocbor_put_bstr(&enc, (uint8_t *)payload, sizeof(payload));
         pkt = gnrc_pktbuf_add(pkt, buf, nanocbor_encoded_len(&enc), GNRC_NETTYPE_UNDEF);
+
+        // UDP
+        pkt = gnrc_udp_hdr_build(pkt, 8000, 8000);
+        ((udp_hdr_t *)pkt->data)->length = byteorder_htons(gnrc_pkt_len(pkt->next));
 
         // IPv6
         gnrc_netif_ipv6_addrs_get(netif_ethernet, &br_ip, sizeof(ipv6_addr_t));  // First address in list
@@ -93,6 +109,7 @@ int main(void) {
         // gnrc_netif_hdr_set_timestamp()
         netif_hdr->next = pkt;
         pkt = netif_hdr;
+        ((udp_hdr_t *)pkt->next->next->data)->checksum = byteorder_htons(gnrc_udp_calc_csum(pkt->next->next, pkt));
 
         // Send
         // int err = gnrc_netapi_dispatch_send(GNRC_NETTYPE_UDP, GNRC_NETREG_DEMUX_CTX_ALL, pkt);
@@ -170,6 +187,7 @@ int main(void) {
         // Send
         gnrc_netif_send(netif_ieee802154, pkt);
     }
+    */
 
     /*     gnrc_ipv6_nib_init_iface(netif_ethernet);
         while (1) {

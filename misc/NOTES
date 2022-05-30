@@ -27,4 +27,4 @@ printf(PREFIX "temperature: %" PRId16 "°C, humidity: %" PRId16 "\n", temp / 100
 */
 - make list-ttys
 - BR IP: fe80::dc7d:20ff:fe37:db1d, Nachricht: 44 5b 4c 57 42
-
+- tip: make menuconfig

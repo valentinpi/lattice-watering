@@ -20,6 +20,7 @@ USEPKG += nanocbor
 
 # net
 USEMODULE += gnrc_sixlowpan
+USEMODULE += gnrc_udp
 USEMODULE += gnrc_ipv6
 USEMODULE += gnrc_ipv6_nib
 USEMODULE += auto_init_gnrc_netif
