@@ -31,7 +31,10 @@
         "nanocbor.h": "c",
         "*.ipp": "c",
         "stdlib.h": "c",
-        "socket.h": "c"
+        "socket.h": "c",
+        "sixlowpan.h": "c",
+        "gcoap.h": "c",
+        "utils.h": "c"
     },
     "C_Cpp.errorSquiggles": "Disabled"
 }

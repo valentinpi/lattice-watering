@@ -6,7 +6,7 @@
 \usetheme{Pittsburgh}
 \usecolortheme{dove}
 
-\title{Lattice Watering: First Status Report}
+\title{Lattice Watering: Second Status Report}
 
 \author{Christian Müller, Jonas Heinemann, Kaan Dönmez, Valentin Pickel}
 
@@ -26,62 +26,8 @@
 
 \maketitle
 
-\begin{frame}{Recap on our Idea}
-    Hier kommt unsere Idee hin und so.
-\end{frame}
-
-\begin{frame}{A short Timeline}
-    09.05.2022: Group formed.
-
-    \vspace*{0.25cm}
-
-    11.05.2022: Received some hardware from Hauke. Implemented the HDC1000 support on the same day.
-
-    \vspace*{0.25cm}
-
-    Independent work consisting of our wait for hardware, getting our communication and development infrastructure via Discord and GitHub ready, looking into the networking stack and frontend design, rethinking the project idea and doing other courses.
-
-    \vspace*{0.25cm}
-\end{frame}
-
-\begin{frame}
-    \frametitle{Hardware}
-
-    \begin{itemize}
-        \item Atmel SAMR21 Xplained. \(\leadsto\) One of the available boards from Hauke. We chose this one since we planned to not use Wifi but the more energy efficient IEEE802.15.4.
-        \item HDC1000 Temperature and Humidity Sensor, soldered by us.
-        \item Soil Moisture Sensor.
-        \item Pumps. (ordered from Amazon)
-        \item Boards with integrated circuitry for connecting the pumps. (After attempting to build a circuit ourselves)
-    \end{itemize}
-\end{frame}
-
-\begin{frame}
-    \frametitle{Firmware}
-
-    \begin{itemize}
-        \item Implemented fetching data from the HDC1000 sensor via the RIOT driver.
-        \item The board comes with prebuilt 802.15.4 capabilities, so it is only natural to use low-power radio frequency communication.
-        \item Which protocols to use? For 802.15.4, the RIOT documentation only specifies the availability of the GNRC, OpenWSN and OpenThread stacks. We went with the GNRC stack, as the others seemingly implement features we will surely not use. We do not think we will require any other stacks, so this should suffice.
-    \end{itemize}
-\end{frame}
-
-\begin{frame}
-    \frametitle{Frontend}
-
-    \begin{itemize}
-        \item
-    \end{itemize}
-\end{frame}
-
-\begin{frame}
-    \frametitle{Process Info}
-
-    \begin{itemize}
-        \item git-Repository via GitHub
-        \item Kanban-Board via GitHub
-        \item C-tools such as `cppcheck` and `clang-format` and VS Code support
-    \end{itemize}
+\begin{frame}{Updates}
+    
 \end{frame}
 
 \end{document}

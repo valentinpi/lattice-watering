@@ -17,6 +17,8 @@
 #define MSG_QUEUE_SIZE 8
 #define PREFIX "[LWFW] "
 
+#define BR_IP_STR "fc00::1"
+
 // Controls the IN1 input pin of the motor board.
 static const gpio_t PUMP_PA13 = GPIO_PIN(0, 13);
 // Controls the EEP sleep mode pin of the motor board.
@@ -45,6 +47,7 @@ int main(void) {
     /* Board initialization */
     pump_setup();
 
+    /*
     msg_t msg_queue[MSG_QUEUE_SIZE];
     memset(msg_queue, 0, MSG_QUEUE_SIZE * sizeof(msg_t));
     msg_init_queue(msg_queue, MSG_QUEUE_SIZE);
@@ -82,6 +85,7 @@ int main(void) {
 
         printf(PREFIX "pump_toggle\n");
     }
+    */
 
     /* Debug Shell */
     const shell_command_t commands[] = {{"pump_toggle", "Toggle the pump", pump_toggle_command}, {NULL, NULL, NULL}};
