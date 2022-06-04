@@ -13,9 +13,13 @@ QUIET ?= 1
 USEMODULE += ps
 USEMODULE += shell
 USEMODULE += shell_commands
+USEMODULE += ztimer
+USEMODULE += ztimer_sec
 USEPKG += nanocbor
 
 # net
+USEMODULE += credman
+USEMODULE += credman_load
 USEMODULE += gcoap
 USEMODULE += gnrc_icmpv6_echo
 USEMODULE += gnrc_ipv6_default
@@ -24,5 +28,6 @@ USEMODULE += auto_init_gnrc_rpl
 USEMODULE += gnrc_netif_single
 USEMODULE += auto_init_gnrc_netif
 USEMODULE += netdev_default
+USEPKG += wolfssl
 
 include $(RIOTBASE)/Makefile.include

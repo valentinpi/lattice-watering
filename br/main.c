@@ -3,8 +3,9 @@
 /***************************/
 
 #include <inttypes.h>
+#include <net/gnrc/icmpv6.h>
 #include <net/gnrc/ipv6.h>
-#include <net/gnrc/pktdump.h>
+#include <net/gnrc/ndp.h>
 #include <net/gnrc/rpl.h>
 #include <sched.h>
 #include <shell.h>
@@ -39,11 +40,9 @@ void netif_init(void) {
     ipv6_addr_from_str(&ieee802154_ip, BR_IEEE802154_IP_ADDR);
     gnrc_netif_ipv6_addr_add(netif_ieee802154, &ieee802154_ip, 64, 0);
 
-    /* ipv6_addr_t host_ip = {};
+    ipv6_addr_t host_ip = {};
     ipv6_addr_from_str(&host_ip, HOST_IP_ADDR);
-    ipv6_addr_t ip_prefix = {};
-    ipv6_addr_from_str(&ip_prefix, IP_PREFIX);
-    gnrc_ipv6_nib_ft_add(&ip_prefix, 64, &host_ip, netif_ethernet->pid, 0); */
+    gnrc_ipv6_nib_ft_add(NULL, 0, &host_ip, netif_ethernet->pid, 0);
 
     gnrc_rpl_init(netif_ieee802154->pid);
     gnrc_rpl_root_init(0, &ieee802154_ip, true, true);
@@ -52,9 +51,6 @@ void netif_init(void) {
 int main(void) {
     msg_init_queue(msg_queue, MSG_QUEUE_SIZE);
     netif_init();
-
-    gnrc_netreg_entry_t dump = GNRC_NETREG_ENTRY_INIT_PID(GNRC_NETREG_DEMUX_CTX_ALL, gnrc_pktdump_pid);
-    gnrc_netreg_register(GNRC_NETTYPE_ICMPV6, &dump);
 
     /* Debug Shell */
     uint8_t shell_buf[SHELL_DEFAULT_BUFSIZE];

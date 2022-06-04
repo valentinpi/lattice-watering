@@ -19,10 +19,10 @@ USEMODULE += ztimer
 USEMODULE += ztimer_sec
 
 # net
-USEMODULE += gnrc_pktdump
 USEMODULE += gnrc_icmpv6_echo
-USEMODULE += gnrc_ipv6_default
+USEMODULE += gnrc_ipv6_router_default
 USEMODULE += gnrc_sixlowpan_router_default
+USEMODULE += gnrc_ndp
 USEMODULE += gnrc_rpl
 USEMODULE += auto_init_gnrc_rpl
 USEMODULE += auto_init_gnrc_netif

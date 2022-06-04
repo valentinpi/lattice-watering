@@ -5,6 +5,7 @@
 #include <inttypes.h>
 #include <nanocbor/nanocbor.h>
 #include <net/coap.h>
+#include <net/credman.h>
 #include <net/gcoap.h>
 #include <net/gnrc/ipv6.h>
 #include <net/gnrc/netreg.h>
@@ -13,6 +14,8 @@
 #include <sched.h>
 #include <shell.h>
 #include <stdio.h>
+
+#include "cred.h"
 
 #define MSG_QUEUE_SIZE 16
 #define PREFIX "[LWFW] "
@@ -58,7 +61,14 @@ int main(void) {
     pump_init();
     netif_init();
 
-    {
+    credman_credential_t cred = {.tag = 1};
+    credman_load_private_ecc_key(&private, private_len, &cred);
+    ecdsa_public_key_t pub = {};
+    credman_load_public_key(&public, public_len, &pub);
+    cred.params.ecdsa.public_key = pub;
+    credman_add(&cred);
+
+    while (true) {
         ipv6_addr_t host_ip = {};
         ipv6_addr_from_str(&host_ip, HOST_IP_ADDR);
         sock_udp_ep_t host_ep = {.family = AF_INET6, .netif = netif_ieee802154->pid, .port = COAP_PORT};
@@ -70,6 +80,10 @@ int main(void) {
         coap_opt_finish(&pdu, 0);
         gcoap_request(&pdu, buf, CONFIG_GCOAP_PDU_BUF_SIZE, COAP_GET, "/");
         gcoap_req_send(buf, CONFIG_GCOAP_PDU_BUF_SIZE, &host_ep, NULL, NULL);
+
+        printf(PREFIX "Sending packet...\n");
+
+        ztimer_sleep(ZTIMER_SEC, 5);
     }
 
     /* Debug Shell */

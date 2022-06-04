@@ -37,7 +37,9 @@
         "utils.h": "c",
         "ndp.h": "c",
         "fib.h": "c",
-        "pktdump.h": "c"
+        "pktdump.h": "c",
+        "rpl.h": "c",
+        "credman.h": "c"
     },
     "C_Cpp.errorSquiggles": "Disabled"
 }
