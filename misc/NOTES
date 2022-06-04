@@ -28,3 +28,6 @@ printf(PREFIX "temperature: %" PRId16 "°C, humidity: %" PRId16 "\n", temp / 100
 - make list-ttys
 - BR IP: fe80::dc7d:20ff:fe37:db1d, Nachricht: 44 5b 4c 57 42
 - tip: make menuconfig
+-   gnrc_netreg_entry_t dump = GNRC_NETREG_ENTRY_INIT_PID(GNRC_NETREG_DEMUX_CTX_ALL, gnrc_pktdump_pid);
+    gnrc_netreg_register(GNRC_NETTYPE_ICMPV6, &dump);
+    and add `net/gnrc/pktdump.h` and `gnrc_pktdump`
