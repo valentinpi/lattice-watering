@@ -39,7 +39,10 @@
         "fib.h": "c",
         "pktdump.h": "c",
         "rpl.h": "c",
-        "credman.h": "c"
+        "credman.h": "c",
+        "settings.h": "c",
+        "sock_dtls_types.h": "c",
+        "dtls.h": "c"
     },
     "C_Cpp.errorSquiggles": "Disabled"
 }

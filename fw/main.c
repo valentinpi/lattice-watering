@@ -2,31 +2,7 @@
 /*  Node Firmware */
 /******************/
 
-#include <inttypes.h>
-#include <nanocbor/nanocbor.h>
-#include <net/coap.h>
-#include <net/credman.h>
-#include <net/gcoap.h>
-#include <net/gnrc/ipv6.h>
-#include <net/gnrc/netreg.h>
-#include <net/gnrc/nettype.h>
-#include <periph/gpio.h>
-#include <sched.h>
-#include <shell.h>
-#include <stdio.h>
-
-#include "cred.h"
-
-#define MSG_QUEUE_SIZE 16
-#define PREFIX "[LWFW] "
-
-static msg_t msg_queue[MSG_QUEUE_SIZE];
-static const gpio_t PUMP_PA13 = GPIO_PIN(0, 13);  // Controls the IN1 input pin of the motor board.
-static const gpio_t PUMP_PA28 = GPIO_PIN(0, 28);  // Controls the EEP sleep mode pin of the motor board.
-static bool pump_activated = false;
-static gnrc_netif_t *netif_ieee802154 = NULL;
-
-// static const char MAGIC_STR[4] = "CBOR";
+#include "main.h"
 
 void pump_init(void) {
     gpio_init(PUMP_PA13, GPIO_OUT);
@@ -55,6 +31,8 @@ void netif_init(void) {
     // Note that via RPL, the node gets added a global address automatically
 }
 
+// int *gcoap_server(gcoap_listener_t *listener, const coap_resource_t **resource, coap_pkt_t *pdu) {}
+
 int main(void) {
     /* Board initialization */
     msg_init_queue(msg_queue, MSG_QUEUE_SIZE);
@@ -68,21 +46,36 @@ int main(void) {
     cred.params.ecdsa.public_key = pub;
     credman_add(&cred);
 
+    sock_dtls_t *sock = gcoap_get_sock_dtls();
+    sock_dtls_add_credential(sock, 1);
+
+    // gcoap_register_listener(gcoap_server);
+
+    // Initialize host address
+    ipv6_addr_t host_ip = {};
+    ipv6_addr_from_str(&host_ip, HOST_IP_ADDR);
+    sock_udp_ep_t host_ep = {.family = AF_INET6, .netif = netif_ieee802154->pid, .port = COAP_PORT};
+    memcpy(host_ep.addr.ipv6, host_ip.u8, 16);
+
+    // Write a dummy package
+    int16_t dummy_tem = 25;
+    int16_t dummy_hum = 50;
+
+    coap_pkt_t pdu;
+    uint8_t buf[CONFIG_GCOAP_PDU_BUF_SIZE];
+    memset(buf, 0, CONFIG_GCOAP_PDU_BUF_SIZE);
+    gcoap_req_init(&pdu, buf, CONFIG_GCOAP_PDU_BUF_SIZE, COAP_METHOD_POST, "/data");
+    ssize_t meta_len = coap_opt_finish(&pdu, 0);
+    nanocbor_encoder_t enc;
+    nanocbor_encoder_init(&enc, &buf[meta_len], 28);
+    nanocbor_fmt_int(&enc, dummy_tem);
+    nanocbor_fmt_int(&enc, dummy_hum);
+    size_t payload_len = nanocbor_encoded_len(&enc);
+
     while (true) {
-        ipv6_addr_t host_ip = {};
-        ipv6_addr_from_str(&host_ip, HOST_IP_ADDR);
-        sock_udp_ep_t host_ep = {.family = AF_INET6, .netif = netif_ieee802154->pid, .port = COAP_PORT};
-        memcpy(host_ep.addr.ipv6, host_ip.u8, 16);
-
-        coap_pkt_t pdu;
-        uint8_t buf[CONFIG_GCOAP_PDU_BUF_SIZE];
-        gcoap_req_init(&pdu, buf, CONFIG_GCOAP_PDU_BUF_SIZE, COAP_CODE_EMPTY, NULL);
-        coap_opt_finish(&pdu, 0);
-        gcoap_request(&pdu, buf, CONFIG_GCOAP_PDU_BUF_SIZE, COAP_GET, "/");
-        gcoap_req_send(buf, CONFIG_GCOAP_PDU_BUF_SIZE, &host_ep, NULL, NULL);
-
+        // Post the data
+        gcoap_req_send(buf, meta_len + payload_len, &host_ep, NULL, NULL);
         printf(PREFIX "Sending packet...\n");
-
         ztimer_sleep(ZTIMER_SEC, 5);
     }
 

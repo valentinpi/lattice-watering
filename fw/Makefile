@@ -10,6 +10,9 @@ DEVELHELP ?= 1
 QUIET ?= 1
 
 # general
+USEMODULE += credman
+USEMODULE += credman_load
+USEMODULE += prng_sha256prng
 USEMODULE += ps
 USEMODULE += shell
 USEMODULE += shell_commands
@@ -17,10 +20,10 @@ USEMODULE += ztimer
 USEMODULE += ztimer_sec
 USEPKG += nanocbor
 
-# net
-USEMODULE += credman
-USEMODULE += credman_load
-USEMODULE += gcoap
+# net and security
+USEMODULE += tinydtls_sock_dtls
+USEMODULE += gcoap_dtls
+USEMODULE += gnrc_sock_udp
 USEMODULE += gnrc_icmpv6_echo
 USEMODULE += gnrc_ipv6_default
 USEMODULE += gnrc_rpl
@@ -28,6 +31,5 @@ USEMODULE += auto_init_gnrc_rpl
 USEMODULE += gnrc_netif_single
 USEMODULE += auto_init_gnrc_netif
 USEMODULE += netdev_default
-USEPKG += wolfssl
 
 include $(RIOTBASE)/Makefile.include

@@ -1,3 +1,30 @@
+/******************/
+/*  Node Firmware */
+/******************/
+
+#include <inttypes.h>
+#include <nanocbor/nanocbor.h>
+#include <net/coap.h>
+#include <net/credman.h>
+#include <net/gcoap.h>
+#include <net/gnrc/ipv6.h>
+#include <net/gnrc/netreg.h>
+#include <net/gnrc/nettype.h>
+#include <net/sock/dtls.h>
+#include <periph/gpio.h>
+#include <sched.h>
+#include <shell.h>
+#include <stdio.h>
+
+#define MSG_QUEUE_SIZE 16
+#define PREFIX "[LWFW] "
+
+static msg_t msg_queue[MSG_QUEUE_SIZE];
+static const gpio_t PUMP_PA13 = GPIO_PIN(0, 13);  // Controls the IN1 input pin of the motor board.
+static const gpio_t PUMP_PA28 = GPIO_PIN(0, 28);  // Controls the EEP sleep mode pin of the motor board.
+static bool pump_activated = false;
+static gnrc_netif_t *netif_ieee802154 = NULL;
+
 const uint8_t private[] = {
     0x30, 0x81, 0xdc, 0x02, 0x01, 0x01, 0x04, 0x42, 0x01, 0x01, 0x05, 0xa2, 0x1e, 0x62, 0x1a, 0xd9, 0x13, 0x24, 0xc8,
     0xeb, 0x71, 0x5d, 0x08, 0xb3, 0xdc, 0x61, 0xb4, 0xb0, 0x3e, 0xdc, 0x99, 0x19, 0x18, 0x6c, 0xab, 0x7c, 0x54, 0xdb,
