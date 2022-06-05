@@ -1,5 +1,7 @@
 # Setting up the Hardware
 
+TODO: Add the setup of the capacitive sensor.
+
 ## Requirements
 
 To build one of the node we used, you require:
@@ -8,12 +10,10 @@ To build one of the node we used, you require:
 2. Two SAMR21-XPRO boards, one bourder router and one node.
 3. Two micro USB cables, optionally a battery connector or powerbank.
 4. One DRV8833 Motor Driver board.
-5. One electronic pump, see e.g. [1].
+5. One electronic pump, see e.g. [1]. It should come with a long tube.
 6. One capacitive moisture sensor, see e.g. [2].
 7. Six female jumper cables.
 8. Two male jumper cables.
-
-
 
 ## Setup
 
@@ -35,7 +35,7 @@ Connect two female jumpers with two male jumpers and solder the two male jumpers
 |    DRV8833 |         OUT1 |          RED |       PUMP |
 |       PUMP |        GREEN |          GND | SAMR21XPRO |
 
-Now you can connect the two boards and flash the border router and node firmwares. After that, you can disconnect the 
+Now you can connect the two boards and flash the border router and node firmwares. After that, you can disconnect the node from the PC and connect it to an external power supply, e.g. the battery or the powerbank. Finally, connect the tube to the pump by sticking onto the bit that is on the outside of the motor. The other end should obviously point towards a plant. Ours was about three meters long, so we cut off parts of it. The pump shall be submerged in water during operation.
 
 ## References
 
