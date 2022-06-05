@@ -1,9 +1,9 @@
 APPLICATION = lwbr
-RIOTBASE ?= $(CURDIR)/../../RIOT
+RIOTBASE ?= $(CURDIR)/../../Tutorials/RIOT
 RIOTTOOLS ?= $(RIOTBASE)/dist/tools
 
 BOARD ?= samr21-xpro
-SERIAL ?= ATML2127031800004672
+SERIAL ?= ATML2127031800008458
 PORT ?= /dev/ttyACM0
 include ../fw/Makefile.vars
 
