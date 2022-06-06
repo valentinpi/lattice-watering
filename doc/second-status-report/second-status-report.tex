@@ -36,4 +36,13 @@
     \end{itemize}
 \end{frame}
 
+\begin{frame}{RIOT proves to be a bit limited}
+    \begin{itemize}
+        \item The border router setup is still very unintuitive and documentation for it is not very well written. At least there is some.
+        \item WolfSSL is not supported for GCoAP, so we are limited here practically, since only using DTLS sockets makes the task harder.
+        \item For TinyDTLS, the only allowed pseudorandom generators are \texttt{prng\_sha1prng}, \texttt{prng\_sha256prng} and \texttt{prng\_hwrng}, despite standardized ones existing. (see \texttt{prng\_tinymt32} from RFC8682)
+        \item Many interfaces still seem to lack features, according to documentation. See e.g. \texttt{adc.h}.
+    \end{itemize}
+\end{frame}
+
 \end{document}
