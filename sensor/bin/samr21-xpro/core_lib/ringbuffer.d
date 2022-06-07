@@ -1,0 +1,38 @@
+/media/kaan/HDD/Dokumente/Uni/Master/SWP_Internetkommunikation/lattice-watering/sensor/bin/samr21-xpro/core_lib/ringbuffer.o: \
+ /media/kaan/HDD/Dokumente/Uni/Master/SWP_Internetkommunikation/Tutorials/RIOT/core/lib/ringbuffer.c \
+ /media/kaan/HDD/Dokumente/Uni/Master/SWP_Internetkommunikation/lattice-watering/sensor/bin/samr21-xpro/riotbuild/riotbuild.h \
+ /media/kaan/HDD/Dokumente/Uni/Master/SWP_Internetkommunikation/Tutorials/RIOT/core/lib/include/ringbuffer.h \
+ /usr/share/gcc-arm-11.2-2022.02-x86_64-arm-none-eabi/arm-none-eabi/include/string.h \
+ /usr/share/gcc-arm-11.2-2022.02-x86_64-arm-none-eabi/arm-none-eabi/include/_ansi.h \
+ /usr/share/gcc-arm-11.2-2022.02-x86_64-arm-none-eabi/arm-none-eabi/include/newlib.h \
+ /usr/share/gcc-arm-11.2-2022.02-x86_64-arm-none-eabi/arm-none-eabi/include/_newlib_version.h \
+ /usr/share/gcc-arm-11.2-2022.02-x86_64-arm-none-eabi/arm-none-eabi/include/sys/config.h \
+ /usr/share/gcc-arm-11.2-2022.02-x86_64-arm-none-eabi/arm-none-eabi/include/machine/ieeefp.h \
+ /usr/share/gcc-arm-11.2-2022.02-x86_64-arm-none-eabi/arm-none-eabi/include/sys/features.h \
+ /usr/share/gcc-arm-11.2-2022.02-x86_64-arm-none-eabi/arm-none-eabi/include/sys/reent.h \
+ /usr/share/gcc-arm-11.2-2022.02-x86_64-arm-none-eabi/arm-none-eabi/include/_ansi.h \
+ /usr/share/gcc-arm-11.2-2022.02-x86_64-arm-none-eabi/lib/gcc/arm-none-eabi/11.2.1/include/stddef.h \
+ /usr/share/gcc-arm-11.2-2022.02-x86_64-arm-none-eabi/arm-none-eabi/include/sys/_types.h \
+ /usr/share/gcc-arm-11.2-2022.02-x86_64-arm-none-eabi/arm-none-eabi/include/machine/_types.h \
+ /usr/share/gcc-arm-11.2-2022.02-x86_64-arm-none-eabi/arm-none-eabi/include/machine/_default_types.h \
+ /usr/share/gcc-arm-11.2-2022.02-x86_64-arm-none-eabi/arm-none-eabi/include/sys/lock.h \
+ /usr/share/gcc-arm-11.2-2022.02-x86_64-arm-none-eabi/arm-none-eabi/include/sys/cdefs.h \
+ /usr/share/gcc-arm-11.2-2022.02-x86_64-arm-none-eabi/arm-none-eabi/include/sys/string.h
+/media/kaan/HDD/Dokumente/Uni/Master/SWP_Internetkommunikation/lattice-watering/sensor/bin/samr21-xpro/riotbuild/riotbuild.h:
+/media/kaan/HDD/Dokumente/Uni/Master/SWP_Internetkommunikation/Tutorials/RIOT/core/lib/include/ringbuffer.h:
+/usr/share/gcc-arm-11.2-2022.02-x86_64-arm-none-eabi/arm-none-eabi/include/string.h:
+/usr/share/gcc-arm-11.2-2022.02-x86_64-arm-none-eabi/arm-none-eabi/include/_ansi.h:
+/usr/share/gcc-arm-11.2-2022.02-x86_64-arm-none-eabi/arm-none-eabi/include/newlib.h:
+/usr/share/gcc-arm-11.2-2022.02-x86_64-arm-none-eabi/arm-none-eabi/include/_newlib_version.h:
+/usr/share/gcc-arm-11.2-2022.02-x86_64-arm-none-eabi/arm-none-eabi/include/sys/config.h:
+/usr/share/gcc-arm-11.2-2022.02-x86_64-arm-none-eabi/arm-none-eabi/include/machine/ieeefp.h:
+/usr/share/gcc-arm-11.2-2022.02-x86_64-arm-none-eabi/arm-none-eabi/include/sys/features.h:
+/usr/share/gcc-arm-11.2-2022.02-x86_64-arm-none-eabi/arm-none-eabi/include/sys/reent.h:
+/usr/share/gcc-arm-11.2-2022.02-x86_64-arm-none-eabi/arm-none-eabi/include/_ansi.h:
+/usr/share/gcc-arm-11.2-2022.02-x86_64-arm-none-eabi/lib/gcc/arm-none-eabi/11.2.1/include/stddef.h:
+/usr/share/gcc-arm-11.2-2022.02-x86_64-arm-none-eabi/arm-none-eabi/include/sys/_types.h:
+/usr/share/gcc-arm-11.2-2022.02-x86_64-arm-none-eabi/arm-none-eabi/include/machine/_types.h:
+/usr/share/gcc-arm-11.2-2022.02-x86_64-arm-none-eabi/arm-none-eabi/include/machine/_default_types.h:
+/usr/share/gcc-arm-11.2-2022.02-x86_64-arm-none-eabi/arm-none-eabi/include/sys/lock.h:
+/usr/share/gcc-arm-11.2-2022.02-x86_64-arm-none-eabi/arm-none-eabi/include/sys/cdefs.h:
+/usr/share/gcc-arm-11.2-2022.02-x86_64-arm-none-eabi/arm-none-eabi/include/sys/string.h:
