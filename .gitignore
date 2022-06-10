@@ -10,3 +10,5 @@ doc/*/*.toc
 br/bin
 fw/bin
 *.opendb
+.vs
+.vscode

@@ -15,10 +15,14 @@ module.exports = function(app, passport) {
         var ip = req.body.pumpIP;
         if (req.body.pumpOn) {
             console.log('Turning pump on at ip: ' + ip);
+            coap.request('coap://localhost/Matteo');
+            res.end;
         } else {
             console.log('Turning pump off at ip: ' + ip);
+            res.end;
         }
     });
+
 
     /**
     // PROFILE SECTION =========================
