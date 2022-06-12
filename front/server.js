@@ -55,7 +55,7 @@ app.post('/pumpToggle', function (req, res) {
         pumpStateChange = 'Off';
     }
     //Send info to input IP with payload pumpOn/pumpOff
-    const _req = coap.request('coap://[' + ip + ']/');
+    const _req = coap.request({ hostname: ip, confirmable: false });
     const payload = {
         title: 'pump' + pumpStateChange
     }

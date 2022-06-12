@@ -98,8 +98,8 @@ ssize_t pump_handler(coap_pkt_t *pkt, uint8_t *buf, size_t len, void *context) {
     printf(PREFIX "Toggle pump.");
     pump_toggle();
 
-    ssize_t meta_len = gcoap_response(&pkt, &buf, CONFIG_GCOAP_PDU_BUF_SIZE, COAP_EMPTY);
-    coap_hdr_set_type(pdu.hdr, COAP_TYPE_ACK);
+    ssize_t meta_len = gcoap_response(pkt, buf, CONFIG_GCOAP_PDU_BUF_SIZE, COAP_CODE_EMPTY);
+    coap_hdr_set_type(pkt->hdr, COAP_TYPE_ACK);
 
     return meta_len;
 }
