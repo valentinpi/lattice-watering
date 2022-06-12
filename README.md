@@ -18,6 +18,10 @@
 - Use the integer types `inttypes.h` provides.
 - Buffers are to be zeroed out asap.
 
+### JS Coding Conventions
+
+- Use `use strict` in all scripts.
+
 ### Design Decisions
 
 - `nanocbor` for commands as it has very low footprint and is non-proprietary

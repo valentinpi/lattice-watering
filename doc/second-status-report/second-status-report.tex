@@ -33,9 +33,10 @@
         \item The NIB did not seem to work last week, but we finally got around it on the 1st of June. So we were able to send CoAP packets from the BR to the host and, naturally, from the BR to nodes. What did not work was sending a packet to the host. The network setup is now automated and the routes are properly configured. Additionally, we setup RPL.
         \item We added the use of GCoAP.
         \item We added DTLS support.
-        \item Added WDT to \texttt{br} and \texttt{fw}.
+        \item Added WDT to \texttt{br} and \texttt{fw}. (10 seconds max, 5 second refresh usually)
         \item We properly documented how the hardware is setup, especially how one can wire a node themselves.
         \item Added documentation on how to setup the hardware.
+        \item We can remotely turn on the pump. This did work the last time, but it was rather messy to setup.
     \end{itemize}
 \end{frame}
 
@@ -140,6 +141,11 @@ Connect the female jumpers the following way:
         \item WolfSSL is not supported for GCoAP, so we are limited here practically, since only using DTLS sockets makes the task harder.
         \item For TinyDTLS, the only allowed pseudorandom generators are \texttt{prng\_sha1prng}, \texttt{prng\_sha256prng} and \texttt{prng\_hwrng}, despite standardized ones existing. (see \texttt{prng\_tinymt32} from RFC8682)
         \item Many interfaces still seem to lack features, according to documentation. See e.g. \texttt{adc.h}.
+        \item Uhh... Is CoAP widely used? Few tools seem to exist.
     \end{itemize}
+\end{frame}
+
+\begin{frame}{Small Demo}
+    \includegraphics[width=\linewidth]{doge2.jpg}
 \end{frame}
 \end{document}

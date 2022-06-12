@@ -43,7 +43,8 @@
         "settings.h": "c",
         "sock_dtls_types.h": "c",
         "dtls.h": "c",
-        "adc.h": "c"
+        "adc.h": "c",
+        "memory_resource": "c"
     },
     "C_Cpp.errorSquiggles": "Disabled"
 }
