@@ -118,6 +118,7 @@
  /media/kaan/HDD/Dokumente/Uni/Master/SWP_Internetkommunikation/Tutorials/RIOT/cpu/sam0_common/include/cpu_conf.h \
  /media/kaan/HDD/Dokumente/Uni/Master/SWP_Internetkommunikation/Tutorials/RIOT/cpu/sam0_common/include/timer_config.h \
  /media/kaan/HDD/Dokumente/Uni/Master/SWP_Internetkommunikation/Tutorials/RIOT/boards/samr21-xpro/include/periph_conf.h \
+ /media/kaan/HDD/Dokumente/Uni/Master/SWP_Internetkommunikation/Tutorials/RIOT/drivers/include/periph/gpio.h \
  /media/kaan/HDD/Dokumente/Uni/Master/SWP_Internetkommunikation/Tutorials/RIOT/sys/include/ztimer.h \
  /media/kaan/HDD/Dokumente/Uni/Master/SWP_Internetkommunikation/Tutorials/RIOT/core/include/msg.h \
  /media/kaan/HDD/Dokumente/Uni/Master/SWP_Internetkommunikation/Tutorials/RIOT/core/include/mutex.h \
@@ -246,6 +247,7 @@
 /media/kaan/HDD/Dokumente/Uni/Master/SWP_Internetkommunikation/Tutorials/RIOT/cpu/sam0_common/include/cpu_conf.h:
 /media/kaan/HDD/Dokumente/Uni/Master/SWP_Internetkommunikation/Tutorials/RIOT/cpu/sam0_common/include/timer_config.h:
 /media/kaan/HDD/Dokumente/Uni/Master/SWP_Internetkommunikation/Tutorials/RIOT/boards/samr21-xpro/include/periph_conf.h:
+/media/kaan/HDD/Dokumente/Uni/Master/SWP_Internetkommunikation/Tutorials/RIOT/drivers/include/periph/gpio.h:
 /media/kaan/HDD/Dokumente/Uni/Master/SWP_Internetkommunikation/Tutorials/RIOT/sys/include/ztimer.h:
 /media/kaan/HDD/Dokumente/Uni/Master/SWP_Internetkommunikation/Tutorials/RIOT/core/include/msg.h:
 /media/kaan/HDD/Dokumente/Uni/Master/SWP_Internetkommunikation/Tutorials/RIOT/core/include/mutex.h:

@@ -7,6 +7,7 @@ BOARD ?= samr21-xpro
 
 # general
 USEMODULE += periph_adc
+USEMODULE += periph_gpio
 USEMODULE += ps
 USEMODULE += shell
 USEMODULE += shell_commands
