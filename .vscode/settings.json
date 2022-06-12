@@ -42,7 +42,8 @@
         "credman.h": "c",
         "settings.h": "c",
         "sock_dtls_types.h": "c",
-        "dtls.h": "c"
+        "dtls.h": "c",
+        "adc.h": "c"
     },
     "C_Cpp.errorSquiggles": "Disabled"
 }
