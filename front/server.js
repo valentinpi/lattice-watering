@@ -55,90 +55,40 @@ app.post('/pumpToggle', function (req, res) {
         pumpStateChange = 'Off';
     }
     //Send info to input IP with payload pumpOn/pumpOff
-    const req = coap.request('coap://' + ip + '/');
+    const coap_req = coap.request('coap://' + ip + '/');
     const payload = {
         title: 'pump' + pumpStateChange
-    }
-    req.write(JSON.stringify(payload));
+    };
+    coap_req.write(JSON.stringify(payload));
 
+    coap_req.on('response', (res) => {
+        res.pipe(process.stdout)
+        res.on('end', () => {
+            process.exit(0);
+        })
+    })
     res.status(204).send();
 });
 
-var mysocket;
-
-http.listen(3000, function () {
+app.listen(3000, () => {
     console.log('listening on port 3000 for frontend requests');
 });
 
 var server = coap.createServer();
 
-server.on('request', (req, res) => {
-    res.end('Hello ' + req.url.split('/')[1] + '\n')
-});
-
-server.listen(() => {
+server.listen(5683, () => {
     console.log('listening on port 5683 for coap requests');
-});
 
-/*//Momentan unnötig aber vlt brauch mans ja noch
-io.on('connection', function (socket) {
-
-    io.emit('info', 'connection to websocketserver succesfully established');
-    console.log('info: a user connected to the websocket server');
-
-
-    var req;
-    mysocket = socket;
-    socket.on('coap', function (msg) {
-
-        console.log('Received a new coap request with options: ' + msg);
-
-        var config = JSON.parse(msg);
-        url = URL.parse(config.url);
-        url.method = config.method;
-        url.observe = config.observe;
-
-        req = request(url).on('response', transmitResponse);
-        req.end();
-        process.stdin.pipe(req);
+    server.on('request', (req, res) => {
+        console.log('server received coap message from: ' + req.url.split('/')[0]);
+        res.end();
     });
 
-    socket.on('disconnect', function () {
-        console.log('user disconnected');
+    server.on('response', (res) => {
+        res.pipe(process.stdout);
+        res.on('end', () => {
+            process.exit(0);
+        })
     });
 });
 
-var transmitResponse = function (res) {
-
-    res.on('data', function (data) {
-
-        mysocket.on('cancel', function (msg) {
-            console.log("Tried to cancel");
-            res.close();
-        });
-
-        var strData = data.toString('utf-8');
-        var payload = JSON.parse(strData);
-
-        if (debug) {
-            var sensorServerTime = new Date(payload.timestamps[0]);
-            var webServerTime = new Date();
-
-            var sensorServerTimeOutput = sensorServerTime.getHours() + ":" + sensorServerTime.getMinutes() + ":" + sensorServerTime.getSeconds() + "." + sensorServerTime.getMilliseconds();
-            var webServerTimeOutput = webServerTime.getHours() + ":" + sensorServerTime.getMinutes() + ":" + sensorServerTime.getSeconds() + "." + sensorServerTime.getMilliseconds();
-            var delay = webServerTime - sensorServerTime;
-            console.log(sensorServerTimeOutput + ": Received a chunk from: " + webServerTimeOutput + " --> Delay: " + delay + " ms");
-        }
-
-        payload.timestamps.push(new Date().getTime());
-        io.emit('coap', JSON.stringify(payload));
-
-    });
-
-    res.on('end', function () {
-        console.log('Stream ended!');
-    });
-
-    if (!res.payload.length) process.exit(0);
-};
-*/
