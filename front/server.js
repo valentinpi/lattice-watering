@@ -62,24 +62,23 @@ app.post('/pumpToggle', function (req, res) {
     _req.write(JSON.stringify(payload));
     _req.end()
 
+    coap_req.on('response', (res) => {
+        res.pipe(process.stdout)
+        res.on('end', () => {
+            process.exit(0);
+        })
+    })
     res.status(204).send();
 });
 
-var mysocket;
-
-http.listen(3000, function () {
+app.listen(3000, () => {
     console.log('listening on port 3000 for frontend requests');
 });
 
 var server = coap.createServer();
 
-server.on('request', (req, res) => {
-    res.end('Hello ' + req.url.split('/')[1] + '\n')
-});
-
-server.listen(() => {
+server.listen(5683, () => {
     console.log('listening on port 5683 for coap requests');
-});
 
 /*//Momentan unn�tig aber vlt brauch mans ja noch
 io.on('connection', function (socket) {
@@ -104,42 +103,11 @@ io.on('connection', function (socket) {
         process.stdin.pipe(req);
     });
 
-    socket.on('disconnect', function () {
-        console.log('user disconnected');
+    server.on('response', (res) => {
+        res.pipe(process.stdout);
+        res.on('end', () => {
+            process.exit(0);
+        })
     });
 });
 
-var transmitResponse = function (res) {
-
-    res.on('data', function (data) {
-
-        mysocket.on('cancel', function (msg) {
-            console.log("Tried to cancel");
-            res.close();
-        });
-
-        var strData = data.toString('utf-8');
-        var payload = JSON.parse(strData);
-
-        if (debug) {
-            var sensorServerTime = new Date(payload.timestamps[0]);
-            var webServerTime = new Date();
-
-            var sensorServerTimeOutput = sensorServerTime.getHours() + ":" + sensorServerTime.getMinutes() + ":" + sensorServerTime.getSeconds() + "." + sensorServerTime.getMilliseconds();
-            var webServerTimeOutput = webServerTime.getHours() + ":" + sensorServerTime.getMinutes() + ":" + sensorServerTime.getSeconds() + "." + sensorServerTime.getMilliseconds();
-            var delay = webServerTime - sensorServerTime;
-            console.log(sensorServerTimeOutput + ": Received a chunk from: " + webServerTimeOutput + " --> Delay: " + delay + " ms");
-        }
-
-        payload.timestamps.push(new Date().getTime());
-        io.emit('coap', JSON.stringify(payload));
-
-    });
-
-    res.on('end', function () {
-        console.log('Stream ended!');
-    });
-
-    if (!res.payload.length) process.exit(0);
-};
-*/
