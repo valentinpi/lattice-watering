@@ -23,3 +23,4 @@
 - `nanocbor` for commands as it has very low footprint and is non-proprietary
 - We wanted to use `wolfssl` since it uses a GNU license, but it is not supported by `gnrc_dtls`
 - No HW RNG, so we use a PRNG. `prng_tinymt32` looks promising, as it is standardized in RFC8682, but we could not choose it, so we went with `prng_sha256prng`, since it might provide better security than SHA-1.
+- There is WDT integration in the `fw` code, but not in the `br`, as its code is much less complex.

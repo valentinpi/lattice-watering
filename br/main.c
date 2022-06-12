@@ -3,14 +3,10 @@
 /***************************/
 
 #include <inttypes.h>
-#include <net/gnrc/icmpv6.h>
 #include <net/gnrc/ipv6.h>
-#include <net/gnrc/ndp.h>
 #include <net/gnrc/rpl.h>
-#include <periph/adc.h>
-#include <sched.h>
+#include <periph/wdt.h>
 #include <shell.h>
-#include <stdio.h>
 #include <ztimer.h>
 
 #define MSG_QUEUE_SIZE 16
@@ -19,6 +15,8 @@
 msg_t msg_queue[MSG_QUEUE_SIZE];
 gnrc_netif_t *netif_ethernet = NULL;
 gnrc_netif_t *netif_ieee802154 = NULL;
+
+uint8_t wdt_thread_stack[THREAD_STACKSIZE_IDLE];
 
 void net_init(void) {
     while (netif_ethernet == NULL || netif_ieee802154 == NULL) {
@@ -49,10 +47,25 @@ void net_init(void) {
     gnrc_rpl_root_init(0, &ieee802154_ip, true, true);
 }
 
+void *wdt_thread(void *arg) {
+    (void)arg;
+
+    wdt_setup_reboot(0, 10e3);
+    wdt_start();
+    while (1) {
+        ztimer_sleep(ZTIMER_SEC, 5);
+        wdt_kick();
+    }
+}
+
 int main(void) {
     /* Init */
     msg_init_queue(msg_queue, MSG_QUEUE_SIZE);
     net_init();
+
+    /* WDT */
+    thread_create((char *)wdt_thread_stack, THREAD_STACKSIZE_IDLE, THREAD_PRIORITY_MAIN - 1, 0, wdt_thread, NULL,
+                  "wdt");
 
     /* Debug Shell */
     uint8_t shell_buf[SHELL_DEFAULT_BUFSIZE];

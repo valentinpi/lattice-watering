@@ -42,6 +42,17 @@ void net_cred_init(void) {
     // sock_dtls_add_credential(sock, 1);
 }
 
+void *wdt_thread(void *arg) {
+    (void)arg;
+
+    wdt_setup_reboot(0, 10e3);
+    wdt_start();
+    while (1) {
+        ztimer_sleep(ZTIMER_SEC, 5);
+        wdt_kick();
+    }
+}
+
 void *data_thread(void *arg) {
     (void)arg;
 
@@ -70,7 +81,6 @@ void *data_thread(void *arg) {
 
     while (true) {
         // Post the data
-        printf("%d\n", coap_get_code(&pdu));
         gcoap_req_send(buf, meta_len + payload_len, &host_ep, NULL, NULL);
         ztimer_sleep(ZTIMER_SEC, DATA_INTERVAL);
     }
@@ -86,6 +96,11 @@ int main(void) {
     pump_init();
     net_cred_init();
 
+    /* WDT */
+    thread_create((char *)wdt_thread_stack, THREAD_STACKSIZE_IDLE, THREAD_PRIORITY_MAIN - 1, 0, wdt_thread, NULL,
+                  "wdt");
+
+    /* Data */
     thread_create((char *)data_thread_stack, THREAD_STACKSIZE_LARGE, THREAD_PRIORITY_MAIN - 1, 0, data_thread, NULL,
                   "data");
 

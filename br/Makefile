@@ -12,7 +12,7 @@ DEVELHELP ?= 1
 QUIET ?= 1
 
 # general
-USEMODULE += periph_adc
+USEMODULE += periph_wdt
 USEMODULE += ps
 USEMODULE += shell
 USEMODULE += shell_commands
@@ -21,11 +21,10 @@ USEMODULE += ztimer_sec
 
 # net
 USEMODULE += gnrc_icmpv6_echo
-USEMODULE += gnrc_ipv6_router_default
 USEMODULE += gnrc_sixlowpan_router_default
-USEMODULE += gnrc_ndp
-USEMODULE += gnrc_rpl
 USEMODULE += auto_init_gnrc_rpl
+USEMODULE += gnrc_rpl
+USEMODULE += gnrc_ipv6_router_default
 USEMODULE += auto_init_gnrc_netif
 USEMODULE += netdev_default
 CFLAGS += -DCONFIG_GNRC_IPV6_NIB_ARSM=1 -DCONFIG_GNRC_IPV6_NIB_SLAAC=1 -DCONFIG_GNRC_IPV6_NIB_NUMOF=16

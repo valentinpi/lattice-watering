@@ -12,6 +12,7 @@ QUIET ?= 1
 # general
 USEMODULE += credman
 USEMODULE += credman_load
+USEMODULE += periph_wdt
 USEMODULE += prng_sha256prng
 USEMODULE += ps
 USEMODULE += shell
