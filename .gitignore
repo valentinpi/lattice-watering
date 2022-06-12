@@ -8,5 +8,6 @@ doc/*/*.out
 doc/*/*.snm
 doc/*/*.synctex.gz
 doc/*/*.toc
+doc/*/*.vrb
 front/node_modules
 fw/bin
