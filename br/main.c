@@ -7,6 +7,7 @@
 #include <net/gnrc/ipv6.h>
 #include <net/gnrc/ndp.h>
 #include <net/gnrc/rpl.h>
+#include <periph/adc.h>
 #include <sched.h>
 #include <shell.h>
 #include <stdio.h>
@@ -50,8 +51,16 @@ void net_init(void) {
 
 int main(void) {
     /* Init */
-    msg_init_queue(msg_queue, MSG_QUEUE_SIZE);
-    net_init();
+    // msg_init_queue(msg_queue, MSG_QUEUE_SIZE);
+    // net_init();
+
+    adc_t line = ADC_LINE(0);
+    int err = adc_init(line);
+    while (true) {
+        int32_t val = adc_sample(line, ADC_RES_10BIT);
+        printf(PREFIX "%" PRId32 "\n", val);
+        ztimer_sleep(ZTIMER_SEC, 1);
+    }
 
     /* Debug Shell */
     uint8_t shell_buf[SHELL_DEFAULT_BUFSIZE];

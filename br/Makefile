@@ -12,6 +12,7 @@ DEVELHELP ?= 1
 QUIET ?= 1
 
 # general
+USEMODULE += periph_adc
 USEMODULE += ps
 USEMODULE += shell
 USEMODULE += shell_commands
