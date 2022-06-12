@@ -11,3 +11,6 @@ doc/*/*.toc
 doc/*/*.vrb
 front/node_modules
 fw/bin
+*.opendb
+.vs
+.vscode
