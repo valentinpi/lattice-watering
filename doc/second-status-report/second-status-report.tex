@@ -83,56 +83,54 @@ Connect the female jumpers the following way:
     \end{verbatim}
 \end{frame}
 
-\begin{frame}{The Final Network Architecture}
-        \begin{tikzpicture}[>=stealth, semithick, scale=0.7]
-            \scriptsize
-            \draw[rounded corners=5pt] (-1, -1) rectangle (1, 1);
-            \draw[draw=none] (-1, 0) -- (1, 1) node[pos=0.5] {Host/PC};
-            \draw (-1, 0) -- (1, 0);
-            \draw[draw=none] (-1, 0) -- (1, -1) node[pos=0.5] {\texttt{tap0}};
-    
-            \draw[rounded corners=5pt] (-12, -1) rectangle (-5, 1);
-            \draw[draw=none] (-12, 0) -- (-5, 1) node[pos=0.5] {Border Router};
-            \draw (-12, 0) -- (-5, 0);
-            \draw (-8.5, 0) -- (-8.5, -1);
-            \draw[draw=none] (-12, 0) -- (-8.5, -1) node[pos=0.5] {\texttt{netif\_ieee802154}};
-            \draw[draw=none] (-8.5, 0) -- (-5, -1) node[pos=0.5] {\texttt{netif\_ethernet}};
-            \draw[->] (-1, -0.33) -- (-5, -0.33);
-            \node[left] at (-1, 0) {\texttt{2001:db8:1::}};
-            \node[right] at (-5, -1) {\texttt{2001:db8:1::1}};
-            \node at (-3, 1.5) {\texttt{ethos}};
-            \node at (-3, 1) {\texttt{2001:db8:1::/64}};
-            \draw[->] (-5, -0.66) -- (-1, -0.66);
-    
-            \draw[rounded corners=5pt] (-12, -5) rectangle (-8.5, -7);
-            \draw (-12, -6) -- (-8.5, -6);
-            \draw[draw=none] (-12, -5) -- (-8.5, -6) node[pos=0.5] {\texttt{netif\_ieee802154}};
-            \draw[draw=none] (-12, -6) -- (-8.5, -7) node[pos=0.5] {Node};
-    
-            \draw[rounded corners=5pt] (-6, -5) rectangle (-2.5, -7);
-            \draw (-6, -6) -- (-2.5, -6);
-            \draw[draw=none] (-6, -5) -- (-2.5, -6) node[pos=0.5] {\texttt{netif\_ieee802154}};
-            \draw[draw=none] (-6, -6) -- (-2.5, -7) node[pos=0.5] {Node};
-    
-            \draw[rounded corners=5pt] (0, -5) rectangle (3.5, -7);
-            \draw (0, -6) -- (3.5, -6);
-            \draw[draw=none] (0, -5) -- (3.5, -6) node[pos=0.5] {\texttt{netif\_ieee802154}};
-            \draw[draw=none] (0, -6) -- (3.5, -7) node[pos=0.5] {Node};
-    
-            \draw[->] (-11.5, -1) -- (-10.5, -5);
-            \draw[->] (-10, -5) -- (-11, -1);
-            \draw[->] (-10.5, -1) -- (-4.5, -5);
-            \draw[->] (-4, -5) -- (-10, -1);
-            \draw[->] (-9.5, -1) -- (1.5, -5);
-            \draw[->] (2, -5) -- (-9, -1);
-    
-            \draw[->] (-8.5, -5.33) -- (-6, -5.33) node[above, pos=0.5] {RPL};
-            \draw[->] (-6, -5.66) -- (-8.5, -5.66);
-            \draw[->] (-2.5, -5.33) -- (0, -5.33) node[above, pos=0.5] {RPL};
-            \draw[->] (0, -5.66) -- (-2.5, -5.66);
-            \node at (0, -2.5) {\texttt{sixlowpan}};
-            \node at (0, -3) {\texttt{2001:db8:2::/64}};
-        \end{tikzpicture}
+\begin{frame}[fragile]{The Final Network Architecture}
+    \begin{tikzpicture}[>=stealth, semithick, scale=0.7]
+        \scriptsize
+        \draw[rounded corners=5pt] (-1, -1) rectangle (1, 1);
+        \draw[draw=none] (-1, 0) -- (1, 1) node[pos=0.5] {Host/PC};
+        \draw (-1, 0) -- (1, 0);
+        \draw[draw=none] (-1, 0) -- (1, -1) node[pos=0.5] {\texttt{tap0}};
+
+        \draw[rounded corners=5pt] (-12, -1) rectangle (-5, 1);
+        \draw[draw=none] (-12, 0) -- (-5, 1) node[pos=0.5] {Border Router};
+        \draw (-12, 0) -- (-5, 0);
+        \draw (-8.5, 0) -- (-8.5, -1);
+        \draw[draw=none] (-12, 0) -- (-8.5, -1) node[pos=0.5] {\texttt{netif\_ieee802154}};
+        \draw[draw=none] (-8.5, 0) -- (-5, -1) node[pos=0.5] {\texttt{netif\_ethernet}};
+        \draw[->] (-1, -0.33) -- (-5, -0.33);
+        \node[left] at (-1, 0) {\texttt{2001:db8:1::}};
+        \node[right] at (-5, -1) {\texttt{2001:db8:1::1}};
+        \node at (-3, 1.5) {\texttt{ethos}};
+        \node at (-3, 1) {\texttt{2001:db8:1::/64}};
+        \draw[->] (-5, -0.66) -- (-1, -0.66);
+
+        \newcommand{\networknode}[2]{
+            \draw[rounded corners=5pt] (#1, #2) rectangle (#1+3.5, #2-2);
+            \draw (#1, #2-1) -- (#1+3.5, #2-1);
+            \draw[draw=none] (#1, #2) -- (#1+3.5, #2-1) node[pos=0.5] {\texttt{netif\_ieee802154}};
+            \draw[draw=none] (#1, #2-1) -- (#1+3.5, #2-2) node[pos=0.5] {Node};
+        }
+
+        \networknode{-12}{-3};
+        \networknode{-7}{-3};
+        \networknode{-12}{-7};
+        \networknode{-7}{-7};
+        \networknode{-2}{-7};
+
+        \draw[->] (-12+1.75-0.48, -1) -- (-12+1.75-0.16, -3) node[left, pos=0.5] {RPL};
+        \draw[->] (-12+1.75+0.16, -3) -- (-12+1.75-0.16, -1);
+        \draw[->] (-12+1.75+0.16, -1) -- (-7+1.75-0.16, -3) node[below left, pos=0.5] {RPL};
+        \draw[->] (-7+1.75+0.16, -3) -- (-12+1.75+0.48, -1);
+        \draw[->] (-12+1.75-0.16, -5) -- (-12+1.75-0.16, -7) node[left, pos=0.5] {RPL};
+        \draw[->] (-12+1.75+0.16, -7) -- (-12+1.75+0.16, -5);
+        \draw[->] (-7+1.75-0.48, -5) -- (-7+1.75-0.16, -7) node[left, pos=0.5] {RPL};
+        \draw[->] (-7+1.75+0.16, -7) -- (-7+1.75-0.16, -5);
+        \draw[->] (-7+1.75+0.16, -5) -- (-2+1.75-0.16, -7) node[below left, pos=0.5] {RPL};
+        \draw[->] (-2+1.75+0.16, -7) -- (-7+1.75+0.48, -5);
+
+        \node at (0, -2.5) {\texttt{sixlowpan}};
+        \node at (0, -3) {\texttt{2001:db8:2::/64}};
+    \end{tikzpicture}
 \end{frame}
 
 \begin{frame}{RIOT Proves to be a Bit Limited}
