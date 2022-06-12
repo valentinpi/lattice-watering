@@ -61,14 +61,14 @@ void *data_thread(void *arg) {
     memcpy(host_ep.addr.ipv6, host_ip.u8, 16);
 
     // Write a dummy package
-    int16_t dummy_tem = 25;
-    int16_t dummy_hum = 50;
+    /* int16_t dummy_tem = 25;
+    int16_t dummy_hum = 50; */
 
     // Put packet metadata
     coap_pkt_t pdu = {};
     uint8_t buf[CONFIG_GCOAP_PDU_BUF_SIZE];
     memset(buf, 0, CONFIG_GCOAP_PDU_BUF_SIZE);
-    gcoap_req_init(&pdu, buf, CONFIG_GCOAP_PDU_BUF_SIZE, COAP_METHOD_POST, "/data");
+    /* gcoap_req_init(&pdu, buf, CONFIG_GCOAP_PDU_BUF_SIZE, COAP_METHOD_POST, "/data");
     coap_opt_add_format(&pdu, COAP_FORMAT_CBOR);
     ssize_t meta_len = coap_opt_finish(&pdu, 0);
 
@@ -77,7 +77,11 @@ void *data_thread(void *arg) {
     nanocbor_encoder_init(&enc, pdu.payload, 28);
     nanocbor_fmt_int(&enc, dummy_tem);
     nanocbor_fmt_int(&enc, dummy_hum);
-    size_t payload_len = nanocbor_encoded_len(&enc);
+    size_t payload_len = nanocbor_encoded_len(&enc); */
+
+    ssize_t meta_len = gcoap_request(&pdu, buf, CONFIG_GCOAP_PDU_BUF_SIZE, COAP_GET, "/");
+    coap_hdr_set_type(pdu.hdr, COAP_TYPE_NON);
+    size_t payload_len = 0;
 
     while (true) {
         // Post the data
@@ -97,7 +101,7 @@ int main(void) {
     net_cred_init();
 
     /* WDT */
-    thread_create((char *)wdt_thread_stack, THREAD_STACKSIZE_IDLE, THREAD_PRIORITY_MAIN - 1, 0, wdt_thread, NULL,
+    thread_create((char *)wdt_thread_stack, THREAD_STACKSIZE_DEFAULT, THREAD_PRIORITY_MAIN - 1, 0, wdt_thread, NULL,
                   "wdt");
 
     /* Data */
