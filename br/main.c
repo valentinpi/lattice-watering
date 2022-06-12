@@ -51,16 +51,8 @@ void net_init(void) {
 
 int main(void) {
     /* Init */
-    // msg_init_queue(msg_queue, MSG_QUEUE_SIZE);
-    // net_init();
-
-    adc_t line = ADC_LINE(0);
-    int err = adc_init(line);
-    while (true) {
-        int32_t val = adc_sample(line, ADC_RES_10BIT);
-        printf(PREFIX "%" PRId32 "\n", val);
-        ztimer_sleep(ZTIMER_SEC, 1);
-    }
+    msg_init_queue(msg_queue, MSG_QUEUE_SIZE);
+    net_init();
 
     /* Debug Shell */
     uint8_t shell_buf[SHELL_DEFAULT_BUFSIZE];

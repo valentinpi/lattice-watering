@@ -1,0 +1,19 @@
+\frametitle{Documented the HW Setup}
+\begin{verbatim}
+HWSETUP.md
+...
+To build one of the node we used, you require:
+
+1. One personal computer with the software set up.
+2. Two SAMR21-XPRO boards, one bourder router and one node.
+...
+Connect the female jumpers the following way:
+
+|   Device 1 | Connection 1 | Connection 2 |   Device 2 |
+|------------|--------------|--------------|------------|
+| SAMR21XPRO |          5V0 |          VCC |     DRV883 |
+| SAMR21XPRO |          GND |          GND |     DRV883 |
+| SAMR21XPRO |         PA13 |          IN1 |     DRV883 |
+| SAMR21XPRO |         PA13 |          EEP |     DRV883 |
+...
+    \end{verbatim}

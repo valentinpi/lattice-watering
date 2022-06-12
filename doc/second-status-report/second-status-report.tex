@@ -2,6 +2,8 @@
 
 \usepackage[T1]{fontenc}
 \usepackage[utf8]{inputenc}
+\usepackage{tikz}
+\usepackage{verbatim}
 
 \usetheme{Pittsburgh}
 \usecolortheme{dove}
@@ -20,7 +22,7 @@
     Institute for Computer Science
 }
 
-\date{\today{ }(newest version)}
+\date{June 13, 2022}
 
 \begin{document}
 
@@ -36,7 +38,102 @@
     \end{itemize}
 \end{frame}
 
-\begin{frame}{RIOT proves to be a bit limited}
+\begin{frame}[fragile]{RPL Topology}
+    RPL (RFC 6550) states that for a home automation solution like ours, one root suffices:
+
+    \begin{verbatim}
+3.1.3.  Instances, DODAGs, and DODAG Versions
+
+A RPL Instance contains one or more DODAG roots. A RPL Instance
+may provide routes to certain destination prefixes, reachable
+via the DODAG roots or alternate paths within the DODAG. ...
+
+A RPL Instance may comprise:
+
+o  a single DODAG with a single root
+
+   *  For example, a DODAG optimized to minimize latency rooted at a
+      single centralized lighting controller in a Home
+      Automation application.
+...
+RIOT: gnrc_rpl_root_init(0, &ieee802154_ip, true, true);
+    \end{verbatim}
+\end{frame}
+
+\begin{frame}[fragile]{Documented the HW Setup}
+    \begin{verbatim}
+HWSETUP.md
+...
+To build one of the node we used, you require:
+        
+1. One personal computer with the software set up.
+2. Two SAMR21-XPRO boards, one bourder router and one node.
+...
+Connect the female jumpers the following way:
+
+|   Device 1 | Connection 1 | Connection 2 |   Device 2 |
+|------------|--------------|--------------|------------|
+| SAMR21XPRO |          5V0 |          VCC |     DRV883 |
+| SAMR21XPRO |          GND |          GND |     DRV883 |
+| SAMR21XPRO |         PA13 |          IN1 |     DRV883 |
+| SAMR21XPRO |         PA13 |          EEP |     DRV883 |
+...
+    \end{verbatim}
+\end{frame}
+
+\begin{frame}{The Final Network Architecture}
+        \begin{tikzpicture}[>=stealth, semithick, scale=0.7]
+            \scriptsize
+            \draw[rounded corners=5pt] (-1, -1) rectangle (1, 1);
+            \draw[draw=none] (-1, 0) -- (1, 1) node[pos=0.5] {Host/PC};
+            \draw (-1, 0) -- (1, 0);
+            \draw[draw=none] (-1, 0) -- (1, -1) node[pos=0.5] {\texttt{tap0}};
+    
+            \draw[rounded corners=5pt] (-12, -1) rectangle (-5, 1);
+            \draw[draw=none] (-12, 0) -- (-5, 1) node[pos=0.5] {Border Router};
+            \draw (-12, 0) -- (-5, 0);
+            \draw (-8.5, 0) -- (-8.5, -1);
+            \draw[draw=none] (-12, 0) -- (-8.5, -1) node[pos=0.5] {\texttt{netif\_ieee802154}};
+            \draw[draw=none] (-8.5, 0) -- (-5, -1) node[pos=0.5] {\texttt{netif\_ethernet}};
+            \draw[->] (-1, -0.33) -- (-5, -0.33);
+            \node[left] at (-1, 0) {\texttt{2001:db8:1::}};
+            \node[right] at (-5, -1) {\texttt{2001:db8:1::1}};
+            \node at (-3, 1.5) {\texttt{ethos}};
+            \node at (-3, 1) {\texttt{2001:db8:1::/64}};
+            \draw[->] (-5, -0.66) -- (-1, -0.66);
+    
+            \draw[rounded corners=5pt] (-12, -5) rectangle (-8.5, -7);
+            \draw (-12, -6) -- (-8.5, -6);
+            \draw[draw=none] (-12, -5) -- (-8.5, -6) node[pos=0.5] {\texttt{netif\_ieee802154}};
+            \draw[draw=none] (-12, -6) -- (-8.5, -7) node[pos=0.5] {Node};
+    
+            \draw[rounded corners=5pt] (-6, -5) rectangle (-2.5, -7);
+            \draw (-6, -6) -- (-2.5, -6);
+            \draw[draw=none] (-6, -5) -- (-2.5, -6) node[pos=0.5] {\texttt{netif\_ieee802154}};
+            \draw[draw=none] (-6, -6) -- (-2.5, -7) node[pos=0.5] {Node};
+    
+            \draw[rounded corners=5pt] (0, -5) rectangle (3.5, -7);
+            \draw (0, -6) -- (3.5, -6);
+            \draw[draw=none] (0, -5) -- (3.5, -6) node[pos=0.5] {\texttt{netif\_ieee802154}};
+            \draw[draw=none] (0, -6) -- (3.5, -7) node[pos=0.5] {Node};
+    
+            \draw[->] (-11.5, -1) -- (-10.5, -5);
+            \draw[->] (-10, -5) -- (-11, -1);
+            \draw[->] (-10.5, -1) -- (-4.5, -5);
+            \draw[->] (-4, -5) -- (-10, -1);
+            \draw[->] (-9.5, -1) -- (1.5, -5);
+            \draw[->] (2, -5) -- (-9, -1);
+    
+            \draw[->] (-8.5, -5.33) -- (-6, -5.33) node[above, pos=0.5] {RPL};
+            \draw[->] (-6, -5.66) -- (-8.5, -5.66);
+            \draw[->] (-2.5, -5.33) -- (0, -5.33) node[above, pos=0.5] {RPL};
+            \draw[->] (0, -5.66) -- (-2.5, -5.66);
+            \node at (0, -2.5) {\texttt{sixlowpan}};
+            \node at (0, -3) {\texttt{2001:db8:2::/64}};
+        \end{tikzpicture}
+\end{frame}
+
+\begin{frame}{RIOT Proves to be a Bit Limited}
     \begin{itemize}
         \item The border router setup is still very unintuitive and documentation for it is not very well written. At least there is some.
         \item WolfSSL is not supported for GCoAP, so we are limited here practically, since only using DTLS sockets makes the task harder.
@@ -44,5 +141,4 @@
         \item Many interfaces still seem to lack features, according to documentation. See e.g. \texttt{adc.h}.
     \end{itemize}
 \end{frame}
-
 \end{document}

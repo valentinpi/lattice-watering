@@ -1,3 +1,4 @@
+br/bin
 doc/*/*.aux
 doc/*/*.fdb_latexmk
 doc/*/*.fls
@@ -7,5 +8,5 @@ doc/*/*.out
 doc/*/*.snm
 doc/*/*.synctex.gz
 doc/*/*.toc
-br/bin
+front/node_modules
 fw/bin
