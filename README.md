@@ -11,6 +11,11 @@
 - `man`: Manuals for the devices we use.
 - `misc`: Mischief.
 
+### General Conventions
+
+- IPv6 only.
+- UDP/CoAP for the communication with the IoT devices.
+
 ### C Coding Conventions
 
 - Use the included `clang-format` file. For VS Code see `xaver.clang-format`.

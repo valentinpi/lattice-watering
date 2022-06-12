@@ -29,6 +29,7 @@ bool pump_activated = false;
 
 gnrc_netif_t *netif_ieee802154 = NULL;
 ipv6_addr_t host_ip = {};
+sock_udp_ep_t host_ep = {};
 
 uint8_t wdt_thread_stack[THREAD_STACKSIZE_DEFAULT];
 uint8_t data_thread_stack[THREAD_STACKSIZE_LARGE];

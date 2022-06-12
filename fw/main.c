@@ -30,6 +30,7 @@ void net_cred_init(void) {
     printf(PREFIX "IEEE802154 interface found\n");
     // Note that via RPL, the node gets added a global address automatically
     ipv6_addr_from_str(&host_ip, HOST_IP_ADDR);
+    memcpy(host_ep.addr.ipv6, host_ip.u8, 16);
 
     credman_credential_t cred = {.tag = 1};
     credman_load_private_ecc_key(&private, private_len, &cred);
@@ -55,10 +56,6 @@ void *wdt_thread(void *arg) {
 
 void *data_thread(void *arg) {
     (void)arg;
-
-    // Initialize host address
-    sock_udp_ep_t host_ep = {.family = AF_INET6, .netif = netif_ieee802154->pid, .port = COAP_PORT};
-    memcpy(host_ep.addr.ipv6, host_ip.u8, 16);
 
     // Write a dummy package
     /* int16_t dummy_tem = 25;
@@ -101,7 +98,10 @@ ssize_t pump_handler(coap_pkt_t *pkt, uint8_t *buf, size_t len, void *context) {
     printf(PREFIX "Toggle pump.");
     pump_toggle();
 
-    return 0;
+    ssize_t meta_len = gcoap_response(&pkt, &buf, CONFIG_GCOAP_PDU_BUF_SIZE, COAP_EMPTY);
+    coap_hdr_set_type(pdu.hdr, COAP_TYPE_ACK);
+
+    return meta_len;
 }
 
 int main(void) {
