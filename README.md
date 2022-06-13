@@ -15,6 +15,7 @@
 
 - IPv6 only.
 - UDP/CoAP for the communication with the IoT devices.
+- The CoAP communication is stateless only.
 
 ### C Coding Conventions
 
