@@ -60,6 +60,7 @@ app.post('/pumpToggle', function (req, res) {
         title: 'pump' + pumpStateChange
     };
     coap_req.write(JSON.stringify(payload));
+    coap_req.end();
 
     coap_req.on('response', (res) => {
         res.pipe(process.stdout)
