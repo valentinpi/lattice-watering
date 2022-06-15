@@ -1,5 +1,5 @@
 {
-    "name": "wataplant",
+    "name": "lattice_watering",
     "version": "1.0.0",
     "description": "Node.js Application for IoT Project",
     "main": "server.js",
@@ -21,11 +21,11 @@
         "express-handlebars": "^6.0.6",
         "express-validator": "^2.10.0",
         "handlebars": "^4.7.7",
-        "mongodb": "^4.6.0",
+        "mongodb": "^4.7.0",
         "mongoose": "^6.3.4",
         "morgan": "^1.10.0",
         "mustache": "^4.2.0",
-        "mysql": "^2.18.1",
+        "mysql": "github:mysqljs/mysql",
         "serve-static": "^1.9.3",
         "socket.io": "^4.5.1"
     }
