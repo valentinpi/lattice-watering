@@ -31,7 +31,20 @@
         "nanocbor.h": "c",
         "*.ipp": "c",
         "stdlib.h": "c",
-        "socket.h": "c"
+        "socket.h": "c",
+        "sixlowpan.h": "c",
+        "gcoap.h": "c",
+        "utils.h": "c",
+        "ndp.h": "c",
+        "fib.h": "c",
+        "pktdump.h": "c",
+        "rpl.h": "c",
+        "credman.h": "c",
+        "settings.h": "c",
+        "sock_dtls_types.h": "c",
+        "dtls.h": "c",
+        "adc.h": "c",
+        "memory_resource": "c"
     },
     "C_Cpp.errorSquiggles": "Disabled"
 }

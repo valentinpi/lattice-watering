@@ -5,38 +5,43 @@ RIOTTOOLS ?= $(RIOTBASE)/dist/tools
 BOARD ?= samr21-xpro
 SERIAL ?= ATML2127031800004672
 PORT ?= /dev/ttyACM0
+include ../fw/Makefile.vars
 
 MAKEFLAGS += -j
 DEVELHELP ?= 1
 QUIET ?= 1
 
 # general
+USEMODULE += periph_wdt
 USEMODULE += ps
 USEMODULE += shell
 USEMODULE += shell_commands
 USEMODULE += ztimer
 USEMODULE += ztimer_sec
-USEPKG += nanocbor
 
 # net
-USEMODULE += gnrc_sixlowpan
-USEMODULE += gnrc_ipv6
-USEMODULE += gnrc_ipv6_nib
+USEMODULE += gnrc_icmpv6_echo
+USEMODULE += gnrc_sixlowpan_router_default
+USEMODULE += auto_init_gnrc_rpl
+USEMODULE += gnrc_rpl
+USEMODULE += gnrc_ipv6_router_default
 USEMODULE += auto_init_gnrc_netif
 USEMODULE += netdev_default
+CFLAGS += -DCONFIG_GNRC_IPV6_NIB_ARSM=1 -DCONFIG_GNRC_IPV6_NIB_SLAAC=1 -DCONFIG_GNRC_IPV6_NIB_NUMOF=16
 
-# br setup
+# ethos
 USEMODULE += stdio_ethos
 CFLAGS += '-DETHOS_UART=UART_DEV(0)' -DETHOS_BAUDRATE=115200
 
-.PHONY: start_network setup_network
+.PHONY: ethos
 
-# Use this if you want to open a shell with the br
-start_network:
-	$(RIOTTOOLS)/ethos/start_network.sh $(PORT) tap0 2001:db8::/64
-
-# Use this if you want to have a connection but not a shell, e.g. for starting a debugger
-setup_network:
-	$(RIOTTOOLS)/ethos/setup_network.sh tap0 2001:db8::/64
+# Start the ethernet over serial connection
+ethos:
+	bash -c    "trap 'ip tuntap del tap0 mode tap' EXIT; \
+				ip tap add mode tap tap0; \
+				ip link set tap0 up; \
+				ip addr add $(HOST_IP_ADDR)/64 dev tap0; \
+				ip route add $(SUBNET_IP_PREFIX)/64 via $(BR_ETHERNET_IP_ADDR); \
+				$(RIOTTOOLS)/ethos/ethos tap0 $(PORT)"
 
 include $(RIOTBASE)/Makefile.include

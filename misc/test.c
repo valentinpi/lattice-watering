@@ -1,3 +1,5 @@
+/* Attempt at manually pinging the br using a raw IP packet. */
+
 #include <arpa/inet.h>
 #include <errno.h>
 #include <netinet/ip.h>

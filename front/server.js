@@ -58,7 +58,7 @@ app.post('/pumpToggle', function (req, res) {
     const coap_req = coap.request({ hostname: ip, confirmable: false });
     const payload = {
         title: 'pump' + pumpStateChange
-    };
+    }
     coap_req.write(JSON.stringify(payload));
     coap_req.end();
 
