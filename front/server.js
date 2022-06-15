@@ -55,7 +55,7 @@ app.post('/pumpToggle', function (req, res) {
         pumpStateChange = 'Off';
     }
     //Send info to input IP with payload pumpOn/pumpOff
-    const coap_req = coap.request('coap://' + ip + '/');
+    const coap_req = coap.request({ hostname: ip, confirmable: false });
     const payload = {
         title: 'pump' + pumpStateChange
     };
@@ -76,19 +76,18 @@ app.listen(3000, () => {
 
 var server = coap.createServer();
 
-server.listen(5683, () => {
-    console.log('listening on port 5683 for coap requests');
-
-    server.on('request', (req, res) => {
-        console.log('server received coap message from: ' + req.url.split('/')[0]);
-        res.end();
-    });
-
-    server.on('response', (res) => {
-        res.pipe(process.stdout);
-        res.on('end', () => {
-            process.exit(0);
-        })
-    });
+server.on('request', (req, res) => {
+    console.log('server received coap message from: ' + req.url.split('/')[0]);
+    res.end();
 });
 
+server.on('response', (res) => {
+    res.pipe(process.stdout);
+    res.on('end', () => {
+        process.exit(0);
+    })
+});
+
+server.listen(null, null, "cert.key", "cert.crt", () => {
+    console.log('listening on port 5683 for coap requests');
+});
