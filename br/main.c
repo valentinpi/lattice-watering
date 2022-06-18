@@ -34,9 +34,9 @@ void net_init(void) {
     printf(PREFIX "Ethernet and IEEE802154 interfaces found\n");
 
     ipv6_addr_t ethernet_ip = {}, ieee802154_ip = {};
-    ipv6_addr_from_str(&ethernet_ip, BR_ETHERNET_IP_ADDR);
+    ipv6_addr_from_str(&ethernet_ip, BR_ETH_IP_ADDR);
     gnrc_netif_ipv6_addr_add(netif_ethernet, &ethernet_ip, 64, 0);
-    ipv6_addr_from_str(&ieee802154_ip, BR_IEEE802154_IP_ADDR);
+    ipv6_addr_from_str(&ieee802154_ip, BR_SIX_IP_ADDR);
     gnrc_netif_ipv6_addr_add(netif_ieee802154, &ieee802154_ip, 64, 0);
 
     ipv6_addr_t host_ip = {};

@@ -4,6 +4,8 @@ These are the routes for communication between the frontend and the nodes.
 
 ### Frontend Routes
 
+Accessible via ipv6 address 2001:db8:2:: and port 5684 (`CONFIG_GCOAPS_PORT`).
+
 | Route   | Method | Description |
 |---------|--------|-------------|
 | `/data` | POST   | Data Route  |
@@ -17,6 +19,8 @@ Every 5 seconds, depending on the configuration, the nodes POST a non-confirmabl
 ```
 
 ### Node Routes
+
+Accessible via port 5684 (`CONFIG_GCOAPS_PORT`).
 
 | Route          | Method | Description                        |
 |----------------|--------|------------------------------------|

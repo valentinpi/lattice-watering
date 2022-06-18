@@ -22,9 +22,8 @@ USEMODULE += ztimer_sec
 USEPKG += nanocbor
 
 # net and security
-#USEMODULE += tinydtls_sock_dtls
-#USEMODULE += gcoap_dtls
-USEMODULE += gcoap
+USEMODULE += tinydtls_sock_dtls
+USEMODULE += gcoap_dtls
 USEMODULE += gnrc_sock_udp
 USEMODULE += gnrc_icmpv6_echo
 USEMODULE += gnrc_ipv6_default
@@ -33,5 +32,6 @@ USEMODULE += auto_init_gnrc_rpl
 USEMODULE += gnrc_netif_single
 USEMODULE += auto_init_gnrc_netif
 USEMODULE += netdev_default
+CFLAGS += -DCONFIG_DTLS_ECC
 
 include $(RIOTBASE)/Makefile.include

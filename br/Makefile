@@ -41,7 +41,7 @@ ethos:
 				ip tap add mode tap tap0; \
 				ip link set tap0 up; \
 				ip addr add $(HOST_IP_ADDR)/64 dev tap0; \
-				ip route add $(SUBNET_IP_PREFIX)/64 via $(BR_ETHERNET_IP_ADDR); \
+				ip route add $(SIX_IP_PREFIX)/64 via $(ETH_IP_ADDR); \
 				$(RIOTTOOLS)/ethos/ethos tap0 $(PORT)"
 
 include $(RIOTBASE)/Makefile.include
