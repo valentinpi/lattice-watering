@@ -4,6 +4,8 @@
 
 #include "main.h"
 
+#include "cred.h"
+
 void pump_init(void) {
     gpio_init(PUMP_PA13, GPIO_OUT);
     gpio_init(PUMP_PA28, GPIO_OUT);
@@ -40,9 +42,9 @@ void net_init(void) {
 
 void cred_init(void) {
     credman_credential_t cred = {.tag = 1};
-    credman_load_private_ecc_key(&private, private_len, &cred);
+    credman_load_private_ecc_key(&cred_private_der, cred_private_der_len, &cred);
     ecdsa_public_key_t pub = {};
-    credman_load_public_key(&public, public_len, &pub);
+    credman_load_public_key(&cred_public_der, cred_public_der_len, &pub);
     cred.params.ecdsa.public_key = pub;
     credman_add(&cred);
 

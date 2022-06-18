@@ -34,4 +34,9 @@ USEMODULE += auto_init_gnrc_netif
 USEMODULE += netdev_default
 CFLAGS += -DCONFIG_DTLS_ECC
 
+.PHONY: cred
+
+cred:
+	just gen_keys
+
 include $(RIOTBASE)/Makefile.include

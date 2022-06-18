@@ -8,9 +8,9 @@ Start the `ethos` server:
 ```
 $ sudo make ethos
 ```
-And build and flash the border router firmware:
+And build and flash the border router firmware (depending on your udev rules you may need to execute this as root):
 ```
-$ sudo make clean all flash
+$ make clean all flash
 ```
 Of course, you may use `doas` instead of `sudo`.
 
