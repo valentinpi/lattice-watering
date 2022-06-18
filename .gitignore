@@ -14,3 +14,6 @@ fw/bin
 *.opendb
 .vs
 .vscode
+.vs/*
+.vscode/*
+node_modules/*

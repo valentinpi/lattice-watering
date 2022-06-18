@@ -7,6 +7,7 @@ var http = require('http').Server(app);
 var morgan = require('morgan');
 var engines = require('consolidate');
 var bodyParser = require('body-parser');
+var sqlite3 = require('sqlite3');
 
 //Websocket
 var io = require('socket.io')(http);
@@ -34,6 +35,50 @@ app.use(bodyParser.urlencoded({
     extended: true
 }));
 
+/* -------------------- SQLite ------------------- */
+function runQueries(db) {
+    console.log('TODO queries')
+};
+
+function createTables(newdb) {
+    newdb.exec(`
+    create table plant_nodes (
+        node_id int primary key not null,
+        plant_name text null,
+        date_time text not null,
+        humidity int not null
+    );
+        `, () => {
+        console.log('Table: "plant_nodes" in database: "lattice_watering.db" created');
+        //runQueries(newdb);
+    });
+};
+
+function createDatabase() {
+    var newdb = new sqlite3.Database('lattice_watering.db', (err) => {
+        if (err) {
+            console.log("Getting error " + err);
+            exit(1);
+        }
+        createTables(newdb);
+    });
+};
+
+function databaseAccess() {
+    let db = new sqlite3.Database('./lattice_watering.db', sqlite3.OPEN_READWRITE, (err) => {
+        if (err && err.code == "SQLITE_CANTOPEN") {
+            console.log('No database: "lattice_watering.db" found, creating new one');
+            createDatabase();
+            return;
+        } else if (err) {
+            console.log("Getting error " + err);
+            exit(1);
+        }
+        console.log('Database: "lattice_watering.db" found and connected')
+        //runQueries(db);
+    });
+};
+/* ----------------------------------------------- */
 
 app.get('/plantView', function (req, res) {
     //res.sendFile('public/plantView.html')
@@ -60,7 +105,7 @@ app.post('/pumpToggle', function (req, res) {
         title: 'pump' + pumpStateChange
     }
     coap_req.write(JSON.stringify(payload));
-    coap_req.end()
+    coap_req.end();
 
     coap_req.on('response', (res) => {
         res.pipe(process.stdout)
@@ -68,6 +113,9 @@ app.post('/pumpToggle', function (req, res) {
             process.exit(0);
         })
     })
+
+    databaseAccess();
+
     res.status(204).send();
 });
 
@@ -77,38 +125,18 @@ app.listen(3000, () => {
 
 var server = coap.createServer();
 
+server.on('request', (req, res) => {
+    console.log('server received coap message from: ' + req.url.split('/')[0] + req.url.split('/')[1] + req.url.split('/')[2]);
+});
+
+server.on('response', (res) => {
+    res.pipe(process.stdout);
+    res.on('end', () => {
+        process.exit(0);
+    })
+});
+
+//null, null, "cert.key", "cert.crt"
 server.listen(5683, () => {
     console.log('listening on port 5683 for coap requests');
 });
-
-/*//Momentan unn�tig aber vlt brauch mans ja noch
-io.on('connection', function (socket) {
-
-    io.emit('info', 'connection to websocketserver succesfully established');
-    console.log('info: a user connected to the websocket server');
-
-
-    var req;
-    mysocket = socket;
-    socket.on('coap', function (msg) {
-
-        console.log('Received a new coap request with options: ' + msg);
-
-        var config = JSON.parse(msg);
-        url = URL.parse(config.url);
-        url.method = config.method;
-        url.observe = config.observe;
-
-        req = request(url).on('response', transmitResponse);
-        req.end();
-        process.stdin.pipe(req);
-    });
-
-    server.on('response', (res) => {
-        res.pipe(process.stdout);
-        res.on('end', () => {
-            process.exit(0);
-        })
-    });
-});
-*/
