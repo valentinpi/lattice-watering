@@ -22,8 +22,9 @@ USEMODULE += ztimer_sec
 USEPKG += nanocbor
 
 # net and security
-USEMODULE += tinydtls_sock_dtls
-USEMODULE += gcoap_dtls
+#USEMODULE += tinydtls_sock_dtls
+#USEMODULE += gcoap_dtls
+USEMODULE += gcoap
 USEMODULE += gnrc_sock_udp
 USEMODULE += gnrc_icmpv6_echo
 USEMODULE += gnrc_ipv6_default

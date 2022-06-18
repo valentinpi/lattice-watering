@@ -23,6 +23,7 @@
 - Use `cppcheck` for static code checking. For VS Code see `QiuMingGe.cpp-check-lint`.
 - Use the integer types `inttypes.h` provides.
 - Buffers are to be zeroed out asap.
+- Use `#pragma once`.
 
 ### JS Coding Conventions
 
@@ -34,3 +35,5 @@
 - We wanted to use `wolfssl` since it uses a GNU license, but it is not supported by `gnrc_dtls`
 - No HW RNG, so we use a PRNG. `prng_tinymt32` looks promising, as it is standardized in RFC8682, but we could not choose it, so we went with `prng_sha256prng`, since it might provide better security than SHA-1.
 - There is WDT integration in the `fw` code, but not in the `br`, as its code is much less complex.
+- We do not use the LED nor an additional HDC1000 sensor due to energy usage.
+- We use SQLite as it suffices for our use case. We do not need a multi-user highly concurrent database, only if we were to attach several thousand sensors, and even then: Every five seconds the packets are sent, and the host is more than strong enough to handle such a load, not even speaking of the possible package loss in the meantime.

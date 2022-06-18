@@ -35,3 +35,4 @@ printf(PREFIX "temperature: %" PRId16 "°C, humidity: %" PRId16 "\n", temp / 100
 // clang-format off
 #include <wolfssl/wolfcrypt/settings.h>
 // clang-format on
+- Get `https://github.com/bfontaine/rfc` and run `rfc 7228`, we use a class 2 device.
