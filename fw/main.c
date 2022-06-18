@@ -79,14 +79,21 @@ void *data_thread(void *arg) {
 
         mutex_lock(&pump_mutex);
 
-        // Dummy number
-        uint8_t humidity = 50;
+        uint8_t humidity = 50;                            // Dummy number
+        netstats_t stats = netif_ieee802154->ipv6.stats;  // Current network stats
 
         // Write data
         nanocbor_encoder_t enc = {};
         nanocbor_encoder_init(&enc, pdu.payload, 28);
-        nanocbor_fmt_int(&enc, humidity);
+        nanocbor_fmt_uint(&enc, humidity);
         nanocbor_fmt_bool(&enc, pump_activated);
+        nanocbor_fmt_uint(&enc, stats.rx_bytes);
+        nanocbor_fmt_uint(&enc, stats.rx_count);
+        nanocbor_fmt_uint(&enc, stats.tx_bytes);
+        nanocbor_fmt_uint(&enc, stats.tx_unicast_count);
+        nanocbor_fmt_uint(&enc, stats.tx_mcast_count);
+        nanocbor_fmt_uint(&enc, stats.tx_success);
+        nanocbor_fmt_uint(&enc, stats.tx_failed);
         size_t payload_len = nanocbor_encoded_len(&enc);
 
         // Post the data
