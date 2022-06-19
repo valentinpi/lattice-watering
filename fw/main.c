@@ -36,6 +36,7 @@ static const int32_t WET_VALUE = 1400;
 void soil_init(void) { adc_init(SOIL_PIN); }
 
 uint8_t soil_read(void) {
+    // TODO: Fix the values.
     int32_t moisture_value = adc_sample(SOIL_PIN, RES);
     printf("%" PRId32 "\n", moisture_value);
     int32_t moisture_percentage = (moisture_value - DRY_VALUE) * 100 / (WET_VALUE - DRY_VALUE);
