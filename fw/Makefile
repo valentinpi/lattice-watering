@@ -3,7 +3,7 @@ RIOTBASE ?= $(CURDIR)/../../RIOT
 
 BOARD ?= samr21-xpro
 SERIAL ?= ATML2127031800001974
-include Makefile.vars
+include ../Makefile.vars
 
 MAKEFLAGS += -j
 DEVELHELP ?= 1
@@ -12,6 +12,8 @@ QUIET ?= 1
 # general
 USEMODULE += credman
 USEMODULE += credman_load
+USEMODULE += periph_adc
+USEMODULE += periph_gpio
 USEMODULE += periph_wdt
 USEMODULE += prng_sha256prng
 USEMODULE += ps

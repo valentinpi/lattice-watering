@@ -28,6 +28,20 @@ int pump_toggle_command(int argc, char **argv) {
     return 0;
 }
 
+static const adc_t SOIL_PIN = ADC_LINE(1);
+static const adc_res_t RES = ADC_RES_12BIT;
+static const int32_t DRY_VALUE = 2920;
+static const int32_t WET_VALUE = 1400;
+
+void soil_init(void) { adc_init(SOIL_PIN); }
+
+uint8_t soil_read(void) {
+    int32_t moisture_value = adc_sample(SOIL_PIN, RES);
+    printf("%" PRId32 "\n", moisture_value);
+    int32_t moisture_percentage = (moisture_value - DRY_VALUE) * 100 / (WET_VALUE - DRY_VALUE);
+    return (uint8_t)moisture_percentage;
+}
+
 void net_init(void) {
     netif_ieee802154 = gnrc_netif_iter(NULL);  // Note that we included `gnrc_netif_single`
     assert(netif_ieee802154->device_type == NETDEV_TYPE_IEEE802154);
@@ -71,7 +85,6 @@ void *data_thread(void *arg) {
         coap_pkt_t pdu = {};
         uint8_t buf[CONFIG_GCOAP_PDU_BUF_SIZE];
         memset(buf, 0, CONFIG_GCOAP_PDU_BUF_SIZE);
-
         gcoap_req_init(&pdu, buf, CONFIG_GCOAP_PDU_BUF_SIZE, COAP_POST, "/data");
         coap_opt_add_format(&pdu, COAP_FORMAT_CBOR);
         coap_hdr_set_type(pdu.hdr, COAP_TYPE_NON);
@@ -79,8 +92,10 @@ void *data_thread(void *arg) {
 
         mutex_lock(&pump_mutex);
 
-        uint8_t humidity = 50;                            // Dummy number
-        netstats_t stats = netif_ieee802154->ipv6.stats;  // Current network stats
+        // Obtain information
+        uint8_t humidity = soil_read();
+        netstats_t stats = netif_ieee802154->ipv6.stats;
+        printf("%" PRId16 "\n", humidity);
 
         // Write data
         nanocbor_encoder_t enc = {};
@@ -96,7 +111,7 @@ void *data_thread(void *arg) {
         nanocbor_fmt_uint(&enc, stats.tx_failed);
         size_t payload_len = nanocbor_encoded_len(&enc);
 
-        // Post the data
+        // Post data
         gcoap_req_send(buf, meta_len + payload_len, &host_ep, NULL, NULL);
 
         mutex_unlock(&pump_mutex);
@@ -123,6 +138,7 @@ int main(void) {
     /* Init */
     msg_init_queue(msg_queue, MSG_QUEUE_SIZE);
     pump_init();
+    soil_init();
     net_init();
     cred_init();
 

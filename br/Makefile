@@ -5,7 +5,7 @@ RIOTTOOLS ?= $(RIOTBASE)/dist/tools
 BOARD ?= samr21-xpro
 SERIAL ?= ATML2127031800004672
 PORT ?= /dev/ttyACM0
-include ../fw/Makefile.vars
+include ../Makefile.vars
 
 MAKEFLAGS += -j
 DEVELHELP ?= 1
