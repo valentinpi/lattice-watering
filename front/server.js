@@ -35,47 +35,102 @@ app.use(bodyParser.urlencoded({
     extended: true
 }));
 
-/* -------------------- SQLite ------------------- */
-function runQueries(db) {
-    console.log('TODO queries')
+function checkFormat(i) {
+    if (i < 10) {
+        i = "0" + i
+    };
+    return i;
 };
 
-function createTables(newdb) {
-    newdb.exec(`
-    create table plant_nodes (
-        node_id int primary key not null,
-        plant_name text null,
-        date_time text not null,
-        humidity int not null
-    );
-        `, () => {
-        console.log('Table: "plant_nodes" in database: "lattice_watering.db" created');
-        //runQueries(newdb);
+/* -------------------- SQLite ------------------- */
+function databaseAccess() {
+    let db = new sqlite3.Database('./lattice_watering.db', sqlite3.OPEN_READWRITE, (err) => {
+        if (err && err.code == "SQLITE_CANTOPEN") {
+            console.log('No database: "lattice_watering.db" found');
+            createDatabase();
+        } else if (err) {
+            console.log("Database Access error " + err);
+            exit(1);
+        } else {
+            console.log('Database: "lattice_watering.db" found and connected')
+        }
+
+        insertQuery(db);
+        selectQuery(db);
     });
 };
 
 function createDatabase() {
-    var newdb = new sqlite3.Database('lattice_watering.db', (err) => {
+    var newdb = new sqlite3.Database('./lattice_watering.db', (err) => {
         if (err) {
-            console.log("Getting error " + err);
+            console.log("Database creation error " + err);
             exit(1);
         }
-        createTables(newdb);
+        console.log('Database: "lattice_watering.db" created')
+        createQuery(newdb);
     });
 };
 
-function databaseAccess() {
-    let db = new sqlite3.Database('./lattice_watering.db', sqlite3.OPEN_READWRITE, (err) => {
-        if (err && err.code == "SQLITE_CANTOPEN") {
-            console.log('No database: "lattice_watering.db" found, creating new one');
-            createDatabase();
+function createQuery(db) {
+    db.run(`
+    CREATE TABLE plant_nodes (
+        id INTEGER PRIMARY KEY AUTOINCREMENT NULL,
+        node_ip TEXT NOT NULL,
+        plant_name TEXT NULL,
+        date_time TEXT NOT NULL,
+        humidity INTEGER NULL
+    );
+    `, (err) => {
+        if (err) {
+            console.log("Create query error " + err);
             return;
-        } else if (err) {
-            console.log("Getting error " + err);
-            exit(1);
         }
-        console.log('Database: "lattice_watering.db" found and connected')
-        //runQueries(db);
+        console.log('Table: "plant_nodes" in database: "lattice_watering.db" created');
+    });
+};
+
+function insertQuery(db) {
+    //placedholder-mania
+    var node_ip = '::1';
+    var plant_name = 'Tomato';
+    var date_time = '2022-06-16 00:11:31';
+    var humidity = '42';
+    //date_time creation for test purposes will be replaced by send info from nodes
+    var today = new Date();
+    var date = today.getFullYear() + '-' + checkFormat((today.getMonth() + 1)) + '-' + checkFormat(today.getDate());
+    var time = checkFormat(today.getHours()) + ":" + checkFormat(today.getMinutes()) + ":" + checkFormat(today.getSeconds());
+    //var date_time = (date + ' ' + time).toString();
+    db.run(`
+    INSERT INTO plant_nodes (id, node_ip, plant_name, date_time, humidity)
+        VALUES (NULL, ?, ?, '2022-06-16 00:11:31', ?);
+    `, (node_ip, plant_name, humidity), (err) => {
+        if (err) {
+            console.log('Insert query error: ' + err);
+            return;
+        }
+        console.log('Inserted row with data into table "plant_nodes"');
+    });
+    /*
+    db.run(`INSERT INTO plant_nodes (id, node_ip, plant_name, date_time, humidity)
+        VALUES (NULL, "::1", "Pumpkin", "2022-06-16 00:11:31", 42);
+    `, () => {
+        console.log('Inserted row with data into table "plant_nodes"');
+    });
+    */
+};
+
+function selectQuery(db) {
+    db.all(`SELECT * FROM plant_nodes`, (err, rows) => {
+        if (err) {
+            console.log("Select query error " + err);
+            return;
+        }
+        //console.log(rows);
+        
+        rows.forEach(row => {
+            console.log(row.id + "\t" + row.node_ip + "\t" + row.plant_name + "\t" + row.date_time + "\t" + row.humidity)
+        });
+        
     });
 };
 /* ----------------------------------------------- */
@@ -140,3 +195,5 @@ server.on('response', (res) => {
 server.listen(5683, () => {
     console.log('listening on port 5683 for coap requests');
 });
+
+databaseAccess();
