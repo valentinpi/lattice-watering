@@ -35,13 +35,6 @@ app.use(bodyParser.urlencoded({
     extended: true
 }));
 
-function checkFormat(i) {
-    if (i < 10) {
-        i = "0" + i
-    };
-    return i;
-};
-
 /* -------------------- SQLite ------------------- */
 function databaseAccess() {
     let db = new sqlite3.Database('./lattice_watering.db', sqlite3.OPEN_READWRITE, (err) => {
@@ -75,10 +68,10 @@ function createQuery(db) {
     db.run(`
     CREATE TABLE plant_nodes (
         id INTEGER PRIMARY KEY AUTOINCREMENT NULL,
-        node_ip TEXT NOT NULL,
-        plant_name TEXT NULL,
-        date_time TEXT NOT NULL,
-        humidity INTEGER NULL
+        node_ip TEXT,
+        plant_name TEXT,
+        date_time TEXT,
+        humidity INTEGER
     );
     `, (err) => {
         if (err) {
@@ -93,30 +86,18 @@ function insertQuery(db) {
     //placedholder-mania
     var node_ip = '::1';
     var plant_name = 'Tomato';
-    var date_time = '2022-06-16 00:11:31';
     var humidity = '42';
-    //date_time creation for test purposes will be replaced by send info from nodes
-    var today = new Date();
-    var date = today.getFullYear() + '-' + checkFormat((today.getMonth() + 1)) + '-' + checkFormat(today.getDate());
-    var time = checkFormat(today.getHours()) + ":" + checkFormat(today.getMinutes()) + ":" + checkFormat(today.getSeconds());
-    //var date_time = (date + ' ' + time).toString();
+    //date_time creation is asynchonous with nodes, data is not perfect (crashes ...)
     db.run(`
     INSERT INTO plant_nodes (id, node_ip, plant_name, date_time, humidity)
-        VALUES (NULL, ?, ?, '2022-06-16 00:11:31', ?);
-    `, (node_ip, plant_name, humidity), (err) => {
+        VALUES (NULL, ?, ?, datetime('now'), ?);
+    `, node_ip, plant_name, humidity, (err) => {
         if (err) {
             console.log('Insert query error: ' + err);
             return;
         }
         console.log('Inserted row with data into table "plant_nodes"');
     });
-    /*
-    db.run(`INSERT INTO plant_nodes (id, node_ip, plant_name, date_time, humidity)
-        VALUES (NULL, "::1", "Pumpkin", "2022-06-16 00:11:31", 42);
-    `, () => {
-        console.log('Inserted row with data into table "plant_nodes"');
-    });
-    */
 };
 
 function selectQuery(db) {
@@ -136,7 +117,6 @@ function selectQuery(db) {
 /* ----------------------------------------------- */
 
 app.get('/plantView', function (req, res) {
-    //res.sendFile('public/plantView.html')
     res.render('./plantView.html')
 });
 
