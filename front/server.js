@@ -90,7 +90,7 @@ function insertQuery(db) {
     //date_time creation is asynchonous with nodes, data is not perfect (crashes ...)
     db.run(`
     INSERT INTO plant_nodes (id, node_ip, plant_name, date_time, humidity)
-        VALUES (NULL, ?, ?, datetime('now'), ?);
+        VALUES (NULL, ?, ?, datetime('now','localtime'), ?);
     `, node_ip, plant_name, humidity, (err) => {
         if (err) {
             console.log('Insert query error: ' + err);
@@ -114,7 +114,7 @@ function selectQuery(db) {
         
     });
 };
-/* ----------------------------------------------- */
+/* ------------------- Frontend ------------------ */
 
 app.get('/plantView', function (req, res) {
     res.render('./plantView.html')
@@ -158,10 +158,14 @@ app.listen(3000, () => {
     console.log('listening on port 3000 for frontend requests');
 });
 
+
+/* --------------------- COAP -------------------- */
 var server = coap.createServer();
 
 server.on('request', (req, res) => {
-    console.log('server received coap message from: ' + req.url.split('/')[0] + req.url.split('/')[1] + req.url.split('/')[2]);
+    console.log('server received coap message from: ' + req.url + ' | ' + req.url.split('/')[0] + ' | ' + req.url.split('/')[1] + ' | ' + req.url.split('/')[2] + ' | ' + req.url.split('/')[3]);
+    console.log('payload from coap message: ' + req.payload + ' ' + req.payload[0] + ' ' + req.payload[1] + ' ' + req.payload[2]);
+    console.log(parseCoapPayload(req.payload));
 });
 
 server.on('response', (res) => {
@@ -171,9 +175,31 @@ server.on('response', (res) => {
     })
 });
 
-//null, null, "cert.key", "cert.crt"
 server.listen(5683, () => {
-    console.log('listening on port 5683 for coap requests');
+    console.log('listening on port 5683 for coap requests without dtls');
 });
 
-databaseAccess();
+function parseCoapPayload(data) {
+    const char_array = [];
+    data.forEach(data_char => {
+        char_array.push(String.fromCharCode(data_char));
+    });
+    return char_array;
+}
+
+//null, null, "cert.key", "cert.crt"
+/*
+try {
+    server.listen(null, null, "cert.key", "cert.crt", () => {
+        console.log('listening on port 5683 for coap requests with dtls');
+    });
+} catch (err) {
+    console.log("No dtls active: " + err);
+    console.log("First you need to generate a private key and public certificate:\nopenssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout cert.key -out cert.crt -subj '/CN=m4n3dw0lf/O=dtls/C=BR'");
+
+    server.listen(5683, () => {
+        console.log('listening on port 5683 for coap requests without dtls');
+    });
+};
+*/
+//databaseAccess();
