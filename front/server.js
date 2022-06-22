@@ -21,6 +21,7 @@ var url;
 
 var debug = false;
 
+/* ---------------- Express Setup ---------------- */
 url = URL.parse('coap://localhost:5683/sensor');
 url.method = 'GET';
 url.observe = true;
@@ -49,7 +50,8 @@ function databaseAccess() {
         }
 
         insertQuery(db);
-        selectQuery(db);
+        selectQuery(db, 0);
+        selectQuery(db, 1);
     });
 };
 
@@ -100,22 +102,38 @@ function insertQuery(db) {
     });
 };
 
-function selectQuery(db) {
-    db.all(`SELECT * FROM plant_nodes`, (err, rows) => {
-        if (err) {
-            console.log("Select query error " + err);
-            return;
-        }
-        //console.log(rows);
-        
-        rows.forEach(row => {
-            console.log(row.id + "\t" + row.node_ip + "\t" + row.plant_name + "\t" + row.date_time + "\t" + row.humidity)
-        });
-        
-    });
-};
-/* ------------------- Frontend ------------------ */
+function selectQuery(db, query = 0) {
+    if (query == 0) {
+        db.all(`SELECT * FROM plant_nodes`, (err, rows) => {
+            if (err) {
+                console.log('Select query error ' + err);
+                return;
+            };
+            //console.log(rows);
 
+            rows.forEach(row => {
+                console.log(row.id + "\t" + row.node_ip + "\t" + row.plant_name + "\t" + row.date_time + "\t" + row.humidity);
+            });
+
+        });
+    } else if (query == 1) {
+        var data = 0;
+        db.all(`SELECT COUNT(DISTINCT node_ip) AS plant_num FROM plant_nodes`, (err, rows) => {
+            if (err) {
+                console.log('Select query error: ' + err); return;
+            };
+            rows.forEach(row => {
+                data = row.plant_num;
+                //console.log(row.plant_num);
+            });
+            console.log('Current Number of plants is: ' + data);
+        });
+    };
+
+};
+
+
+/* ------------------- Frontend ------------------ */
 app.get('/plantView', function (req, res) {
     res.render('./plantView.html')
 });
@@ -164,7 +182,7 @@ var server = coap.createServer();
 
 server.on('request', (req, res) => {
     console.log('server received coap message from: ' + req.url + ' | ' + req.url.split('/')[0] + ' | ' + req.url.split('/')[1] + ' | ' + req.url.split('/')[2] + ' | ' + req.url.split('/')[3]);
-    console.log('payload from coap message: ' + req.payload + ' ' + req.payload[0] + ' ' + req.payload[1] + ' ' + req.payload[2]);
+    console.log('payload from coap message: ' + req.payload + ' | ' + req.payload[0] + ' | ' + req.ip + ' | ');
     console.log(parseCoapPayload(req.payload));
 });
 
