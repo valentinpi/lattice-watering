@@ -21,6 +21,7 @@ var url;
 
 var debug = false;
 
+/* ---------------- Express Setup ---------------- */
 url = URL.parse('coap://localhost:5683/sensor');
 url.method = 'GET';
 url.observe = true;
@@ -36,52 +37,104 @@ app.use(bodyParser.urlencoded({
 }));
 
 /* -------------------- SQLite ------------------- */
-function runQueries(db) {
-    console.log('TODO queries')
-};
+function databaseAccess() {
+    let db = new sqlite3.Database('./lattice_watering.db', sqlite3.OPEN_READWRITE, (err) => {
+        if (err && err.code == "SQLITE_CANTOPEN") {
+            console.log('No database: "lattice_watering.db" found');
+            createDatabase();
+        } else if (err) {
+            console.log("Database Access error " + err);
+            exit(1);
+        } else {
+            console.log('Database: "lattice_watering.db" found and connected')
+        }
 
-function createTables(newdb) {
-    newdb.exec(`
-    create table plant_nodes (
-        node_id int primary key not null,
-        plant_name text null,
-        date_time text not null,
-        humidity int not null
-    );
-        `, () => {
-        console.log('Table: "plant_nodes" in database: "lattice_watering.db" created');
-        //runQueries(newdb);
+        insertQuery(db);
+        selectQuery(db, 0);
+        selectQuery(db, 1);
     });
 };
 
 function createDatabase() {
-    var newdb = new sqlite3.Database('lattice_watering.db', (err) => {
+    var newdb = new sqlite3.Database('./lattice_watering.db', (err) => {
         if (err) {
-            console.log("Getting error " + err);
+            console.log("Database creation error " + err);
             exit(1);
         }
-        createTables(newdb);
+        console.log('Database: "lattice_watering.db" created')
+        createQuery(newdb);
     });
 };
 
-function databaseAccess() {
-    let db = new sqlite3.Database('./lattice_watering.db', sqlite3.OPEN_READWRITE, (err) => {
-        if (err && err.code == "SQLITE_CANTOPEN") {
-            console.log('No database: "lattice_watering.db" found, creating new one');
-            createDatabase();
+function createQuery(db) {
+    db.run(`
+    CREATE TABLE plant_nodes (
+        id INTEGER PRIMARY KEY AUTOINCREMENT NULL,
+        node_ip TEXT,
+        plant_name TEXT,
+        date_time TEXT,
+        humidity INTEGER
+    );
+    `, (err) => {
+        if (err) {
+            console.log("Create query error " + err);
             return;
-        } else if (err) {
-            console.log("Getting error " + err);
-            exit(1);
         }
-        console.log('Database: "lattice_watering.db" found and connected')
-        //runQueries(db);
+        console.log('Table: "plant_nodes" in database: "lattice_watering.db" created');
     });
 };
-/* ----------------------------------------------- */
 
+function insertQuery(db) {
+    //placedholder-mania
+    var node_ip = '::1';
+    var plant_name = 'Tomato';
+    var humidity = '42';
+    //date_time creation is asynchonous with nodes, data is not perfect (crashes ...)
+    db.run(`
+    INSERT INTO plant_nodes (id, node_ip, plant_name, date_time, humidity)
+        VALUES (NULL, ?, ?, datetime('now','localtime'), ?);
+    `, node_ip, plant_name, humidity, (err) => {
+        if (err) {
+            console.log('Insert query error: ' + err);
+            return;
+        }
+        console.log('Inserted row with data into table "plant_nodes"');
+    });
+};
+
+function selectQuery(db, query = 0) {
+    if (query == 0) {
+        db.all(`SELECT * FROM plant_nodes`, (err, rows) => {
+            if (err) {
+                console.log('Select query error ' + err);
+                return;
+            };
+            //console.log(rows);
+
+            rows.forEach(row => {
+                console.log(row.id + "\t" + row.node_ip + "\t" + row.plant_name + "\t" + row.date_time + "\t" + row.humidity);
+            });
+
+        });
+    } else if (query == 1) {
+        var data = 0;
+        db.all(`SELECT COUNT(DISTINCT node_ip) AS plant_num FROM plant_nodes`, (err, rows) => {
+            if (err) {
+                console.log('Select query error: ' + err); return;
+            };
+            rows.forEach(row => {
+                data = row.plant_num;
+                //console.log(row.plant_num);
+            });
+            console.log('Current Number of plants is: ' + data);
+        });
+    };
+
+};
+
+
+/* ------------------- Frontend ------------------ */
 app.get('/plantView', function (req, res) {
-    //res.sendFile('public/plantView.html')
     res.render('./plantView.html')
 });
 
@@ -123,10 +176,14 @@ app.listen(3000, () => {
     console.log('listening on port 3000 for frontend requests');
 });
 
+
+/* --------------------- COAP -------------------- */
 var server = coap.createServer();
 
 server.on('request', (req, res) => {
-    console.log('server received coap message from: ' + req.url.split('/')[0] + req.url.split('/')[1] + req.url.split('/')[2]);
+    console.log('server received coap message from: ' + req.url + ' | ' + req.url.split('/')[0] + ' | ' + req.url.split('/')[1] + ' | ' + req.url.split('/')[2] + ' | ' + req.url.split('/')[3]);
+    console.log('payload from coap message: ' + req.payload + ' | ' + req.payload[0] + ' | ' + req.ip + ' | ');
+    console.log(parseCoapPayload(req.payload));
 });
 
 server.on('response', (res) => {
@@ -136,7 +193,31 @@ server.on('response', (res) => {
     })
 });
 
-//null, null, "cert.key", "cert.crt"
 server.listen(5683, () => {
-    console.log('listening on port 5683 for coap requests');
+    console.log('listening on port 5683 for coap requests without dtls');
 });
+
+function parseCoapPayload(data) {
+    const char_array = [];
+    data.forEach(data_char => {
+        char_array.push(String.fromCharCode(data_char));
+    });
+    return char_array;
+}
+
+//null, null, "cert.key", "cert.crt"
+/*
+try {
+    server.listen(null, null, "cert.key", "cert.crt", () => {
+        console.log('listening on port 5683 for coap requests with dtls');
+    });
+} catch (err) {
+    console.log("No dtls active: " + err);
+    console.log("First you need to generate a private key and public certificate:\nopenssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout cert.key -out cert.crt -subj '/CN=m4n3dw0lf/O=dtls/C=BR'");
+
+    server.listen(5683, () => {
+        console.log('listening on port 5683 for coap requests without dtls');
+    });
+};
+*/
+//databaseAccess();

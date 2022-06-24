@@ -2,49 +2,43 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>WataPlant</title>
+    <title>Lattice-Watering</title>
     <link type="text/css" rel="stylesheet" href="/css/style.css">
     <link rel="icon" type="image/x-icon" href="/img/favicon.ico">
 </head>
 
 <body onload="startup()">
-    <div class="container">
-        <table class="topRow" cellpadding="1" cellspacing="1" style="width: 100%">
-            <tr>
-                <td>WataYaPlant the project</td>
-                <td><div id="displayDateTime"></div></td>
-            </tr>
-        </table>
+    <table class="topRow" cellpadding="1" cellspacing="1" style="width: 100%">
+        <tr>
+            <td>Lattice-Watering the project</td>
+            <td><div id="displayDateTime"></div></td>
+        </tr>
+    </table>
 
-        <table class="plantSelection" cellpadding="1" cellspacing="1" style="width: 100%">
-            <tr>
-                <td colspan="2">
-                    <div class="scrollmenu">
-                        <div class="box">
-                            Plant 1<br />
-                            <img src="/img/placeholder_plant.png" alt="Plant"><br />
-                            Humidity: n/a %<br />
-                            Temperature: n/a C<br />
-                            <form action="/pumpToggle" method="POST">
-                                <input type="text" name="pumpIP" placeholder="127.0.0.1" value="127.0.0.1" /><br /><br />
-                                <input type="submit" name="pumpOn" value="Turn Pump On">
-                                <input type="submit" name="pumpOff" value="Turn Pump Off">
-                            </form>
-                            <!--
-                            <p><input type="text" id="pumpIP" value="" placeholder="127.0.0.1" /></p>
-                            <button type="button" onclick="pumpToggle(1)">Turn Pump On</button>
-                            <button type="button" onclick="pumpToggle(0)">Turn Pump Off</button><br />
-                            -->
-                            <a id="plantSettings" title="Go back to all plants." href="/">Go back!</a><br />
-                        </div>
+    <table class="plantSelection" cellpadding="1" cellspacing="1" style="width: 100%">
+        <tr>
+            <td colspan="2">
+                <div class="scrollmenu">
+                    <div class="box">
+                        Plant 1<br />
+                        <img src="/img/placeholder_plant.png" alt="Plant"><br />
+                        Humidity: n/a %<br />
+                        Temperature: n/a C<br />
+                        <form action="/pumpToggle" method="POST">
+                            <input type="text" name="pumpIP" placeholder="127.0.0.1" value="127.0.0.1" /><br /><br />
+                            <input type="submit" name="pumpOn" value="Turn Pump On">
+                            <input type="submit" name="pumpOff" value="Turn Pump Off">
+                        </form>
+                        <a id="plantSettings" title="Go back to all plants." href="/">Go back!</a><br />
                     </div>
-                </td>
-            </tr>
-        </table>
+                </div>
+            </td>
+        </tr>
+    </table>
 
     <table class="botRow" cellpadding="1" cellspacing="1" style="width: 100%">
         <tr>
-            <td colspan="2">Ver: Alpha 1.0</td>
+            <td colspan="2">Ver: Beta</td>
         </tr>
     </table>
     <script type="text/javascript" src="/js/app.js"></script>

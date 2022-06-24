@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>WataPlant</title>
+    <title>Lattice-Watering</title>
     <link type="text/css" rel="stylesheet" href="/css/style.css">
     <link rel="icon" type="image/x-icon" href="/img/favicon.ico">
 </head>
@@ -10,7 +10,7 @@
 <body onload="startup()">
     <table class="topRow" cellpadding="1" cellspacing="1" style="width: 100%">
         <tr>
-            <td>WataYaPlant the project</td>
+            <td>Lattice-Watering the project</td>
             <td><div id="displayDateTime"></div></td>
         </tr>
     </table>
@@ -20,9 +20,44 @@
             <td colspan="2">
                 <div class="scrollmenu">
                     <div class="box">
-                        Plant 1<br />
+                        <h3>Plant 1</h3>
                         <img src="/img/placeholder_plant.png" alt="Plant"><br />
                         Humidity: n/a%<br />
+                        Temperature: n/a C<br />
+                        <a id="plantSettings" title="Configure desired temperature and humidity" href="plantView" onclick="showPlant(0)">Settings ...</a><br />
+                    </div>
+                    <div class="box">
+                        <h3>Plant 2</h3>
+                        <img src="/img/placeholder_plant.png" alt="Plant"><br />
+                        Humidity: n/a %<br />
+                        Temperature: n/a C<br />
+                        <a id="plantSettings" title="Configure desired temperature and humidity" href="plantView" onclick="showPlant(1)">Settings ...</a><br />
+                    </div>
+                    <div class="box">
+                        <h3>Plant 3</h3>
+                        <img src="/img/placeholder_plant.png" alt="Plant"><br />
+                        Humidity: n/a %<br />
+                        Temperature: n/a C<br />
+                        <a id="plantSettings" title="Configure desired temperature and humidity" href="plantView" onclick="showPlant(1)">Settings ...</a><br />
+                    </div>
+                    <div class="box">
+                        <h3>Plant 4</h3>
+                        <img src="/img/placeholder_plant.png" alt="Plant"><br />
+                        Humidity: n/a %<br />
+                        Temperature: n/a C<br />
+                        <a id="plantSettings" title="Configure desired temperature and humidity" href="plantView" onclick="showPlant(1)">Settings ...</a><br />
+                    </div>
+                    <div class="box">
+                        <h3>Plant 5</h3>
+                        <img src="/img/placeholder_plant.png" alt="Plant"><br />
+                        Humidity: n/a %<br />
+                        Temperature: n/a C<br />
+                        <a id="plantSettings" title="Configure desired temperature and humidity" href="plantView" onclick="showPlant(1)">Settings ...</a><br />
+                    </div>
+                    <div class="box">
+                        <h3>Plant 6</h3>
+                        <img src="/img/placeholder_plant.png" alt="Plant"><br />
+                        Humidity: n/a %<br />
                         Temperature: n/a C<br />
                         <a id="plantSettings" title="Configure desired temperature and humidity" href="plantView" onclick="showPlant(1)">Settings ...</a><br />
                     </div>
@@ -33,7 +68,7 @@
 
     <table class="botRow" cellpadding="1" cellspacing="1" style="width: 100%">
         <tr>
-            <td colspan="2">Ver: Alpha 1.0</td>
+            <td colspan="2">Ver: Beta</td>
         </tr>
     </table>
     <script type="text/javascript" src="/js/app.js"></script>

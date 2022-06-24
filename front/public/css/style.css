@@ -47,43 +47,44 @@ button {
     border-left: 5px solid #00CC66;
     color: #000000;
     border-spacing: 0;
-    padding: 0.75%;
 }
 
-div.scrollmenu {
-    overflow: auto;
+.scrollmenu {
+    overflow-x: scroll;
+    overflow-y: hidden;
     white-space: nowrap;
     display: inline-block;
 }
 
-    div.scrollmenu a {
+    .scrollmenu a {
         display: inline-block;
         color: blue;
         text-align: center;
-        padding: 14px;
+        padding: 3%;
         text-decoration: none;
     }
 
-        div.scrollmenu a:hover {
+        .scrollmenu a:hover {
             color: dodgerblue;
         }
 
-div.box {
+.box {
+    display: inline-block;
     background-color: ghostwhite;
     border: 5px solid #00CC66;
     border-radius: 16px;
     width: 20%;
     height: 40%;
-    margin: 1%;
+    margin: 0.5%;
 }
 
-div.box img {
-    width: 35%;
-}
-
-    div.box hover {
-        background-color: bisque;
+    .box img {
+        width: 35%;
     }
+
+        .box hover {
+            background-color: bisque;
+        }
 
 .botRow {
     background-color: #DFFEE4;

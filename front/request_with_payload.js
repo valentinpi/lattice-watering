@@ -97,3 +97,53 @@ var transmitResponse = function (res) {
     if (!res.payload.length) process.exit(0);
 };
 */
+
+/* -------------------- MySQL -------------------- */
+/*
+var mysql = require('mysql');
+const { error } = require('console');
+var connection = mysql.createConnection({
+    host: 'localhost',
+    user: 'root',
+    password: 'secret',
+    database: 'lattice_watering_db'
+});
+
+function databaseAccess2() {
+    connection.query('SELECT 1 + 1 AS solution', function (error, results, fields) {
+        if (error) throw error;
+        console.log('The solution is: ', results[0].solution);
+    });
+    //placeholder-mania
+    var node_ip = '::1';
+    var plant_name = 'Tomato';
+    var date_time = '2022-06-16 00:11:31';
+    var temperature = '22';
+    var humidity = '42';
+    var insert_query = 'INSERT INTO plant_nodes VALUE("0","' +
+        node_ip + '","' +
+        plant_name + '","' +
+        date_time + '","' +
+        temperature + '","' +
+        humidity + '")';
+
+    console.log(insert_query);
+
+    connection.query(insert_query, function (error, results, fields) {
+        if (error) throw error;
+        console.log('Added to database plant node: ');
+    });
+
+    //connection.end();
+
+}
+*/
+/*CREATE TABLE plant_nodes(
+id INT NOT NULL AUTO_INCREMENT,
+    node_ip VARCHAR(45) NOT NULL,
+    plant_name VARCHAR(100) NULL,
+    date_time DATETIME,
+    temperature INT(8) NULL,
+    humidity INT(8) NULL,
+        PRIMARY KEY(id));
+*/
