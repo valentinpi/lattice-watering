@@ -17,6 +17,7 @@
         "coap": "^1.0.11",
         "connect-flash": "^0.1.1",
         "consolidate": "^0.16.0",
+        "dtls": "^0.0.1",
         "express": "^4.18.1",
         "express-handlebars": "^6.0.6",
         "express-validator": "^2.10.0",

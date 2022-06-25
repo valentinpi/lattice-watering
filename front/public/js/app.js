@@ -20,17 +20,21 @@ function checkFormat(i) {
     return i;
 };
 
-function pumpToggle(state) {
-    var ip = document.getElementById('pumpIP').value;
-    if (state) {
-        console.log('Turning pump on at IP: ' + ip);
-    } else {
-        console.log('Turning pump off at IP: ' + ip);
-    }
-
-
-};
-
 function startup() {
     dateTime();
+};
+
+var reqs_id = 0;
+function refreshPlants() {
+    reqs_id++; // increment reqs_id to get a unique ID for the new element
+
+    //create textbox
+    var input = document.createElement('box');
+    input.type = "div";
+    input.setAttribute('id', 'box' + reqs_id);
+    input.setAttribute('value', reqs_id);
+    var reqs = document.getElementById("box");
+
+    //append elements
+    reqs.appendChild(input);
 };
