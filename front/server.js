@@ -1,4 +1,4 @@
-"use strict";
+"use strict"
 
 //Webserver
 var express = require('express');
@@ -8,6 +8,8 @@ var morgan = require('morgan');
 var engines = require('consolidate');
 var bodyParser = require('body-parser');
 var sqlite3 = require('sqlite3');
+var dtls = require('dtls');
+var db = require('./public/js/db');
 
 //Websocket
 var io = require('socket.io')(http);
@@ -35,103 +37,6 @@ app.use(bodyParser.json()); // get information from html forms
 app.use(bodyParser.urlencoded({
     extended: true
 }));
-
-/* -------------------- SQLite ------------------- */
-function databaseAccess() {
-    let db = new sqlite3.Database('./lattice_watering.db', sqlite3.OPEN_READWRITE, (err) => {
-        if (err && err.code == "SQLITE_CANTOPEN") {
-            console.log('No database: "lattice_watering.db" found');
-            createDatabase();
-        } else if (err) {
-            console.log("Database Access error " + err);
-            exit(1);
-        } else {
-            console.log('Database: "lattice_watering.db" found and connected')
-        }
-
-        insertQuery(db);
-        selectQuery(db, 0);
-        selectQuery(db, 1);
-    });
-};
-
-function createDatabase() {
-    var newdb = new sqlite3.Database('./lattice_watering.db', (err) => {
-        if (err) {
-            console.log("Database creation error " + err);
-            exit(1);
-        }
-        console.log('Database: "lattice_watering.db" created')
-        createQuery(newdb);
-    });
-};
-
-function createQuery(db) {
-    db.run(`
-    CREATE TABLE plant_nodes (
-        id INTEGER PRIMARY KEY AUTOINCREMENT NULL,
-        node_ip TEXT,
-        plant_name TEXT,
-        date_time TEXT,
-        humidity INTEGER
-    );
-    `, (err) => {
-        if (err) {
-            console.log("Create query error " + err);
-            return;
-        }
-        console.log('Table: "plant_nodes" in database: "lattice_watering.db" created');
-    });
-};
-
-function insertQuery(db) {
-    //placedholder-mania
-    var node_ip = '::1';
-    var plant_name = 'Tomato';
-    var humidity = '42';
-    //date_time creation is asynchonous with nodes, data is not perfect (crashes ...)
-    db.run(`
-    INSERT INTO plant_nodes (id, node_ip, plant_name, date_time, humidity)
-        VALUES (NULL, ?, ?, datetime('now','localtime'), ?);
-    `, node_ip, plant_name, humidity, (err) => {
-        if (err) {
-            console.log('Insert query error: ' + err);
-            return;
-        }
-        console.log('Inserted row with data into table "plant_nodes"');
-    });
-};
-
-function selectQuery(db, query = 0) {
-    if (query == 0) {
-        db.all(`SELECT * FROM plant_nodes`, (err, rows) => {
-            if (err) {
-                console.log('Select query error ' + err);
-                return;
-            };
-            //console.log(rows);
-
-            rows.forEach(row => {
-                console.log(row.id + "\t" + row.node_ip + "\t" + row.plant_name + "\t" + row.date_time + "\t" + row.humidity);
-            });
-
-        });
-    } else if (query == 1) {
-        var data = 0;
-        db.all(`SELECT COUNT(DISTINCT node_ip) AS plant_num FROM plant_nodes`, (err, rows) => {
-            if (err) {
-                console.log('Select query error: ' + err); return;
-            };
-            rows.forEach(row => {
-                data = row.plant_num;
-                //console.log(row.plant_num);
-            });
-            console.log('Current Number of plants is: ' + data);
-        });
-    };
-
-};
-
 
 /* ------------------- Frontend ------------------ */
 app.get('/plantView', function (req, res) {
@@ -167,7 +72,7 @@ app.post('/pumpToggle', function (req, res) {
         })
     })
 
-    databaseAccess();
+    db.databaseAccess();
 
     res.status(204).send();
 });
@@ -193,10 +98,6 @@ server.on('response', (res) => {
     })
 });
 
-server.listen(5683, () => {
-    console.log('listening on port 5683 for coap requests without dtls');
-});
-
 function parseCoapPayload(data) {
     const char_array = [];
     data.forEach(data_char => {
@@ -205,10 +106,8 @@ function parseCoapPayload(data) {
     return char_array;
 }
 
-//null, null, "cert.key", "cert.crt"
-/*
 try {
-    server.listen(null, null, "cert.key", "cert.crt", () => {
+    server.listen((null, null, "cert.key", "cert.crt"), () => {
         console.log('listening on port 5683 for coap requests with dtls');
     });
 } catch (err) {
@@ -219,5 +118,3 @@ try {
         console.log('listening on port 5683 for coap requests without dtls');
     });
 };
-*/
-//databaseAccess();

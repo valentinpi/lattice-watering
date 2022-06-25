@@ -40,27 +40,6 @@
                         Temperature: n/a C<br />
                         <a id="plantSettings" title="Configure desired temperature and humidity" href="plantView" onclick="showPlant(1)">Settings ...</a><br />
                     </div>
-                    <div class="box">
-                        <h3>Plant 4</h3>
-                        <img src="/img/placeholder_plant.png" alt="Plant"><br />
-                        Humidity: n/a %<br />
-                        Temperature: n/a C<br />
-                        <a id="plantSettings" title="Configure desired temperature and humidity" href="plantView" onclick="showPlant(1)">Settings ...</a><br />
-                    </div>
-                    <div class="box">
-                        <h3>Plant 5</h3>
-                        <img src="/img/placeholder_plant.png" alt="Plant"><br />
-                        Humidity: n/a %<br />
-                        Temperature: n/a C<br />
-                        <a id="plantSettings" title="Configure desired temperature and humidity" href="plantView" onclick="showPlant(1)">Settings ...</a><br />
-                    </div>
-                    <div class="box">
-                        <h3>Plant 6</h3>
-                        <img src="/img/placeholder_plant.png" alt="Plant"><br />
-                        Humidity: n/a %<br />
-                        Temperature: n/a C<br />
-                        <a id="plantSettings" title="Configure desired temperature and humidity" href="plantView" onclick="showPlant(1)">Settings ...</a><br />
-                    </div>
                 </div>
             </td>
         </tr>
@@ -68,7 +47,9 @@
 
     <table class="botRow" cellpadding="1" cellspacing="1" style="width: 100%">
         <tr>
-            <td colspan="2">Ver: Beta</td>
+            <td colspan="2">
+                <button type="button" value="Add" onclick="refreshPlants();">Refresh Show Plants</button>Ver: Beta
+            </td>
         </tr>
     </table>
     <script type="text/javascript" src="/js/app.js"></script>
