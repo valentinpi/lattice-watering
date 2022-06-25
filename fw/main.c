@@ -38,8 +38,9 @@ void soil_init(void) { adc_init(SOIL_PIN); }
 uint8_t soil_read(void) {
     // TODO: Fix the values.
     int32_t moisture_value = adc_sample(SOIL_PIN, RES);
-    printf("%" PRId32 "\n", moisture_value);
     int32_t moisture_percentage = (moisture_value - DRY_VALUE) * 100 / (WET_VALUE - DRY_VALUE);
+    printf("%" PRId32 " ", moisture_value);
+    printf("%d\n", (uint8_t)moisture_percentage);
     return (uint8_t)moisture_percentage;
 }
 
@@ -96,7 +97,6 @@ void *data_thread(void *arg) {
         // Obtain information
         uint8_t humidity = soil_read();
         netstats_t stats = netif_ieee802154->ipv6.stats;
-        printf("%" PRId16 "\n", humidity);
 
         // Write data
         nanocbor_encoder_t enc = {};
@@ -129,7 +129,6 @@ ssize_t pump_handler(coap_pkt_t *pkt, uint8_t *buf, size_t len, void *context) {
     (void)len;
     (void)context;
 
-    printf(PREFIX "Toggle pump.");
     pump_toggle();
 
     return 0;
