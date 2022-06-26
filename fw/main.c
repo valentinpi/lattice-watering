@@ -53,7 +53,8 @@ void net_init(void) {
     memcpy(host_ep.addr.ipv6, host_ip.u8, 16);
     host_ep.family = AF_INET6;
     host_ep.netif = netif_ieee802154->pid;
-    host_ep.port = CONFIG_GCOAPS_PORT;
+    // host_ep.port = CONFIG_GCOAPS_PORT;
+    host_ep.port = CONFIG_GCOAP_PORT;
 }
 
 void cred_init(void) {
@@ -64,8 +65,8 @@ void cred_init(void) {
     cred.params.ecdsa.public_key = pub;
     credman_add(&cred);
 
-    sock_dtls_t *sock = gcoap_get_sock_dtls();
-    sock_dtls_add_credential(sock, 1);
+    // sock_dtls_t *sock = gcoap_get_sock_dtls();
+    // sock_dtls_add_credential(sock, 1);
 }
 
 void *wdt_thread(void *arg) {

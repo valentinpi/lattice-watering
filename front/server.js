@@ -83,7 +83,7 @@ app.listen(3000, () => {
 
 
 /* --------------------- COAP -------------------- */
-var server = coap.createServer();
+var server = coap.createServer({ type: 'udp6' });
 
 server.on('request', (req, res) => {
     console.log('server received coap message from: ' + req.url + ' | ' + req.url.split('/')[0] + ' | ' + req.url.split('/')[1] + ' | ' + req.url.split('/')[2] + ' | ' + req.url.split('/')[3]);
@@ -107,8 +107,8 @@ function parseCoapPayload(data) {
 }
 
 try {
-    server.listen((null, null, "cert.key", "cert.crt"), () => {
-        console.log('listening on port 5683 for coap requests with dtls');
+    server.listen(5683, () => {
+        console.log('listening on port 5683 for coap requests');
     });
 } catch (err) {
     console.log("No dtls active: " + err);
