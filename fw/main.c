@@ -45,7 +45,7 @@ uint8_t soil_read(void) {
 }
 
 void net_init(void) {
-    netif_ieee802154 = gnrc_netif_iter(NULL);  // Note that we included `gnrc_netif_single`
+    netif_ieee802154 = gnrc_netif_iter(NULL); // Note that we included `gnrc_netif_single`
     assert(netif_ieee802154->device_type == NETDEV_TYPE_IEEE802154);
     printf(PREFIX "IEEE802154 interface found\n");
     // Note that via RPL, the node gets added a global address automatically
@@ -90,7 +90,7 @@ void *data_thread(void *arg) {
         memset(buf, 0, CONFIG_GCOAP_PDU_BUF_SIZE);
         gcoap_req_init(&pdu, buf, CONFIG_GCOAP_PDU_BUF_SIZE, COAP_POST, "/data");
         coap_opt_add_format(&pdu, COAP_FORMAT_CBOR);
-        coap_hdr_set_type(pdu.hdr, COAP_TYPE_NON);
+        ^coap_hdr_set_type(pdu.hdr, COAP_TYPE_NON);
         ssize_t meta_len = coap_opt_finish(&pdu, COAP_OPT_FINISH_PAYLOAD);
 
         mutex_lock(&pump_mutex);
