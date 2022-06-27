@@ -20,7 +20,6 @@ var URL = require('url');
 var request = require('coap').request;
 var Agent = require('coap').Agent;
 var url;
-
 var debug = false;
 
 /* ---------------- Express Setup ---------------- */
@@ -38,6 +37,21 @@ app.use(bodyParser.urlencoded({
     extended: true
 }));
 
+/* ------------------ PlantView ------------------ */
+/*const box = document.createElement("div");
+box.classList.add('box');
+const h3 = document.createElement("h3");
+const img = document.createElement("img");
+img.src = "/img/placeholder_plant.png";
+img.alt = "Plant";
+const text = document.createTextNode = "Humidity: n/a%<br />Temperature: n/a C<br />"
+
+box.appendChild(h3);
+box.appendChild(img);
+box.appendChild(text);
+const element = document.getElementById("scrollmenu");
+element.appendChild(box);*/
+
 /* ------------------- Frontend ------------------ */
 app.get('/plantView', function (req, res) {
     res.render('./plantView.html')
@@ -45,6 +59,14 @@ app.get('/plantView', function (req, res) {
 
 app.get('/', function (req, res) {
     res.render('./index.html');
+});
+
+app.get('/plant_count', async function (req, res) {
+    //let selectAll = await db.selectAll();
+    let plant_count = await db.selectPlantInfos();
+    //console.log("server says: " + plant_count);
+    //res.json(plant_count);
+    res.json('2');
 });
 
 app.post('/pumpToggle', function (req, res) {
@@ -71,16 +93,13 @@ app.post('/pumpToggle', function (req, res) {
             process.exit(0);
         })
     })
-
     db.databaseAccess();
-
     res.status(204).send();
 });
 
 app.listen(3000, () => {
     console.log('listening on port 3000 for frontend requests');
 });
-
 
 /* --------------------- COAP -------------------- */
 var server = coap.createServer({ type: 'udp6' });
@@ -107,12 +126,12 @@ function parseCoapPayload(data) {
 }
 
 try {
-    server.listen(5683, () => {
-        console.log('listening on port 5683 for coap requests');
+    server.listen(("localhost", 5684, "cert.key", "cert.crt"), () => {
+        console.log('listening on port 5683 for coap requests with dtls');
     });
 } catch (err) {
     console.log("No dtls active: " + err);
-    console.log("First you need to generate a private key and public certificate:\nopenssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout cert.key -out cert.crt -subj '/CN=m4n3dw0lf/O=dtls/C=BR'");
+    console.log("First you need to generate a private key and public certificate");
 
     server.listen(5683, () => {
         console.log('listening on port 5683 for coap requests without dtls');

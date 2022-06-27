@@ -1,8 +1,13 @@
-//var database = require('./database');
+//var db = require('./public/js/db');
 //var dateTime = require('./dateTime');
 //var pump = require('./pump');
 //var url = require('url');
 //var http = require('http');
+
+function startup() {
+    dateTime();
+    refreshPlants();
+};
 
 function dateTime() {
     var today = new Date();
@@ -20,21 +25,49 @@ function checkFormat(i) {
     return i;
 };
 
-function startup() {
-    dateTime();
-};
+var box_id = 0;
 
-var reqs_id = 0;
-function refreshPlants() {
-    reqs_id++; // increment reqs_id to get a unique ID for the new element
+async function refreshPlants() {
+    //var data = await getServerRes();
+    let response = await (fetch('/plant_count'));
+    let data = await response.json();
+    console.log(data);
 
-    //create textbox
-    var input = document.createElement('box');
-    input.type = "div";
-    input.setAttribute('id', 'box' + reqs_id);
-    input.setAttribute('value', reqs_id);
-    var reqs = document.getElementById("box");
+    var element = document.getElementById("scrollmenu");
 
-    //append elements
-    reqs.appendChild(input);
+    //for (var j = 0; j < box_id; j++) {
+    //    element.removeChild();
+    //}
+
+    //Add boxes for every distinct plant_ip in table in db
+    for (var i = 0; i < data; i++) {
+        box_id = box_id + 1;
+
+        var div = document.createElement("div");
+        div.classList.add('box');
+        var br = document.createElement("br");
+        var h3 = document.createElement("h3");
+        h3.textContent = "Plant " + box_id;
+        var img = document.createElement("img");
+        img.src = "/img/placeholder_plant.png";
+        img.alt = "Plant";
+        var text_hum = document.createTextNode("Humidity: n/a %");
+        var a = document.createElement("a");
+        a.id = "plantSetting";
+        a.title = "Configure desired humidity and show statistics";
+        a.href = "plantView";
+        a.onclick = "showPlant(1)";
+        a.text = "Settings ...";
+
+        div.appendChild(h3);
+        div.appendChild(img);
+        div.appendChild(br.cloneNode(true));
+        div.appendChild(br.cloneNode(true));
+        div.appendChild(text_hum);
+        div.appendChild(br.cloneNode(true));
+        div.appendChild(a);
+        //var element = document.getElementById("scrollmenu");
+        element.appendChild(div);
+    }
+    //var t = setTimeout(refreshPlants, 2000);
 };
