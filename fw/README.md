@@ -2,7 +2,7 @@
 
 ## Starting
 
-After adjusting the Makefile, simply execute:
+After adjusting the Makefile, simply execute (depending on your udev rules you may need to execute this as root):
 ```
-$ sudo make clean all flash
+$ make cred clean all flash
 ```

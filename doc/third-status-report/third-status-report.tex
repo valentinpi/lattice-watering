@@ -1,0 +1,65 @@
+\documentclass[10pt, xcolor=svgnames]{beamer}
+
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{tikz}
+\usepackage{verbatim}
+
+\usetheme{Pittsburgh}
+\usecolortheme{dove}
+
+\title{Lattice Watering: Third Status Report}
+
+\author{Christian Müller, Jonas Heinemann, Kaan Dönmez, Valentin Pickel}
+
+\institute{
+    Software Project on Internet Communication
+
+    Summer Term 2022
+    
+    Freie Universität Berlin
+
+    Institute for Computer Science
+}
+
+\date{June 27, 2022}
+
+\begin{document}
+
+\maketitle
+
+\begin{frame}{Updates}
+    \begin{itemize}
+        \item Changed the default IPv6 prefix to \texttt{fc00::/7}, which is the standardized prefix for local networks, see RFC 4193. So the subnets are now called \texttt{fc00:0:0:0:0:0:0:0::/64} and \texttt{fc00:0:0:0:0:0:0:1::/64}.
+        \item More HW: On the 17th, we bought battery connectors for an empirical test on battery consumption. In the sadly last Conrad store in Kreuzberg. We will use this to empirically test out the battery usage of a board using our firmware.
+        \item Designed a simple route scheme for the CoAP communication.
+        \item Not related directly, but we filed a bug report: \url{https://github.com/RIOT-OS/RIOT/issues/18228}
+        \item Switched to SQLite since that DBS fits our usecase a bit better and is simpler.
+    \end{itemize}
+\end{frame}
+
+\begin{frame}{Updates}
+    \begin{itemize}
+        \item Frontend DTLS was not working properly (no connection at all), now fixed. Part of component integration.
+        \item We will leave the HDC1000 out of the project to reduce battery consumption.
+        \item Sensory is working.
+    \end{itemize}
+
+    All in all, everything is moving towards integration and testing, we have also worked on the report and final presentation.
+\end{frame}
+
+\begin{frame}[fragile]{Routes}
+    \small
+    \begin{verbatim}
+Frontend Routes
+| Route   | Method | Description |
+|---------|--------|-------------|
+| `/data` | POST   | Data Route  |
+
+Node Routes
+| Route          | Method | Description                        |
+|----------------|--------|------------------------------------|
+| `/pump_toggle` | POST   | Toggle the pump of the node board. |
+    \end{verbatim}
+\end{frame}
+\end{document}

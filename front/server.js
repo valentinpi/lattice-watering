@@ -11,7 +11,6 @@ var sqlite3 = require('sqlite3');
 var dtls = require('dtls');
 var db = require('./public/js/db');
 
-
 //Websocket
 var io = require('socket.io')(http);
 
@@ -103,7 +102,7 @@ app.listen(3000, () => {
 });
 
 /* --------------------- COAP -------------------- */
-var server = coap.createServer();
+var server = coap.createServer({ type: 'udp6' });
 
 server.on('request', (req, res) => {
     console.log('server received coap message from: ' + req.url + ' | ' + req.url.split('/')[0] + ' | ' + req.url.split('/')[1] + ' | ' + req.url.split('/')[2] + ' | ' + req.url.split('/')[3]);
@@ -117,7 +116,6 @@ server.on('response', (res) => {
         process.exit(0);
     })
 });
-
 
 function parseCoapPayload(data) {
     const char_array = [];

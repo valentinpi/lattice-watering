@@ -1,0 +1,7 @@
+gen_keys:
+    #!/usr/bin/sh
+    rm -rf cred
+    mkdir cred
+    cd cred
+    openssl ecparam -name brainpoolP160r1 -noout -genkey -outform PEM -out private.pem
+    openssl req -x509 -nodes -key private.pem -out cert.pem -config ../cred.conf
