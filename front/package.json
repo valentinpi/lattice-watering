@@ -29,6 +29,7 @@
         "mysql": "github:mysqljs/mysql",
         "serve-static": "^1.9.3",
         "socket.io": "^4.5.1",
-        "sqlite3": "^5.0.8"
+        "sqlite3": "^5.0.8",
+        "webpack": "^5.73.0"
     }
 }
