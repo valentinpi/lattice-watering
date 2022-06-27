@@ -53,8 +53,7 @@ void net_init(void) {
     memcpy(host_ep.addr.ipv6, host_ip.u8, 16);
     host_ep.family = AF_INET6;
     host_ep.netif = netif_ieee802154->pid;
-    // host_ep.port = CONFIG_GCOAPS_PORT;
-    host_ep.port = CONFIG_GCOAP_PORT;
+    host_ep.port = CONFIG_GCOAPS_PORT;
 }
 
 void cred_init(void) {
@@ -65,8 +64,8 @@ void cred_init(void) {
     cred.params.ecdsa.public_key = pub;
     credman_add(&cred);
 
-    // sock_dtls_t *sock = gcoap_get_sock_dtls();
-    // sock_dtls_add_credential(sock, 1);
+    sock_dtls_t *sock = gcoap_get_sock_dtls();
+    sock_dtls_add_credential(sock, 1);
 }
 
 void *wdt_thread(void *arg) {
@@ -90,7 +89,7 @@ void *data_thread(void *arg) {
         memset(buf, 0, CONFIG_GCOAP_PDU_BUF_SIZE);
         gcoap_req_init(&pdu, buf, CONFIG_GCOAP_PDU_BUF_SIZE, COAP_POST, "/data");
         coap_opt_add_format(&pdu, COAP_FORMAT_CBOR);
-        ^coap_hdr_set_type(pdu.hdr, COAP_TYPE_NON);
+        coap_hdr_set_type(pdu.hdr, COAP_TYPE_NON);
         ssize_t meta_len = coap_opt_finish(&pdu, COAP_OPT_FINISH_PAYLOAD);
 
         mutex_lock(&pump_mutex);
