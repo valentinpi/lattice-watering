@@ -123,10 +123,41 @@ module.exports = {
                     console.log('Select query error: ' + err);
                     resolve(data);
                 } else {
-                    rows.forEach(row => {
-                        console.log(row.id + "\t" + row.node_ip + "\t" + row.plant_name + "\t" + row.date_time + "\t" + row.humidity);
-                    });
-                    data = rows[0].plant_num;
+                    //rows.forEach(row => {
+                    //    console.log(row.id + "\t" + row.node_ip + "\t" + row.plant_name + "\t" + row.date_time + "\t" + row.humidity);
+                    //});
+                    //data = rows[0].plant_num;
+                    data = rows;
+                    resolve(data);
+                }
+            });
+
+        })
+        var return_data = await myPromise;
+        return return_data;
+    },
+
+    selectSinglePlant: async function (plantIP) {
+        var db = this.databaseAccess();
+        var data = 0;
+        //Return infos of a single plant identified by its node_ip
+        let myPromise = new Promise(function (resolve) {
+            db.all(`
+            SELECT
+                id as id,
+                node_ip,
+                plant_name as plant_name,
+                MAX(date_time) as date_time,
+                humidity as humidity
+            FROM plant_nodes
+            WHERE node_ip = ?
+            GROUP BY node_ip
+            `,plantIP, (err, row) => {
+                if (err) {
+                    console.log('Select query error: ' + err);
+                    resolve(data);
+                } else {
+                    data = row;
                     resolve(data);
                 }
             });

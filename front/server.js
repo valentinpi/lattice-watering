@@ -10,6 +10,7 @@ var bodyParser = require('body-parser');
 var sqlite3 = require('sqlite3');
 var dtls = require('dtls');
 var db = require('./public/js/db');
+var ejs = require('ejs');
 
 //Websocket
 var io = require('socket.io')(http);
@@ -19,6 +20,7 @@ var coap = require('coap');
 var URL = require('url');
 var request = require('coap').request;
 var Agent = require('coap').Agent;
+const cons = require('consolidate');
 var url;
 var debug = false;
 
@@ -30,57 +32,54 @@ url.observe = true;
 app.use(morgan('dev'));
 app.set('views', __dirname + '/views');
 app.engine('html', engines.mustache);
-app.set('view engine', 'html');
+app.set('view engine', 'ejs');
 app.use(express.static(__dirname + '/public'));
 app.use(bodyParser.json()); // get information from html forms
 app.use(bodyParser.urlencoded({
     extended: true
 }));
 
-/* ------------------ PlantView ------------------ */
-/*const box = document.createElement("div");
-box.classList.add('box');
-const h3 = document.createElement("h3");
-const img = document.createElement("img");
-img.src = "/img/placeholder_plant.png";
-img.alt = "Plant";
-const text = document.createTextNode = "Humidity: n/a%<br />Temperature: n/a C<br />"
-
-box.appendChild(h3);
-box.appendChild(img);
-box.appendChild(text);
-const element = document.getElementById("scrollmenu");
-element.appendChild(box);*/
-
 /* ------------------- Frontend ------------------ */
 app.get('/plantView', function (req, res) {
-    res.render('./plantView.html')
+    var myUrl = url.parse(req.url, true);
+    var nodeIP = myUrl.query.node_ip;
+    res.render('./plantView.html', { node_ip: nodeIP });
 });
 
 app.get('/', function (req, res) {
     res.render('./index.html');
 });
 
-app.get('/plant_count', async function (req, res) {
-    //let selectAll = await db.selectAll();
-    let plant_count = await db.selectPlantInfos();
-    //console.log("server says: " + plant_count);
-    //res.json(plant_count);
-    res.json('2');
+app.get('/plantRefresh', async function (req, res) {
+    let plant_refresh = await db.selectPlantInfos();
+    res.json(plant_refresh);
+});
+
+app.get('/plantDetailView', async function (req, res) {
+    var plantIP = req.query.nodeIP;
+    let plantDetailView = await db.selectSinglePlant(plantIP);
+    res.json(plantDetailView);
 });
 
 app.post('/pumpToggle', function (req, res) {
     var ip = req.body.pumpIP;
-    var pumpStateChange = 'On';
+    var plantIP = req.query.nodeIP;
+
+    //var my_url = url.parse(req.url, true);
+    //var node_ip = my_url.query.node_ip;
+    //console.log(my_url);
+    //console.log(node_ip);
+
+    var pumpStateChange = 'Off';
     if (req.body.pumpOn) {
-        console.log('Turning pump on at ip: ' + ip);
+        console.log('Turning pump on at ip: ' + plantIP);
         pumpStateChange = 'On';
     } else {
-        console.log('Turning pump off at ip: ' + ip);
+        console.log('Turning pump off at ip: ' + plantIP);
         pumpStateChange = 'Off';
     }
     //Send info to input IP with payload pumpOn/pumpOff
-    const coap_req = coap.request({ hostname: ip, confirmable: false });
+    const coap_req = coap.request({ hostname: plantIP, confirmable: false });
     const payload = {
         title: 'pump' + pumpStateChange
     }
