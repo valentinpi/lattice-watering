@@ -1,3 +1,8 @@
+.vs
+.vs/*
+.vscode
+.vscode/*
+*.opendb
 br/bin
 doc/*/*.aux
 doc/*/*.fdb_latexmk
@@ -11,9 +16,5 @@ doc/*/*.toc
 doc/*/*.vrb
 front/node_modules
 fw/bin
-*.opendb
-.vs
-.vscode
-.vs/*
-.vscode/*
 node_modules/*
+proxy/bin

@@ -40,12 +40,11 @@
 
 \begin{frame}{Updates}
     \begin{itemize}
-        \item Frontend DTLS was not working properly (no connection at all), now fixed. Part of component integration.
         \item We will leave the HDC1000 out of the project to reduce battery consumption.
         \item Sensory is working.
     \end{itemize}
 
-    All in all, everything is moving towards integration and testing, we have also worked on the report and final presentation.
+    All in all, everything is moving towards integration and testing, we have also worked on the report and final presentation. In the next two weeks, we will meet up for integration tests.
 \end{frame}
 
 \begin{frame}[fragile]{Routes}
@@ -61,5 +60,37 @@ Node Routes
 |----------------|--------|------------------------------------|
 | `/pump_toggle` | POST   | Toggle the pump of the node board. |
     \end{verbatim}
+\end{frame}
+
+\begin{frame}{Frontend}
+    \begin{itemize}
+        \item Node.js, Express and Sqlite3
+        \item Local server handles frontend and db operations
+        \item Asynchronous nature of Node.js (or js in general) leads to implementation of promises with async/await for db operations
+        \item Nodes will be recognized based on their ip
+    \end{itemize}
+\end{frame}
+
+\begin{frame}
+    \frametitle{Issues}
+
+    \begin{itemize}
+        \item Frontend DTLS is not working and node support is very poor.
+        \item Sensor calibration is \emph{still} not quite solved.
+        \item It has not been tested whether connecting multiple boards yields issues.
+    \end{itemize}
+\end{frame}
+
+\begin{frame}
+    \frametitle{TODO}
+
+    The frontend is lacking behind. We need:
+
+    \begin{itemize}
+        \item Boards join the network and are registered by the first message they send. This registration is not quite functional yet.
+        \item Individual boards need to be accessed, currently this is coded s.t. the user must give a board IP. This will pose no problem at all.
+        \item One has to configure time periods in which the plants are watered or setup humidity thresholds for watering.
+        \item The humidity has to be displayed in a graph. There are dozens of fully capable libraries for this, e.g. Chart.js.
+    \end{itemize}
 \end{frame}
 \end{document}

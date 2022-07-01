@@ -45,7 +45,7 @@ uint8_t soil_read(void) {
 }
 
 void net_init(void) {
-    netif_ieee802154 = gnrc_netif_iter(NULL);  // Note that we included `gnrc_netif_single`
+    netif_ieee802154 = gnrc_netif_iter(NULL); // Note that we included `gnrc_netif_single`
     assert(netif_ieee802154->device_type == NETDEV_TYPE_IEEE802154);
     printf(PREFIX "IEEE802154 interface found\n");
     // Note that via RPL, the node gets added a global address automatically
@@ -53,8 +53,7 @@ void net_init(void) {
     memcpy(host_ep.addr.ipv6, host_ip.u8, 16);
     host_ep.family = AF_INET6;
     host_ep.netif = netif_ieee802154->pid;
-    // host_ep.port = CONFIG_GCOAPS_PORT;
-    host_ep.port = CONFIG_GCOAP_PORT;
+    host_ep.port = CONFIG_GCOAPS_PORT;
 }
 
 void cred_init(void) {
@@ -65,8 +64,8 @@ void cred_init(void) {
     cred.params.ecdsa.public_key = pub;
     credman_add(&cred);
 
-    // sock_dtls_t *sock = gcoap_get_sock_dtls();
-    // sock_dtls_add_credential(sock, 1);
+    sock_dtls_t *sock = gcoap_get_sock_dtls();
+    sock_dtls_add_credential(sock, 1);
 }
 
 void *wdt_thread(void *arg) {

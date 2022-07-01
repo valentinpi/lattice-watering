@@ -1,9 +1,8 @@
-APPLICATION = lwfw
+APPLICATION = lwproxy
 RIOTBASE ?= $(CURDIR)/../../RIOT
 
-BOARD ?= samr21-xpro
-SERIAL ?= ATML2127031800001974
-include ../Makefile.vars
+BOARD ?= native
+PORT ?= tap1
 
 MAKEFLAGS += -j
 DEVELHELP ?= 1
@@ -12,20 +11,15 @@ QUIET ?= 1
 # general
 USEMODULE += credman
 USEMODULE += credman_load
-USEMODULE += periph_adc
-USEMODULE += periph_gpio
-USEMODULE += periph_wdt
 USEMODULE += prng_sha256prng
 USEMODULE += ps
 USEMODULE += shell
 USEMODULE += shell_commands
 USEMODULE += ztimer
 USEMODULE += ztimer_sec
-USEPKG += nanocbor
 
 # net and security
 USEMODULE += tinydtls_sock_dtls
-USEMODULE += gcoap_dtls
 USEMODULE += gnrc_sock_udp
 USEMODULE += netstats_ipv6
 USEMODULE += gnrc_netif_ipv6
@@ -42,5 +36,12 @@ CFLAGS += -DCONFIG_DTLS_ECC
 
 cred:
 	just gen_keys
+
+# Proxy tap interface
+proxy:
+	bash -c    "trap 'ip tuntap del tap1 mode tap' EXIT; \
+				ip tap add mode tap tap1; \
+				ip link set tap1 up; \
+				while true; do sleep 1; done"
 
 include $(RIOTBASE)/Makefile.include

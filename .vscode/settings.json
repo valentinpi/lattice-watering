@@ -45,7 +45,8 @@
         "dtls.h": "c",
         "adc.h": "c",
         "memory_resource": "c",
-        "netstats.h": "c"
+        "netstats.h": "c",
+        "compare": "c"
     },
     "C_Cpp.errorSquiggles": "Disabled"
 }
