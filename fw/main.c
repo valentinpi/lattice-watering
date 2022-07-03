@@ -53,7 +53,8 @@ void net_init(void) {
     memcpy(host_ep.addr.ipv6, host_ip.u8, 16);
     host_ep.family = AF_INET6;
     host_ep.netif = netif_ieee802154->pid;
-    host_ep.port = CONFIG_GCOAPS_PORT;
+    /* host_ep.port = CONFIG_GCOAPS_PORT; */
+    host_ep.port = CONFIG_GCOAP_PORT;
 }
 
 /* void cred_init(void) {
