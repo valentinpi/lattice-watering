@@ -3,11 +3,32 @@
 open_firewall:
     #!/usr/bin/sh
     sudo nft add rule inet filter input position 9 udp dport 5684 accept
+    sudo nft add rule inet filter input position 9 udp dport 5683 accept
 
+# Slightly hardcoded script for `cred.rs` generation
 gen_keys:
-    #!/usr/bin/sh
+    #!/usr/bin/bash
     rm -rf cred
     mkdir cred
     cd cred
-    openssl ecparam -name prime256v1 -noout -genkey -outform PEM -out private.pem
-    openssl req -x509 -nodes -key private.pem -out cert.pem -config ../cred.conf
+    openssl ecparam -name secp256r1 -genkey -outform DER -out private.der
+    openssl ec -inform DER -in private.der -outform PEM -out private.pem
+    openssl ec -inform DER -in private.der -pubout -outform DER -out public.der
+    openssl ec -inform PEM -in private.pem -pubout -outform PEM -out public.pem
+    touch summary.txt
+    cat private.pem >> summary.txt
+    echo "" >> summary.txt
+    cat public.pem >> summary.txt
+    echo "" >> summary.txt
+    ~/.cargo/bin/xxd-rs generate -o tmp1.rs private.der
+    ~/.cargo/bin/xxd-rs generate -o tmp2.rs public.der
+    echo "" >> tmp1.rs
+    cat tmp2.rs >> tmp1.rs
+    rm tmp2.rs
+    mv tmp1.rs cred.rs
+    sed -i '0,/const/{s/const[ ]char[ ]data\[\][ ]=[ ]{/pub const PRIVATE_DER: [u8; 121] = [/}' cred.rs
+    sed -i '1,/const/{s/const[ ]char[ ]data\[\][ ]=[ ]{/pub const PUBLIC_DER: [u8; 91] = [/}' cred.rs
+    sed -i 's/}/]/g' cred.rs
+    cat cred.rs >> summary.txt
+    cd ..
+    mv cred/cred.rs src/cred.rs

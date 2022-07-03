@@ -82,16 +82,16 @@ void *wdt_thread(void *arg) {
 void *data_thread(void *arg) {
     (void)arg;
 
-    while (true) {
-        // Put packet metadata
-        coap_pkt_t pdu = {};
-        uint8_t buf[CONFIG_GCOAP_PDU_BUF_SIZE];
-        memset(buf, 0, CONFIG_GCOAP_PDU_BUF_SIZE);
-        gcoap_req_init(&pdu, buf, CONFIG_GCOAP_PDU_BUF_SIZE, COAP_POST, "/data");
-        coap_opt_add_format(&pdu, COAP_FORMAT_CBOR);
-        coap_hdr_set_type(pdu.hdr, COAP_TYPE_NON);
-        ssize_t meta_len = coap_opt_finish(&pdu, COAP_OPT_FINISH_PAYLOAD);
+    uint8_t buf[CONFIG_GCOAP_PDU_BUF_SIZE];
+    memset(buf, 0, CONFIG_GCOAP_PDU_BUF_SIZE);
 
+    // Put packet metadata
+    coap_pkt_t pdu = {};
+    gcoap_req_init(&pdu, buf, CONFIG_GCOAP_PDU_BUF_SIZE, COAP_POST, "/data");
+    coap_opt_add_format(&pdu, COAP_FORMAT_CBOR);
+    coap_hdr_set_type(pdu.hdr, COAP_TYPE_NON);
+    ssize_t meta_len = coap_opt_finish(&pdu, COAP_OPT_FINISH_PAYLOAD);
+    while (true) {
         mutex_lock(&pump_mutex);
 
         // Obtain information
@@ -143,7 +143,7 @@ int main(void) {
     cred_init();
 
     /* WDT */
-    thread_create((char *)wdt_thread_stack, THREAD_STACKSIZE_DEFAULT, THREAD_PRIORITY_MAIN - 1, 0, wdt_thread, NULL,
+    thread_create((char *)wdt_thread_stack, THREAD_STACKSIZE_TINY, THREAD_PRIORITY_MAIN - 1, 0, wdt_thread, NULL,
                   "wdt");
 
     /* Data */

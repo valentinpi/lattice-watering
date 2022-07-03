@@ -1,8 +1,3 @@
-.vs
-.vs/*
-.vscode
-.vscode/*
-*.opendb
 br/bin
 doc/*/*.aux
 doc/*/*.fdb_latexmk
@@ -17,4 +12,6 @@ doc/*/*.vrb
 front/node_modules
 fw/bin
 node_modules/*
-proxy/bin
+proxy/Cargo.lock
+proxy/target
+proxy/tinydtls
