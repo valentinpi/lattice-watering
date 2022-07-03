@@ -10,6 +10,7 @@
 - `fw`: Firmware for the clients that utilize sensory to water the plants.
 - `man`: Manuals for the devices we use.
 - `misc`: Mischief.
+- `proxy`: A DTLS proxy based on `tinydtls` written in Rust.
 
 ### General Conventions
 
@@ -32,7 +33,7 @@
 ### Design Decisions
 
 - `nanocbor` for commands as it has very low footprint and is non-proprietary
-- We wanted to use `wolfssl` since it uses a GNU license, but it is not supported by `gnrc_dtls`
+- We wanted to use `wolfssl` since it uses a GNU license, but it is not supported by `gnrc_dtls`, so we use `tinydtls`
 - No HW RNG, so we use a PRNG. `prng_tinymt32` looks promising, as it is standardized in RFC8682, but we could not choose it, so we went with `prng_sha256prng`, since it might provide better security than SHA-1.
 - There is WDT integration in the `fw` code, but not in the `br`, as its code is much less complex.
 - We do not use the LED nor an additional HDC1000 sensor due to energy usage.
@@ -43,11 +44,11 @@
 
 ### Starting the System
 
-To start the system, the `proxy` software and its ethos interface has to be started, and the `br` and `fw` firmwares have to be flashed onto the boards.
+To start the system, the `proxy` software and the `ethos` interface have to be started, and the `br` and `fw` firmwares have to be flashed onto the boards.
 
 ### Possible Future Enhancements
 
-- Use TypeScript instead of JavaScript in teh frontend.
+- Use TypeScript instead of JavaScript in the frontend.
 - The TinyDTLS library comes with a weak PRNG, replace it with a tough one.
 - Improve the Rust proxy server. A possible larger project could be to build a very good and easy to use DTLS library with support for multiple platforms such as Node JS, since no library currently really accomplishes that.
 - The `proxy` does not verify ECDSA keys, handle `tinydtls` events and does not discard connected devices, meaning that the `sessions` vector will have run out of space at some point. This was made so due to time constraints. Regular restarts could fix this issue.

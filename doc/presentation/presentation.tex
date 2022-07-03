@@ -2,6 +2,7 @@
 
 \usepackage[T1]{fontenc}
 \usepackage[utf8]{inputenc}
+\usepackage{hyperref}
 \usepackage{tikz}
 \usepackage{verbatim}
 
@@ -22,13 +23,69 @@
     Institute for Computer Science
 }
 
+\date{July 18, 2022}
+
 \begin{document}
 
 \maketitle
 
+\begin{frame}{The Idea}
+
+    Authentic plant watering! How about we take pics of ourselves annoyed at watering plants with the hoses we have?
+
+\end{frame}
+
+\begin{frame}{Goals}
+
+    \begin{itemize}
+        \item Implement a small but secure system for controlling several devices that can regularly water plants.
+        \item Learn about techniques and challenges in developing IoT-based systems.
+        \item Learn about RIOT.
+    \end{itemize}
+\end{frame}
+
+\begin{frame}
+    \frametitle{Architecture}
+
+    
+
+\end{frame}
+
+\begin{frame}
+    \frametitle{Communication Protocols Involved}
+
+    \begin{itemize}
+        \item All communication is based on IPv6 in the lower parts. We do not use any IPv4 addresses.
+        \item The nodes, together with the border router, form a DODAG structure due to the RPL protocol. They also use SixLoWPAN to compress and fragment their IPv6 packets, such that if one places many around a huge house, they can route in a lossy network.
+        \item The nodes indirectly talk with the DTLS proxy running on the hosts computer, which decrypts their traffic to forward the packets to the frontend.
+        \item Notice that the finer details show up when looking closely: For the devices to find each others local address, IPv6 uses neighbor and router solicitation messages, and the DTLS protocol must establish a secure session before sending encrypted packets. So snooped traffic looks more complicated than expected.
+    \end{itemize}
+
+\end{frame}
+
+\begin{frame}
+    \frametitle{Demo}
+
+    
+
+\end{frame}
+
+\begin{frame}{Reflecting on our Work}
+    The development was rather rough.
+    \begin{itemize}
+        \item Lack of documentation for specific parts, such as the humidity sensor. We are no electric engineers, despite our best efforts, and do not know all the small tricks.
+        \item Initial hardware was simply failing. In our report, we outline how we tried to build a small circuit for connecting the pump, but a faulty transistor deminished our efforts.
+        \item Despite our best efforts of communicating changes on different parts and how they effect others, this still lead to some systems not working. E.g. when the DTLS proxy was developed, a false commit broke communication on another branch as DTLS there was enabled, but no proxy was yet developed.
+    \end{itemize}
+
+    Despite that, the system is working. Somewhat. Hurray.
+\end{frame}
+
 \begin{frame}{Possible Future Enhancements}
     \begin{itemize}
-        \item A case for the controllers and their circuitry.
+        \item \texttt{hw}: A case for the controllers and their circuitry.
+        \item \texttt{front}: TypeScript instead of JavaScript.
+        \item \texttt{proxy}: Better RNG for \texttt{tinydtls} and multiple possible improvements to the proxy, see \texttt{README.md}
     \end{itemize}
 \end{frame}
 
