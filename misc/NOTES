@@ -4,6 +4,7 @@
 `sudo nft --handle list ruleset`
 `sudo nft add rule inet filter input udp dport 8000 accept`
 `sudo nft delete rule inet filter input handle <handle-id>`
+`sudo nft add rule inet filter input position 9 udp dport 5684 accept`
 - `nc` testing: `nc -6 -u <ipv6-address` 8000`
 - The now useless HDC1000 setup code.
 /* HDC1000 Initialization Code */

@@ -13,7 +13,7 @@
 #include <net/gnrc/netreg.h>
 #include <net/gnrc/nettype.h>
 #include <net/netstats.h>
-//#include <net/sock/dtls.h>
+#include <net/sock/dtls.h>
 #include <periph/adc.h>
 #include <periph/gpio.h>
 #include <periph/wdt.h>
@@ -26,8 +26,8 @@
 
 msg_t msg_queue[MSG_QUEUE_SIZE];
 
-const gpio_t PUMP_PA13 = GPIO_PIN(0, 13);  // Controls the IN1 input pin of the motor board.
-const gpio_t PUMP_PA28 = GPIO_PIN(0, 28);  // Controls the EEP sleep mode pin of the motor board.
+const gpio_t PUMP_PA13 = GPIO_PIN(0, 13); // Controls the IN1 input pin of the motor board.
+const gpio_t PUMP_PA28 = GPIO_PIN(0, 28); // Controls the EEP sleep mode pin of the motor board.
 bool pump_activated = false;
 mutex_t pump_mutex = {};
 
