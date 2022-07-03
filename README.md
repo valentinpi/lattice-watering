@@ -48,4 +48,5 @@ To start the system, the `proxy` software and its ethos interface has to be star
 ### Possible Future Enhancements
 
 - Use TypeScript instead of JavaScript in teh frontend.
+- The TinyDTLS library comes with a weak PRNG, replace it with a tough one.
 - Improve the Rust proxy server. A possible larger project could be to build a very good and easy to use DTLS library with support for multiple platforms such as Node JS, since no library currently really accomplishes that.

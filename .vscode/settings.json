@@ -51,7 +51,8 @@
         "netstats.h": "c",
         "compare": "c",
         "string.h": "c",
-        "thread.h": "c"
+        "thread.h": "c",
+        "gpio.h": "c"
     },
     "C_Cpp.errorSquiggles": "Disabled"
 }
