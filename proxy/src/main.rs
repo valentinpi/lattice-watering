@@ -16,7 +16,6 @@ pub mod cred;
 use core::ffi::{c_int, c_size_t, c_uchar, c_ushort};
 use libc::{in6_addr, sockaddr, sockaddr_in6, socklen_t, AF_INET6};
 use std::{
-    char::MAX,
     ffi::c_void,
     net::{Ipv6Addr, SocketAddr, SocketAddrV6, UdpSocket},
 };
@@ -31,30 +30,6 @@ const DTLS_ECDSA_KEY: dtls_ecdsa_key_t = dtls_ecdsa_key_t {
     pub_key_y: &cred::PUBLIC_DER[33],
 };
 const MAX_SESSIONS: u64 = 16;
-
-struct proxy_session {
-    session: session_t,
-}
-
-impl Default for proxy_session {
-    fn default() -> proxy_session {
-        proxy_session {
-            session: session_t {
-                size: std::mem::sizeof(sockaddr_in6),
-                addr: session_t__bindgen_ty_1 {
-                    bindgen_union_field:
-                } (sockaddr_in6 {
-                    sin6_addr: in6_addr { s6_addr: [0; 16] },
-                    sin6_family: 0,
-                    sin6_flowinfo: 0,
-                    sin6_port: 0,
-                    sin6_scope_id: 0,
-                }),
-                ifindex: 0,
-            },
-        }
-    }
-}
 
 macro_rules! debug_fmt {
     ($s:expr) => {
@@ -97,8 +72,8 @@ unsafe extern "C" fn server_write_callback(
 }
 
 unsafe extern "C" fn server_read_callback(
-    _ctx: *mut dtls_context_t,
-    _session: *mut session_t,
+    ctx: *mut dtls_context_t,
+    session: *mut session_t,
     buf: *mut u8,
     len: c_size_t,
 ) -> c_int {
@@ -110,6 +85,13 @@ unsafe extern "C" fn server_read_callback(
         .send(std::slice::from_raw_parts(buf, len as usize))
         .expect(debug_fmt!("Could not send data to backend"));
     debug_println!("Forwarded message to backend.");
+
+    let mut backend_buf: [u8; 1024] = [0; 1024];
+    let (size, _) = backend
+        .recv_from(&mut backend_buf)
+        .expect(debug_fmt!("Could not receive data"));
+
+    dtls_write(ctx, session, backend_buf.as_mut_ptr(), size);
 
     0
 }
@@ -166,12 +148,12 @@ fn main() {
     unsafe { dtls_set_handler(context, &mut handlers) };
 
     let mut buf: [u8; 1024] = [0; 1024];
-    let mut proxy_sessions: [proxy_session; MAX_SESSIONS as usize];
-    let mut active_sessions = 0;
+    let mut sessions: Vec<*mut session_t> = Vec::new();
     loop {
         let (size, peer) = socket.recv_from(&mut buf).expect("Failed to receive data");
+        debug_println!("Received message");
 
-        let addr: sockaddr_in6 = match peer {
+        let mut addr: sockaddr_in6 = match peer {
             SocketAddr::V4(_) => {
                 debug_println!("Non-IPv6 peer");
                 panic!();
@@ -189,64 +171,44 @@ fn main() {
             }
         };
 
+        let mut session_index = usize::MAX;
         unsafe {
-            let mut session_index = 0;
-            for i in 0..active_sessions {
-                if addr.sin6_addr.s6_addr
-                    == proxy_sessions[i]
-                        .session
-                        .addr
-                        .sin6
-                        .as_ref()
-                        .sin6_addr
-                        .s6_addr
-                {
+            for i in 0..sessions.len() {
+                if addr.sin6_addr.s6_addr == (*sessions[i]).addr.sin6.as_ref().sin6_addr.s6_addr {
                     session_index = i;
                 }
             }
         }
 
-        if active_sessions > MAX_SESSIONS as usize {
-            debug_println!("maximum number of sessions reached");
-            continue;
+        if session_index == usize::MAX {
+            unsafe {
+                if sessions.len() == MAX_SESSIONS as usize {
+                    debug_println!("Cannot create new sessions (sessions.len() == MAX_SESSIONS)");
+                    continue;
+                } else {
+                    let session = dtls_new_session(
+                        &mut addr as *mut sockaddr_in6 as *mut sockaddr,
+                        std::mem::size_of::<sockaddr_in6>() as socklen_t,
+                    );
+                    assert!(!session.is_null());
+                    sessions.push(session);
+                    debug_println!(format!(
+                        "Created session, session count: {}",
+                        sessions.len()
+                    ));
+                }
+            }
+        }
+
+        unsafe {
+            dtls_handle_message(
+                context,
+                sessions[session_index],
+                buf.as_mut_ptr(),
+                size as c_int,
+            );
         }
 
         buf = [0; 1024];
     }
-    /*     debug_println!("Received message.");
-    let session: *mut session_t = match peer {
-        SocketAddr::V4(_) => {
-            debug_println!("Non-IPv6 peer.");
-            panic!();
-        }
-        SocketAddr::V6(addr) => {
-            let mut raw_addr = sockaddr_in6 {
-                sin6_family: AF_INET6 as u16,
-                sin6_port: addr.port().to_be(), // Standard network byte order
-                sin6_flowinfo: addr.flowinfo(),
-                sin6_addr: in6_addr {
-                    s6_addr: addr.ip().octets(),
-                },
-                sin6_scope_id: addr.scope_id(),
-            };
-
-            unsafe {
-                dtls_new_session(
-                    &mut raw_addr as *mut sockaddr_in6 as *mut sockaddr,
-                    std::mem::size_of::<sockaddr_in6>() as socklen_t,
-                )
-            }
-        }
-    };
-    assert!(!session.is_null());
-    debug_println!("Created session.");
-    unsafe {
-        dtls_handle_message(context, session, buf.as_mut_ptr(), size as c_int);
-    }
-    loop {
-        let (size, peer) = socket.recv_from(&mut buf).expect("Failed to receive data");
-        unsafe {
-            dtls_handle_message(context, session, buf.as_mut_ptr(), size as c_int);
-        }
-    } */
 }
