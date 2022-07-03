@@ -56,7 +56,7 @@ void net_init(void) {
     host_ep.port = CONFIG_GCOAPS_PORT;
 }
 
-void cred_init(void) {
+/* void cred_init(void) {
     credman_credential_t cred = {.tag = 1};
     credman_load_private_ecc_key(&cred_private_der, cred_private_der_len, &cred);
     ecdsa_public_key_t pub = {};
@@ -66,7 +66,7 @@ void cred_init(void) {
 
     sock_dtls_t *sock = gcoap_get_sock_dtls();
     sock_dtls_add_credential(sock, 1);
-}
+} */
 
 void *wdt_thread(void *arg) {
     (void)arg;
@@ -140,7 +140,7 @@ int main(void) {
     pump_init();
     soil_init();
     net_init();
-    cred_init();
+    /* cred_init(); */
 
     /* WDT */
     thread_create((char *)wdt_thread_stack, THREAD_STACKSIZE_TINY, THREAD_PRIORITY_MAIN - 1, 0, wdt_thread, NULL,
