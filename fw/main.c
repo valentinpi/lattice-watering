@@ -48,8 +48,7 @@ void net_init(void) {
     netif_ieee802154 = gnrc_netif_iter(NULL); // Note that we included `gnrc_netif_single`
     assert(netif_ieee802154->device_type == NETDEV_TYPE_IEEE802154);
     printf(PREFIX "IEEE802154 interface found\n");
-    // Note that via RPL, the node gets added a global address automatically
-    ipv6_addr_from_str(&host_ip, HOST_IP_ADDR);
+    ipv6_addr_from_str(&host_ip, HOST_IP_ADDR); // Note that via RPL, the node gets added a global address automatically
     memcpy(host_ep.addr.ipv6, host_ip.u8, 16);
     host_ep.family = AF_INET6;
     host_ep.netif = netif_ieee802154->pid;
@@ -57,7 +56,7 @@ void net_init(void) {
     host_ep.port = CONFIG_GCOAP_PORT;
 }
 
-/* void cred_init(void) {
+void cred_init(void) {
     credman_credential_t cred = {.tag = 1};
     credman_load_private_ecc_key(&cred_private_der, cred_private_der_len, &cred);
     ecdsa_public_key_t pub = {};
@@ -67,7 +66,7 @@ void net_init(void) {
 
     sock_dtls_t *sock = gcoap_get_sock_dtls();
     sock_dtls_add_credential(sock, 1);
-} */
+}
 
 void *wdt_thread(void *arg) {
     (void)arg;
@@ -104,6 +103,11 @@ void *data_thread(void *arg) {
         nanocbor_encoder_init(&enc, pdu.payload, 28);
         nanocbor_fmt_uint(&enc, humidity);
         nanocbor_fmt_bool(&enc, pump_activated);
+        ipv6_addr_t ip = {};
+        gnrc_netif_ipv6_addrs_get(netif_ieee802154, &ip, 1);
+        for (size_t i = 0; i < 16; i++) {
+            nanocbor_fmt_uint(&enc, ip.u8[i]);
+        }
         nanocbor_fmt_uint(&enc, stats.rx_bytes);
         nanocbor_fmt_uint(&enc, stats.rx_count);
         nanocbor_fmt_uint(&enc, stats.tx_bytes);
@@ -141,7 +145,7 @@ int main(void) {
     pump_init();
     soil_init();
     net_init();
-    /* cred_init(); */
+    cred_init();
 
     /* WDT */
     thread_create((char *)wdt_thread_stack, THREAD_STACKSIZE_TINY, THREAD_PRIORITY_MAIN - 1, 0, wdt_thread, NULL,

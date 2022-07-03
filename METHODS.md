@@ -1,10 +1,10 @@
 # Methods
 
-These are the methods for communication between the frontend and the nodes.
+These are the methods for communication between the frontend and the nodes. The frontend uses UDP, the backend DTLS.
 
 ### Frontend Methods
 
-Accessible via ipv6 address 2001:db8:2:: and port 5684 (`CONFIG_GCOAPS_PORT`).
+Accessible via IPv6 address `fc00::` and port 5683 (`CONFIG_GCOAP_PORT`).
 
 | Route   | Method | Description |
 |---------|--------|-------------|
@@ -16,6 +16,9 @@ Every 5 seconds, depending on the configuration, the nodes POST a non-confirmabl
 --------------------------------------------------------
 | humidity (uint8, in percent) | pump_activated (bool) |
 --------------------------------------------------------
+-----------------------
+| ip_addr (uint8[16]) |
+-----------------------
 -----------------------------------------
 | rx_bytes (uint32) | rx_count (uint32) |
 -----------------------------------------
@@ -23,7 +26,7 @@ Every 5 seconds, depending on the configuration, the nodes POST a non-confirmabl
 | tx_bytes (uint32) | tx_unicast_count (uint32) | tx_mcast_count (uint32) | tx_success (uint32) |  tx_failed (uint32) |
 -----------------------------------------------------------------------------------------------------------------------
 ```
-So the packet contains humidity information, as well as info on the node itself: Whether its pump is activated and its current IPv6 statistics. Note that these statistics do not need to be saved. `count` refers to the number of packets. The data is aligned from left to right, top to bottom.
+So the packet contains humidity information, as well as info on the node itself: Whether its pump is activated and its current IPv6 statistics. Note that these statistics do not need to be saved. `count` refers to the number of packets. The data is aligned from left to right, top to bottom. We also post the IP address, as the packet may go through a tunnel, and our frontend uses some unique IPs for board identification.
 
 ### Node Methods
 
