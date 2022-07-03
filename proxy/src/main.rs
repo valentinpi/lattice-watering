@@ -16,6 +16,7 @@ pub mod cred;
 use core::ffi::{c_int, c_size_t, c_uchar, c_ushort};
 use libc::{in6_addr, sockaddr, sockaddr_in6, socklen_t, AF_INET6};
 use std::{
+    char::MAX,
     ffi::c_void,
     net::{Ipv6Addr, SocketAddr, SocketAddrV6, UdpSocket},
 };
@@ -30,6 +31,30 @@ const DTLS_ECDSA_KEY: dtls_ecdsa_key_t = dtls_ecdsa_key_t {
     pub_key_y: &cred::PUBLIC_DER[33],
 };
 const MAX_SESSIONS: u64 = 16;
+
+struct proxy_session {
+    session: session_t,
+}
+
+impl Default for proxy_session {
+    fn default() -> proxy_session {
+        proxy_session {
+            session: session_t {
+                size: std::mem::sizeof(sockaddr_in6),
+                addr: session_t__bindgen_ty_1 {
+                    bindgen_union_field:
+                } (sockaddr_in6 {
+                    sin6_addr: in6_addr { s6_addr: [0; 16] },
+                    sin6_family: 0,
+                    sin6_flowinfo: 0,
+                    sin6_port: 0,
+                    sin6_scope_id: 0,
+                }),
+                ifindex: 0,
+            },
+        }
+    }
+}
 
 macro_rules! debug_fmt {
     ($s:expr) => {
@@ -128,9 +153,9 @@ fn main() {
     let mut socket = UdpSocket::bind(":::5684").expect(debug_fmt!("Could not bind socket"));
 
     let mut handlers = dtls_handler_t {
+        event: Some(server_event_callback),
         write: Some(server_write_callback),
         read: Some(server_read_callback),
-        event: Some(server_event_callback),
         get_psk_info: None,
         get_ecdsa_key: Some(server_get_ecdsa_key),
         verify_ecdsa_key: Some(server_verify_ecdsa_key),
@@ -141,13 +166,14 @@ fn main() {
     unsafe { dtls_set_handler(context, &mut handlers) };
 
     let mut buf: [u8; 1024] = [0; 1024];
-    let sessions: [session_t; MAX_SESSIONS as usize];
+    let mut proxy_sessions: [proxy_session; MAX_SESSIONS as usize];
+    let mut active_sessions = 0;
     loop {
         let (size, peer) = socket.recv_from(&mut buf).expect("Failed to receive data");
 
         let addr: sockaddr_in6 = match peer {
             SocketAddr::V4(_) => {
-                debug_println!("Non-IPv6 peer.");
+                debug_println!("Non-IPv6 peer");
                 panic!();
             }
             SocketAddr::V6(addr) => {
@@ -163,11 +189,26 @@ fn main() {
             }
         };
 
-        let mut session_index = 0;
-        for i in 0..MAX_SESSIONS as usize {
-            if addr == sessions[i].addr {
-                session_index = i;
+        unsafe {
+            let mut session_index = 0;
+            for i in 0..active_sessions {
+                if addr.sin6_addr.s6_addr
+                    == proxy_sessions[i]
+                        .session
+                        .addr
+                        .sin6
+                        .as_ref()
+                        .sin6_addr
+                        .s6_addr
+                {
+                    session_index = i;
+                }
             }
+        }
+
+        if active_sessions > MAX_SESSIONS as usize {
+            debug_println!("maximum number of sessions reached");
+            continue;
         }
 
         buf = [0; 1024];
