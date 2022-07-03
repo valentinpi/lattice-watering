@@ -38,3 +38,4 @@ printf(PREFIX "temperature: %" PRId16 "°C, humidity: %" PRId16 "\n", temp / 100
 // clang-format on
 - Get `https://github.com/bfontaine/rfc` and run `rfc 7228`, we use a class 2 device.
 - `openssl x509 -in cred/cert.crt -text -noout`
+- `ip -6 route show`

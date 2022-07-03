@@ -3,6 +3,7 @@
 /***************************/
 
 #include <inttypes.h>
+
 #include <net/gnrc/ipv6.h>
 #include <net/gnrc/rpl.h>
 #include <periph/wdt.h>

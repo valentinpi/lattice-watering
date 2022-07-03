@@ -4,6 +4,7 @@ RIOTTOOLS ?= $(RIOTBASE)/dist/tools
 
 BOARD ?= samr21-xpro
 SERIAL ?= ATML2127031800004672
+TAP ?= tap0
 PORT ?= /dev/ttyACM0
 include ../Makefile.vars
 
@@ -20,10 +21,10 @@ USEMODULE += ztimer
 USEMODULE += ztimer_sec
 
 # net
-USEMODULE += gnrc_icmpv6_echo
 USEMODULE += gnrc_sixlowpan_router_default
 USEMODULE += auto_init_gnrc_rpl
 USEMODULE += gnrc_rpl
+USEMODULE += gnrc_icmpv6_echo
 USEMODULE += gnrc_ipv6_router_default
 USEMODULE += auto_init_gnrc_netif
 USEMODULE += netdev_default
@@ -37,11 +38,11 @@ CFLAGS += '-DETHOS_UART=UART_DEV(0)' -DETHOS_BAUDRATE=115200
 
 # Start the ethernet over serial connection
 ethos:
-	bash -c    "trap 'ip tuntap del tap0 mode tap' EXIT; \
-				ip tap add mode tap tap0; \
-				ip link set tap0 up; \
-				ip addr add $(HOST_IP_ADDR)/64 dev tap0; \
-				ip route add $(SIX_IP_PREFIX)/64 via $(BR_ETH_IP_ADDR); \
-				$(RIOTTOOLS)/ethos/ethos tap0 $(PORT)"
+	bash -c    "trap 'ip tuntap del $(TAP) mode tap' EXIT; \
+				ip tap add mode tap $(TAP); \
+				ip link set $(TAP) up; \
+				ip addr add $(HOST_IP_ADDR)/64 dev $(TAP); \
+				ip route add $(SIX_IP_PREFIX)/64 dev $(TAP) via $(BR_ETH_IP_ADDR); \
+				$(RIOTTOOLS)/ethos/ethos $(TAP) $(PORT)"
 
 include $(RIOTBASE)/Makefile.include

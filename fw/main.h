@@ -5,6 +5,8 @@
 #pragma once
 
 #include <inttypes.h>
+#include <stdio.h>
+
 #include <nanocbor/nanocbor.h>
 #include <net/coap.h>
 #include <net/credman.h>
@@ -19,7 +21,6 @@
 #include <periph/wdt.h>
 #include <sched.h>
 #include <shell.h>
-#include <stdio.h>
 
 #define MSG_QUEUE_SIZE 16
 #define PREFIX "[LWFW] "
