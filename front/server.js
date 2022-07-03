@@ -100,6 +100,9 @@ app.listen(3000, () => {
     console.log('listening on port 3000 for frontend requests');
 });
 
+/* -------------------- Chart -------------------- */
+
+
 /* --------------------- COAP -------------------- */
 var server = coap.createServer({ type: 'udp6' });
 
@@ -124,6 +127,7 @@ function parseCoapPayload(data) {
     return char_array;
 }
 
+/*
 try {
     server.listen(("localhost", 5684, "cert.key", "cert.crt"), () => {
         console.log('listening on port 5683 for coap requests with dtls');
@@ -136,3 +140,7 @@ try {
         console.log('listening on port 5683 for coap requests without dtls');
     });
 };
+*/
+server.listen(5683, () => {
+    console.log('listening on port 5683 for coap requests without dtls');
+});

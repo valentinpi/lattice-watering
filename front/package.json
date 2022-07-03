@@ -14,6 +14,8 @@
     "license": "MIT",
     "dependencies": {
         "body-parser": "^1.12.4",
+        "canvas": "^2.9.3",
+        "chart.js": "^3.8.0",
         "coap": "^1.0.11",
         "connect-flash": "^0.1.1",
         "consolidate": "^0.16.0",
@@ -23,6 +25,7 @@
         "express-handlebars": "^6.0.6",
         "express-validator": "^2.10.0",
         "handlebars": "^4.7.7",
+        "jsdom": "^20.0.0",
         "mongodb": "^4.7.0",
         "mongoose": "^6.3.4",
         "morgan": "^1.10.0",

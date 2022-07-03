@@ -1,6 +1,6 @@
 //"use strict"
 
-const { response } = require('express');
+//const { response } = require('express');
 var sqlite3 = require('sqlite3');
 
 module.exports = {
@@ -107,7 +107,8 @@ module.exports = {
     selectPlantInfos: async function () {
         var db = this.databaseAccess();
         var data = 0;
-        //Returns amount of distinct ips in table
+        //Returns all distinct plant information which sent info in the past 2 minutes
+        //WHERE date_time >= DATETIME('now', 'localtime', '-2 minutes')
         let myPromise = new Promise(function (resolve) {
             db.all(`
             SELECT

@@ -28,3 +28,6 @@
 - `sqlite3`: Chosen database, offline, in-place, one file which can easily be transfered
 - `dtls`: Security protocol
 - `url`
+
+#### 
+All db requests are done by the node server. If the client needs information from the db he needs to request it from the server.
