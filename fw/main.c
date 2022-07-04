@@ -144,7 +144,7 @@ int main(void) {
     /* cred_init(); */
 
     /* WDT */
-    thread_create((char *)wdt_thread_stack, THREAD_STACKSIZE_TINY, THREAD_PRIORITY_MAIN - 1, 0, wdt_thread, NULL,
+    thread_create((char *)wdt_thread_stack, THREAD_STACKSIZE_SMALL, THREAD_PRIORITY_MAIN - 1, 0, wdt_thread, NULL,
                   "wdt");
 
     /* Data */

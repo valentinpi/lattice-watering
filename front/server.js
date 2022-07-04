@@ -11,6 +11,7 @@ var sqlite3 = require('sqlite3');
 var dtls = require('dtls');
 var db = require('./public/js/db');
 var ejs = require('ejs');
+var cbor = require('node-cbor');
 
 //Websocket
 var io = require('socket.io')(http);
@@ -21,6 +22,7 @@ var URL = require('url');
 var request = require('coap').request;
 var Agent = require('coap').Agent;
 const cons = require('consolidate');
+const { createBrotliCompress } = require('zlib');
 var url;
 var debug = false;
 
@@ -73,20 +75,11 @@ app.post('/pump_toggle', function (req, res) {
         pumpStateChange = 'Off';
     }
     //Send info to input IP with payload pumpOn/pumpOff
-    const coap_req = coap.request({ hostname: plantIP, confirmable: false });
-    const payload = {
-        title: 'pump' + pumpStateChange
-    }
-    coap_req.write(JSON.stringify(payload));
+    const coap_req = coap.request({ hostname: plantIP, confirmable: false, method: 'POST' });
+
     coap_req.end();
 
-    coap_req.on('response', (res) => {
-        res.pipe(process.stdout)
-        res.on('end', () => {
-            process.exit(0);
-        })
-    })
-    db.databaseAccess();
+    //db.databaseAccess();
     res.status(204).send();
 });
 
@@ -103,7 +96,10 @@ var server = coap.createServer({ type: 'udp6' });
 server.on('request', (req, res) => {
     //console.log('server received coap message from: ' + req.url + ' | ' + req.url.split('/')[0]);
     //console.log('payload from coap message: ' + req.payload + ' | ' + req.payload[0]);
-    parsePayloadIntoDB(req.payload);
+    //parsePayloadIntoDB(req.payload);
+    console.log(cbor.decodeAllSync(req.payload));
+    console.log(req.rsinfo.address);
+    db.insertQuery(req.rsinfo.address,'NULL',req.payload[0])
 });
 
 server.on('response', (res) => {

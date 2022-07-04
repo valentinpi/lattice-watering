@@ -17,7 +17,7 @@ msg_t msg_queue[MSG_QUEUE_SIZE];
 gnrc_netif_t *netif_ethernet = NULL;
 gnrc_netif_t *netif_ieee802154 = NULL;
 
-uint8_t wdt_thread_stack[THREAD_STACKSIZE_TINY];
+uint8_t wdt_thread_stack[THREAD_STACKSIZE_SMALL];
 
 void net_init(void) {
     while (netif_ethernet == NULL || netif_ieee802154 == NULL) {
@@ -65,7 +65,7 @@ int main(void) {
     net_init();
 
     /* WDT */
-    thread_create((char *)wdt_thread_stack, THREAD_STACKSIZE_TINY, THREAD_PRIORITY_MAIN - 1, 0, wdt_thread, NULL,
+    thread_create((char *)wdt_thread_stack, THREAD_STACKSIZE_SMALL, THREAD_PRIORITY_MAIN - 1, 0, wdt_thread, NULL,
                   "wdt");
 
     /* Debug Shell */

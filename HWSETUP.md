@@ -24,7 +24,7 @@ Connect the female jumpers the following way:
 | SAMR21XPRO |          5V0 |          VCC |     DRV883 |
 | SAMR21XPRO |          GND |          GND |     DRV883 |
 | SAMR21XPRO |         PA13 |          IN1 |     DRV883 |
-| SAMR21XPRO |         PA13 |          EEP |     DRV883 |
+| SAMR21XPRO |         PA28 |          EEP |     DRV883 |
 
 Connect two female jumpers with two male jumpers and solder the two male jumpers on the two connectors of the pump. Connect three male jumpers with three female jumpers. Then connect the following way:
 

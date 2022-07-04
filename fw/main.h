@@ -36,7 +36,7 @@ gnrc_netif_t *netif_ieee802154 = NULL;
 ipv6_addr_t host_ip = {};
 sock_udp_ep_t host_ep = {};
 
-uint8_t wdt_thread_stack[THREAD_STACKSIZE_TINY];
+uint8_t wdt_thread_stack[THREAD_STACKSIZE_SMALL];
 
 const uint32_t DATA_INTERVAL = 5;
 uint8_t data_thread_stack[THREAD_STACKSIZE_LARGE];
