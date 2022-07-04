@@ -53,10 +53,11 @@ void net_init(void) {
     memcpy(host_ep.addr.ipv6, host_ip.u8, 16);
     host_ep.family = AF_INET6;
     host_ep.netif = netif_ieee802154->pid;
-    host_ep.port = CONFIG_GCOAPS_PORT;
+    /* host_ep.port = CONFIG_GCOAPS_PORT; */
+    host_ep.port = CONFIG_GCOAP_PORT;
 }
 
-void cred_init(void) {
+/* void cred_init(void) {
     credman_credential_t cred = {.tag = 1};
     credman_load_private_ecc_key(&cred_private_der, cred_private_der_len, &cred);
     ecdsa_public_key_t pub = {};
@@ -66,7 +67,7 @@ void cred_init(void) {
 
     sock_dtls_t *sock = gcoap_get_sock_dtls();
     sock_dtls_add_credential(sock, 1);
-}
+} */
 
 void *wdt_thread(void *arg) {
     (void)arg;
@@ -82,16 +83,16 @@ void *wdt_thread(void *arg) {
 void *data_thread(void *arg) {
     (void)arg;
 
-    while (true) {
-        // Put packet metadata
-        coap_pkt_t pdu = {};
-        uint8_t buf[CONFIG_GCOAP_PDU_BUF_SIZE];
-        memset(buf, 0, CONFIG_GCOAP_PDU_BUF_SIZE);
-        gcoap_req_init(&pdu, buf, CONFIG_GCOAP_PDU_BUF_SIZE, COAP_POST, "/data");
-        coap_opt_add_format(&pdu, COAP_FORMAT_CBOR);
-        coap_hdr_set_type(pdu.hdr, COAP_TYPE_NON);
-        ssize_t meta_len = coap_opt_finish(&pdu, COAP_OPT_FINISH_PAYLOAD);
+    uint8_t buf[CONFIG_GCOAP_PDU_BUF_SIZE];
+    memset(buf, 0, CONFIG_GCOAP_PDU_BUF_SIZE);
 
+    // Put packet metadata
+    coap_pkt_t pdu = {};
+    gcoap_req_init(&pdu, buf, CONFIG_GCOAP_PDU_BUF_SIZE, COAP_POST, "/data");
+    coap_opt_add_format(&pdu, COAP_FORMAT_CBOR);
+    coap_hdr_set_type(pdu.hdr, COAP_TYPE_NON);
+    ssize_t meta_len = coap_opt_finish(&pdu, COAP_OPT_FINISH_PAYLOAD);
+    while (true) {
         mutex_lock(&pump_mutex);
 
         // Obtain information
@@ -140,10 +141,10 @@ int main(void) {
     pump_init();
     soil_init();
     net_init();
-    cred_init();
+    /* cred_init(); */
 
     /* WDT */
-    thread_create((char *)wdt_thread_stack, THREAD_STACKSIZE_DEFAULT, THREAD_PRIORITY_MAIN - 1, 0, wdt_thread, NULL,
+    thread_create((char *)wdt_thread_stack, THREAD_STACKSIZE_TINY, THREAD_PRIORITY_MAIN - 1, 0, wdt_thread, NULL,
                   "wdt");
 
     /* Data */

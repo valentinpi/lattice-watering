@@ -1,8 +1,8 @@
-# Routes
+# Methods
 
-These are the routes for communication between the frontend and the nodes.
+These are the methods for communication between the frontend and the nodes.
 
-### Frontend Routes
+### Frontend Methods
 
 Accessible via ipv6 address 2001:db8:2:: and port 5684 (`CONFIG_GCOAPS_PORT`).
 
@@ -25,7 +25,7 @@ Every 5 seconds, depending on the configuration, the nodes POST a non-confirmabl
 ```
 So the packet contains humidity information, as well as info on the node itself: Whether its pump is activated and its current IPv6 statistics. Note that these statistics do not need to be saved. `count` refers to the number of packets. The data is aligned from left to right, top to bottom.
 
-### Node Routes
+### Node Methods
 
 Accessible via port 5684 (`CONFIG_GCOAPS_PORT`).
 
