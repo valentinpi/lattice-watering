@@ -28,7 +28,7 @@ Every 5 seconds, depending on the configuration, the nodes POST a non-confirmabl
 | tx_bytes (uint32) | tx_unicast_count (uint32) | tx_mcast_count (uint32) | tx_success (uint32) |  tx_failed (uint32) |
 -----------------------------------------------------------------------------------------------------------------------
 ```
-So the packet contains humidity information, the humdity sensor calibration, as well as info on the node itself: Whether its pump is activated and its current IPv6 statistics. Note that these statistics do not need to be saved. `count` refers to the number of packets. The data is aligned from left to right, top to bottom. We also post the IP address, as the packet may go through a tunnel, and our frontend uses some unique IPs for board identification.
+So the packet contains humidity information, the humdity sensor calibration, as well as info on the node itself: Whether its pump is activated and its current IPv6 statistics. Note that these statistics do not need to be saved. `count` refers to the number of packets. The data is aligned from left to right, top to bottom. We also post the IP address, as the packet will go through a tunnel, and our frontend uses some unique IPs for board identification.
 
 ### Node Methods
 
@@ -41,9 +41,21 @@ Accessible via port 5684 (`CONFIG_GCOAPS_PORT`).
 
 It suffices to POST a single non-confirmable `COAP_CODE_EMPTY` package (a ping) to this endpoint.
 
+The `/pump_toggle` method expects the following non-confirmable CBOR packet form:
+```
+-----------------------
+| ip_addr (uint8[16]) |
+-----------------------
+```
+
 The `/calibrate_sensor` method expects a non-nonfirmable CBOR packet of form:
 ```
+-----------------------
+| ip_addr (uint8[16]) |
+-----------------------
 ---------------------------------------------
 | dry_value (int32_t) | wet_value (int32_t) |
 ---------------------------------------------
 ```
+
+Note that the DTLS proxy will remove both IP addresses before the packets reach the SixLoWPAN network.
