@@ -22,6 +22,8 @@
 #include <sched.h>
 #include <shell.h>
 
+#include "psk_key.h"
+
 #define MSG_QUEUE_SIZE 16
 #define PREFIX "[LWFW] "
 
@@ -29,8 +31,11 @@ msg_t msg_queue[MSG_QUEUE_SIZE];
 
 const gpio_t PUMP_PA13 = GPIO_PIN(0, 13); // Controls the IN1 input pin of the motor board.
 const gpio_t PUMP_PA28 = GPIO_PIN(0, 28); // Controls the EEP sleep mode pin of the motor board.
-bool pump_activated = false;
 mutex_t pump_mutex = {};
+
+const adc_t SOIL_PIN = ADC_LINE(1);
+const adc_res_t SOIL_RES = ADC_RES_12BIT;
+mutex_t soil_mutex = {};
 
 gnrc_netif_t *netif_ieee802154 = NULL;
 ipv6_addr_t host_ip = {};

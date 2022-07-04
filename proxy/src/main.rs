@@ -11,7 +11,7 @@
 #![feature(core_ffi_c, c_size_t)]
 #![allow(improper_ctypes_definitions)]
 
-pub mod cred;
+pub mod psk_key;
 
 use core::ffi::{c_int, c_size_t, c_uchar, c_ushort};
 use libc::{in6_addr, sockaddr, sockaddr_in6, socklen_t, AF_INET6};
@@ -47,8 +47,8 @@ unsafe extern "C" fn server_write_callback(
     ctx: *mut dtls_context_t,
     session: *mut session_t,
     buf: *mut u8,
-    len: c_size_t,
-) -> c_int {
+    len: usize,
+) -> i32 {
     debug_println!("WRITE");
 
     let socket = (*ctx).app as *mut UdpSocket;
@@ -75,8 +75,8 @@ unsafe extern "C" fn server_read_callback(
     ctx: *mut dtls_context_t,
     session: *mut session_t,
     buf: *mut u8,
-    len: c_size_t,
-) -> c_int {
+    len: usize,
+) -> i32 {
     let backend = UdpSocket::bind("::1:5685").expect(debug_fmt!("Could not bind socket"));
     backend
         .connect("::1:5683")
@@ -100,33 +100,23 @@ unsafe extern "C" fn server_event_callback(
     _ctx: *mut dtls_context_t,
     _session: *mut session_t,
     _level: dtls_alert_level_t,
-    _code: c_ushort,
-) -> c_int {
+    _code: u16,
+) -> i32 {
     debug_println!("EVENT");
 
     0
 }
 
-unsafe extern "C" fn server_get_ecdsa_key(
+unsafe extern "C" fn server_get_psk_info(
     _ctx: *mut dtls_context_t,
-    _session: *const session_t,
-    result: *mut *const dtls_ecdsa_key_t,
-) -> c_int {
-    debug_println!("GET_ECDSA_KEY");
-    *result = &DTLS_ECDSA_KEY;
-
-    0
-}
-
-unsafe extern "C" fn server_verify_ecdsa_key(
-    _ctx: *mut dtls_context_t,
-    _session: *const session_t,
-    _other_pub_x: *const c_uchar,
-    _other_pub_y: *const c_uchar,
-    _key_size: c_size_t,
-) -> c_int {
-    // No verification needed for our usecase. Anyone can connect tot his address.
-    debug_println!("VERIFICATION");
+    _session: *mut session_t,
+    _type: dtls_credentials_type_t,
+    _id: *const u8,
+    _id_len: usize,
+    _result: *mut u8,
+    _result_length: usize,
+) -> i32 {
+    debug_println!("PSK");
 
     0
 }
@@ -138,9 +128,9 @@ fn main() {
         event: Some(server_event_callback),
         write: Some(server_write_callback),
         read: Some(server_read_callback),
-        get_psk_info: None,
-        get_ecdsa_key: Some(server_get_ecdsa_key),
-        verify_ecdsa_key: Some(server_verify_ecdsa_key),
+        get_psk_info: Some(server_get_psk_info),
+        get_ecdsa_key: None,
+        verify_ecdsa_key: None,
     };
     let context: *mut dtls_context_t =
         unsafe { dtls_new_context(&mut socket as *mut UdpSocket as *mut c_void) };

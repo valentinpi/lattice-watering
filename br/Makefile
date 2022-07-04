@@ -1,5 +1,5 @@
 APPLICATION = lwbr
-RIOTBASE ?= $(CURDIR)/../../../Tutorials/RIOT
+RIOTBASE ?= $(CURDIR)/../../RIOT
 RIOTTOOLS ?= $(RIOTBASE)/dist/tools
 
 BOARD ?= samr21-xpro

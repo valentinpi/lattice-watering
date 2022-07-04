@@ -1,5 +1,5 @@
 APPLICATION = lwfw
-RIOTBASE ?= $(CURDIR)/../../../Tutorials/RIOT
+RIOTBASE ?= $(CURDIR)/../../RIOT
 
 BOARD ?= samr21-xpro
 SERIAL ?= ATML2127031800001974
@@ -37,11 +37,6 @@ USEMODULE += auto_init_gnrc_rpl
 USEMODULE += gnrc_netif_single
 USEMODULE += auto_init_gnrc_netif
 USEMODULE += netdev_default
-CFLAGS += -DCONFIG_DTLS_ECC
-
-.PHONY: cred
-
-cred:
-	just gen_keys
+CFLAGS += -DCONFIG_DTLS_PSK
 
 include $(RIOTBASE)/Makefile.include
