@@ -61,14 +61,8 @@ app.get('/plantDetailView', async function (req, res) {
     res.json(plantDetailView);
 });
 
-app.post('/pumpToggle', function (req, res) {
-    var ip = req.body.pumpIP;
+app.post('/pump_toggle', function (req, res) {
     var plantIP = req.query.nodeIP;
-
-    //var my_url = url.parse(req.url, true);
-    //var node_ip = my_url.query.node_ip;
-    //console.log(my_url);
-    //console.log(node_ip);
 
     var pumpStateChange = 'Off';
     if (req.body.pumpOn) {
@@ -107,9 +101,9 @@ app.listen(3000, () => {
 var server = coap.createServer({ type: 'udp6' });
 
 server.on('request', (req, res) => {
-    console.log('server received coap message from: ' + req.url + ' | ' + req.url.split('/')[0] + ' | ' + req.url.split('/')[1] + ' | ' + req.url.split('/')[2] + ' | ' + req.url.split('/')[3]);
-    console.log('payload from coap message: ' + req.payload + ' | ' + req.payload[0] + ' | ' + req.ip + ' | ');
-    console.log(parseCoapPayload(req.payload));
+    //console.log('server received coap message from: ' + req.url + ' | ' + req.url.split('/')[0]);
+    //console.log('payload from coap message: ' + req.payload + ' | ' + req.payload[0]);
+    parsePayloadIntoDB(req.payload);
 });
 
 server.on('response', (res) => {
@@ -119,13 +113,19 @@ server.on('response', (res) => {
     })
 });
 
-function parseCoapPayload(data) {
-    const char_array = [];
-    data.forEach(data_char => {
-        char_array.push(String.fromCharCode(data_char));
-    });
-    return char_array;
+function parsePayloadIntoDB(data) {
+    data = JSON.parse(data);
+    var title = data.title;
+    var node_ip = data.node_ip;
+    var humidity = data.humidity;
+
+    console.log('title:\t\t' + title + '\nnode_ip:\t' + node_ip + '\nhumidity:\t' + humidity);
+    //db.insertQuery(node_ip,'NULL',humidity);
 }
+
+server.listen(5683, () => {
+    console.log('listening on port 5683 for coap requests without dtls');
+});
 
 /*
 try {
@@ -141,6 +141,3 @@ try {
     });
 };
 */
-server.listen(5683, () => {
-    console.log('listening on port 5683 for coap requests without dtls');
-});

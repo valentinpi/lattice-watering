@@ -100,7 +100,7 @@ async function plantDetailView() {
         img.alt = 'Plant';
     var text_hum = document.createTextNode('Humidity: ' + data[0].humidity + '%');
     var form = document.createElement('form');
-    form.action = '/pumpToggle' + '?nodeIP=' + myIP;
+    form.action = '/pump_toggle' + '?nodeIP=' + myIP;
         form.method = 'POST';
     var input1 = document.createElement('input');
         input1.type = 'submit';
