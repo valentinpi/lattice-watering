@@ -1,5 +1,5 @@
 APPLICATION = lwfw
-RIOTBASE ?= $(CURDIR)/../../RIOT
+RIOTBASE ?= $(CURDIR)/../../../Tutorials/RIOT
 
 BOARD ?= samr21-xpro
 SERIAL ?= ATML2127031800001974
