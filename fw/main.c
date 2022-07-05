@@ -54,18 +54,18 @@ int calibration_command(int argc, char **argv) {
     return 0;
 }
 
-/* void cred_init(void) {
+void cred_init(void) {
     credman_credential_t cred = {.type = CREDMAN_TYPE_PSK,
-                                 .tag = 1,
+                                 .tag = 1, // Should be nonzero! 0 is an invalid tag.
                                  .params = {.psk = {.key = {.s = PSK_KEY, .len = PSK_KEY_LEN},
                                                     // Leave the rest blank, see https://www.ietf.org/rfc/rfc4279.txt
-                                                    .hint = {},
-                                                    .id = {}}}};
+                                                    .hint = {0},
+                                                    .id = {0}}}};
     credman_add(&cred);
 
     sock_dtls_t *sock = gcoap_get_sock_dtls();
     sock_dtls_add_credential(sock, 1);
-} */
+}
 
 void net_init(void) {
     netif_ieee802154 = gnrc_netif_iter(NULL); // Note that we included `gnrc_netif_single`
@@ -75,8 +75,7 @@ void net_init(void) {
     memcpy(host_ep.addr.ipv6, host_ip.u8, 16);
     host_ep.family = AF_INET6;
     host_ep.netif = netif_ieee802154->pid;
-    /* host_ep.port = CONFIG_GCOAPS_PORT; */
-    host_ep.port = CONFIG_GCOAP_PORT;
+    host_ep.port = CONFIG_GCOAPS_PORT;
 }
 
 void *wdt_thread(void *arg) {
@@ -97,7 +96,7 @@ void *data_thread(void *arg) {
     memset(buf, 0, 256);
 
     // Put packet metadata
-    coap_pkt_t pdu = {};
+    coap_pkt_t pdu = {0};
     gcoap_req_init(&pdu, buf, 256, COAP_POST, "/data");
     coap_opt_add_format(&pdu, COAP_FORMAT_CBOR);
     coap_hdr_set_type(pdu.hdr, COAP_TYPE_NON);
@@ -108,7 +107,7 @@ void *data_thread(void *arg) {
         netstats_t stats = netif_ieee802154->ipv6.stats;
 
         // Write data
-        nanocbor_encoder_t enc = {};
+        nanocbor_encoder_t enc = {0};
         nanocbor_encoder_init(&enc, pdu.payload, 28);
         nanocbor_fmt_uint(&enc, humidity);
         mutex_lock(&pump_mutex);
@@ -118,7 +117,7 @@ void *data_thread(void *arg) {
         nanocbor_fmt_int(&enc, soil_dry_value);
         nanocbor_fmt_int(&enc, soil_wet_value);
         mutex_unlock(&soil_mutex);
-        ipv6_addr_t ip = {};
+        ipv6_addr_t ip = {0};
         gnrc_netif_ipv6_addrs_get(netif_ieee802154, &ip, sizeof(ipv6_addr_t));
         for (size_t i = 0; i < 16; i++) {
             nanocbor_fmt_uint(&enc, ip.u8[i]);
@@ -158,7 +157,7 @@ ssize_t calibration_handler(coap_pkt_t *pkt, uint8_t *buf, size_t len, void *con
     (void)context;
 
     mutex_lock(&soil_mutex);
-    nanocbor_value_t dec = {};
+    nanocbor_value_t dec = {0};
     nanocbor_decoder_init(&dec, buf, len);
     nanocbor_get_int32(&dec, &soil_dry_value);
     nanocbor_get_int32(&dec, &soil_wet_value);
@@ -172,7 +171,7 @@ int main(void) {
     msg_init_queue(msg_queue, MSG_QUEUE_SIZE);
     pump_init();
     soil_init();
-    /* cred_init(); */
+    cred_init();
     net_init();
 
     /* WDT */
