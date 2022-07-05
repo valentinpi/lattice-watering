@@ -2,7 +2,7 @@
 
 ## Starting
 
-After adjusting the Makefile, simply execute (depending on your udev rules you may need to execute this as root):
+As in the `br` firmware, you figure out your board name and serial number and execute e.g.:
 ```
-$ make clean all flash
+$ BOARD=samr21-xpro SERIAL=ATML2127031800001974 make clean all flash
 ```

@@ -2,17 +2,22 @@
 
 ## Starting
 
-Inspect the `Makefile` and make necessary changes to the macros and commands according to your system. On a relatively standard system, it should work out of the box. For macros like `BOARD`, `SERIAL` and `PORT`, consult `$ make list-ttys`;
+Inspect the `Makefile` and make necessary changes to the macros and commands according to your system. On a relatively standard system, it should work out of the box.
 
-Start the `ethos` server:
+Start the `ethos` server (using `sudo` or `doas` e.g.):
 ```
 $ sudo make ethos
 ```
-And build and flash the border router firmware (depending on your udev rules you may need to execute this as root):
+Notice that for this to succeed, you may need to manually build the `ethos` program by RIOT. It can be found in `RIOT/dist/tools/ethos`. Just execute `make` there and you are set. Also, the `Makefile` assumes that the RIOT base directory is in `lattice-watering/../`. You may need to adjust this, or, if you have enough space, you can just clone the repository twice. This should not be an issue. Installing the necessary dependencies is also your task, executing `make print-versions` in the base directory of RIOT can help quite tremendously.
+
+And build and flash the border router firmware (depending on your udev rules you may need to execute this as root), you first figure out your board using the `board` directory and RIOT documentation and then your board serial number using:
 ```
-$ make clean all flash
+$ BOARD=samr21-xpro make list-ttys
 ```
-Of course, you may use `doas` instead of `sudo`.
+In our case, we use the `samr21-xpro` board for the border router and the nodes as well. To flash, one can, for instance, execute:
+```
+$ BOARD=samr21-xpro SERIAL=ATML2127031800004672 make clean all flash
+```
 
 ## About Connectivity
 

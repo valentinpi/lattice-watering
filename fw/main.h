@@ -15,7 +15,7 @@
 #include <net/gnrc/netreg.h>
 #include <net/gnrc/nettype.h>
 #include <net/netstats.h>
-#include <net/sock/dtls.h>
+/* #include <net/sock/dtls.h> */
 #include <periph/adc.h>
 #include <periph/gpio.h>
 #include <periph/wdt.h>

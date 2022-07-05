@@ -54,7 +54,7 @@ int calibration_command(int argc, char **argv) {
     return 0;
 }
 
-void cred_init(void) {
+/* void cred_init(void) {
     credman_credential_t cred = {.type = CREDMAN_TYPE_PSK,
                                  .tag = 1,
                                  .params = {.psk = {.key = {.s = PSK_KEY, .len = PSK_KEY_LEN},
@@ -65,7 +65,7 @@ void cred_init(void) {
 
     sock_dtls_t *sock = gcoap_get_sock_dtls();
     sock_dtls_add_credential(sock, 1);
-}
+} */
 
 void net_init(void) {
     netif_ieee802154 = gnrc_netif_iter(NULL); // Note that we included `gnrc_netif_single`
@@ -75,7 +75,8 @@ void net_init(void) {
     memcpy(host_ep.addr.ipv6, host_ip.u8, 16);
     host_ep.family = AF_INET6;
     host_ep.netif = netif_ieee802154->pid;
-    host_ep.port = CONFIG_GCOAPS_PORT;
+    /* host_ep.port = CONFIG_GCOAPS_PORT; */
+    host_ep.port = CONFIG_GCOAP_PORT;
 }
 
 void *wdt_thread(void *arg) {
@@ -171,7 +172,7 @@ int main(void) {
     msg_init_queue(msg_queue, MSG_QUEUE_SIZE);
     pump_init();
     soil_init();
-    cred_init();
+    /* cred_init(); */
     net_init();
 
     /* WDT */
