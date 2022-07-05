@@ -9,7 +9,7 @@
 - `front`: The frontend is a website from which one can see statistics on each plant and control the pumps.
 - `fw`: Firmware for the clients that utilize sensory to water the plants.
 - `man`: Manuals for the devices we use.
-- `misc`: Mischief.
+- `misc`: Mischief that was created during development. You can look at it for the giggles.
 - `proxy`: A DTLS proxy based on `tinydtls` written in Rust.
 - `psk`: PSK key used, remember to regenerate this once in a while.
 
