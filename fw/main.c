@@ -28,8 +28,6 @@ uint8_t soil_read(void) {
     mutex_lock(&soil_mutex);
     int32_t moisture_value = adc_sample(SOIL_PIN, SOIL_RES);
     int32_t moisture_percentage = (moisture_value - soil_dry_value) * 100 / (soil_wet_value - soil_dry_value);
-    printf("%" PRId32 " ", moisture_value);
-    printf("%d\n", (uint8_t)moisture_percentage);
     mutex_unlock(&soil_mutex);
     return (uint8_t)moisture_percentage;
 }
@@ -56,26 +54,18 @@ int calibration_command(int argc, char **argv) {
     return 0;
 }
 
-/* void cred_init(void) {
+void cred_init(void) {
     credman_credential_t cred = {.type = CREDMAN_TYPE_PSK,
                                  .tag = 1,
-                                 .params{.psk{.key{.s = PSK_KEY, .len = PSK_KEY_LEN},
-                                              // Leave the rest blank, see https://www.ietf.org/rfc/rfc4279.txt
-                                              .hint = {},
-                                              .id = {};
-}
-}
-}
-;
-credman_load_private_ecc_key(&cred_private_der, cred_private_der_len, &cred);
-ecdsa_public_key_t pub = {};
-credman_load_public_key(&cred_public_der, cred_public_der_len, &pub);
-cred.params.ecdsa.public_key = pub;
-credman_add(&cred);
+                                 .params = {.psk = {.key = {.s = PSK_KEY, .len = PSK_KEY_LEN},
+                                                    // Leave the rest blank, see https://www.ietf.org/rfc/rfc4279.txt
+                                                    .hint = {},
+                                                    .id = {}}}};
+    credman_add(&cred);
 
-sock_dtls_t *sock = gcoap_get_sock_dtls();
-sock_dtls_add_credential(sock, 1);
-} */
+    sock_dtls_t *sock = gcoap_get_sock_dtls();
+    sock_dtls_add_credential(sock, 1);
+}
 
 void net_init(void) {
     netif_ieee802154 = gnrc_netif_iter(NULL); // Note that we included `gnrc_netif_single`
@@ -85,8 +75,7 @@ void net_init(void) {
     memcpy(host_ep.addr.ipv6, host_ip.u8, 16);
     host_ep.family = AF_INET6;
     host_ep.netif = netif_ieee802154->pid;
-    /* host_ep.port = CONFIG_GCOAPS_PORT; */
-    host_ep.port = CONFIG_GCOAP_PORT;
+    host_ep.port = CONFIG_GCOAPS_PORT;
 }
 
 void *wdt_thread(void *arg) {
@@ -182,7 +171,7 @@ int main(void) {
     msg_init_queue(msg_queue, MSG_QUEUE_SIZE);
     pump_init();
     soil_init();
-    /*     cred_init(); */
+    cred_init();
     net_init();
 
     /* WDT */
