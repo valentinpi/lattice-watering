@@ -3,7 +3,7 @@
 open_firewall:
     #!/usr/bin/sh
     sudo nft add rule inet filter input position 9 udp dport 5684 accept
-    sudo nft add rule inet filter input position 9 udp dport 5683 accept
+    #sudo nft add rule inet filter input position 9 udp dport 5683 accept
 
 # Slightly hardcoded script for `cred.rs` generation
 gen_psk:

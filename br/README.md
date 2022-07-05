@@ -6,7 +6,7 @@ Inspect the `Makefile` and make necessary changes to the macros and commands acc
 
 Start the `ethos` server (using `sudo` or `doas` e.g.):
 ```
-$ sudo make ethos
+# make ethos
 ```
 Notice that for this to succeed, you may need to manually build the `ethos` program by RIOT. It can be found in `RIOT/dist/tools/ethos`. Just execute `make` there and you are set. Also, the `Makefile` assumes that the RIOT base directory is in `lattice-watering/../`. You may need to adjust this, or, if you have enough space, you can just clone the repository twice. This should not be an issue. Installing the necessary dependencies is also your task, executing `make print-versions` in the base directory of RIOT can help quite tremendously.
 

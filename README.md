@@ -13,6 +13,12 @@
 - `proxy`: A DTLS proxy based on `tinydtls` written in Rust.
 - `psk`: PSK key used, remember to regenerate this once in a while.
 
+To replicate our project, you will need to follow the steps of the `HWSETUP.md` file to first create a border router and at least one node board. THen, you will want to flash both of these. Please look into flashing a border router, `br`, first, as the explanations there are very similar to `fw` (node firmware). Also, you will need to build the proxy that is used for translating DTLS traffic. You will also want to create new PSK keys, you can do that by running:
+```
+$ just gen_psk
+```
+`just` is a small program that is similar to `make`, but not a build tool, but a script runner. Look into the `justfile` for the commands we have written.
+
 ### General Conventions
 
 - IPv6 only.
@@ -33,10 +39,10 @@
 
 ### Design Decisions
 
-- `nanocbor` for commands as it has very low footprint and is non-proprietary
+- CoAP instead of MQTT-SN due to... TODO:
+- `nanocbor` for commands as it has very low footprint and is non-proprietary.
 - We wanted to use `wolfssl` since it uses a GNU license, but it is not supported by `gnrc_dtls`, so we use `tinydtls`
-- No HW RNG, so we use a PRNG. `prng_tinymt32` looks promising, as it is standardized in RFC8682, but we could not choose it, so we went with `prng_sha256prng`, since it might provide better security than SHA-1.
-- There is WDT integration in the `fw` code, but not in the `br`, as its code is much less complex.
+- The SAMR21-XPRO boards have no HW RNG, so we use a PRNG. We went with `prng_sha256prng`, since it might provide better security than `prng_sha1prng` at a possibly slightly higher computational cost. Security in IoT should not be overlooked.
 - We do not use the LED nor an additional HDC1000 sensor due to energy usage.
 - We use SQLite as it suffices for our use case. We do not need a multi-user highly concurrent database, only if we were to attach several thousand sensors, and even then: Every five seconds the packets are sent, and the host is more than strong enough to handle such a load, not even speaking of the possible package loss in the meantime.
 - To make authentication easy, we use PSKs (Pre-Shared Secrets) to build DTLS connections, such that only peers who have the same secret can communicate with one another. In our threat model, we assume that no board will be compromised.
