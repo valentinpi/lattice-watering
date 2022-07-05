@@ -39,3 +39,4 @@ printf(PREFIX "temperature: %" PRId16 "°C, humidity: %" PRId16 "\n", temp / 100
 - Get `https://github.com/bfontaine/rfc` and run `rfc 7228`, we use a class 2 device.
 - `openssl x509 -in cred/cert.crt -text -noout`
 - `ip -6 route show`
+- In many RIOT files, one can set `#define ENABLE_DEBUG 1` to enable local(!) debug messages. They are local due to a macro trick with `debug.h` (set `ENABLE_DEBUG` to 1, include `debug.h`, but `debug.h` sets `ENABLE_DEBUG = 0`; This works, since the macro processor proceeds sequentially, as it seems.).

@@ -9,5 +9,5 @@ To use this proxy, you will need to open up the port 5684 on your machine. The `
 
 To execute the proxy, assuming you have installed Rust e.g. via `rustup`, simply type:
 ```
-$ cargo run
+$ cargo run --release
 ```

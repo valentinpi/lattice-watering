@@ -36,4 +36,8 @@ USEMODULE += auto_init_gnrc_netif
 USEMODULE += netdev_default
 CFLAGS += -DCONFIG_DTLS_PSK
 
+# NOTE: To fix weird timing issue: When trying to send the handshake, the timeout is just far too slow.
+#       We use 10 seconds.
+CFLAGS += -DCONFIG_GCOAP_DTLS_HANDSHAKE_TIMEOUT_MSEC=10000
+
 include $(RIOTBASE)/Makefile.include

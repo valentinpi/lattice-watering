@@ -26,6 +26,7 @@ USEMODULE += gnrc_icmpv6_echo
 USEMODULE += gnrc_ipv6_router_default
 USEMODULE += auto_init_gnrc_netif
 USEMODULE += netdev_default
+CFLAGS += -DCONFIG_GNRC_IPV6_NIB_SLAAC=1
 
 # ethos
 USEMODULE += stdio_ethos

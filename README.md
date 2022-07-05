@@ -45,7 +45,7 @@ $ just gen_psk
 - The SAMR21-XPRO boards have no HW RNG, so we use a PRNG. We went with `prng_sha256prng`, since it might provide better security than `prng_sha1prng` at a possibly slightly higher computational cost. Security in IoT should not be overlooked.
 - We do not use the LED nor an additional HDC1000 sensor due to energy usage.
 - We use SQLite as it suffices for our use case. We do not need a multi-user highly concurrent database, only if we were to attach several thousand sensors, and even then: Every five seconds the packets are sent, and the host is more than strong enough to handle such a load, not even speaking of the possible package loss in the meantime.
-- To make authentication easy, we use PSKs (Pre-Shared Secrets) to build DTLS connections, such that only peers who have the same secret can communicate with one another. In our threat model, we assume that no board will be compromised.
+- To make authentication easy, we use PSKs (Pre-Shared Secrets) to build DTLS connections, such that only peers who have the same secret can communicate with one another. In our threat model, we assume that no board will be compromised. Sadly, the `tinydtls` RIOT implementation apprently only supports 16 byte large keys.
 - Due to very poor support of DTLS in node.js at the time, we implemented our own DTLS proxy in RIOT native. This was needed as the implementations and proxies we found were not working, as well as OpenSSL, and writing an OpenSSL proxy would have taken too much time.
 
 ### Starting the System

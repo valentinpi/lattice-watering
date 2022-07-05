@@ -11,7 +11,7 @@ gen_psk:
     rm -rf psk
     mkdir psk
     cd psk
-    pwgen -cnsy 32 1 > psk_key
+    pwgen -cnsy 16 1 > psk_key
     tr --delete '\n' < psk_key > tmp
     mv tmp psk_key
     xxd -i psk_key > psk_key.h
@@ -23,8 +23,8 @@ gen_psk:
     clang-format -i psk/psk_key.h
     cd psk
     cp psk_key.h psk_key.rs
-    sed -i '4d' psk_key.rs
-    sed -i 's/const[ ]uint8_t[ ]PSK_KEY\[\][ ]=[ ]{/pub const PSK_KEY: [u8; 32] = [/' psk_key.rs
+    sed -i '3d' psk_key.rs
+    sed -i 's/const[ ]uint8_t[ ]PSK_KEY\[\][ ]=[ ]{/pub const PSK_KEY: [u8; 16] = [/' psk_key.rs
     sed -i 's/}/]/' psk_key.rs
     mv psk_key.h ../fw
     mv psk_key.rs ../proxy/src

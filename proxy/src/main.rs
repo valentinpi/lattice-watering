@@ -29,6 +29,7 @@ use std::{
 use tinydtls_sys::*;
 
 use crate::psk_key::PSK_KEY;
+const PSK_DEFAULT_IDENTITY: &str = "default";
 
 const PREFIX: &'static str = "[LWPROXY]";
 const MAX_SESSIONS: u64 = 16;
@@ -140,7 +141,7 @@ unsafe extern "C" fn server_event_callback(
 unsafe extern "C" fn server_get_psk_info(
     _ctx: *mut dtls_context_t,
     _session: *const session_t,
-    _type: dtls_credentials_type_t,
+    cred_type: dtls_credentials_type_t,
     _id: *const u8,
     _id_len: usize,
     result: *mut u8,
@@ -148,11 +149,26 @@ unsafe extern "C" fn server_get_psk_info(
 ) -> i32 {
     debug_println!("PSK");
 
-    // TODO: Maybe optimize this dirty copy, not many bits, however.
-    assert!(PSK_KEY.len() <= result_length);
-    std::slice::from_raw_parts_mut(result, result_length).copy_from_slice(PSK_KEY.as_ref());
-
-    PSK_KEY.len() as i32
+    match cred_type {
+        // See also the `fw`.
+        dtls_credentials_type_t::DTLS_PSK_HINT => 0,
+        dtls_credentials_type_t::DTLS_PSK_IDENTITY => {
+            result.copy_from(
+                PSK_DEFAULT_IDENTITY.as_bytes().as_ptr(),
+                PSK_DEFAULT_IDENTITY.len(),
+            );
+            PSK_DEFAULT_IDENTITY.len() as i32
+        }
+        dtls_credentials_type_t::DTLS_PSK_KEY => {
+            // TODO: Maybe optimize this dirty copy, not many bits, however.
+            assert!(PSK_KEY.len() <= result_length);
+            std::slice::from_raw_parts_mut(result, result_length).copy_from_slice(PSK_KEY.as_ref());
+            PSK_KEY.len() as i32
+        }
+        _ => {
+            panic!()
+        }
+    }
 }
 
 fn main() {

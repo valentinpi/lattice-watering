@@ -55,12 +55,13 @@ int calibration_command(int argc, char **argv) {
 }
 
 void cred_init(void) {
-    credman_credential_t cred = {.type = CREDMAN_TYPE_PSK,
-                                 .tag = 1, // Should be nonzero! 0 is an invalid tag.
-                                 .params = {.psk = {.key = {.s = PSK_KEY, .len = PSK_KEY_LEN},
-                                                    // Leave the rest blank, see https://www.ietf.org/rfc/rfc4279.txt
-                                                    .hint = {0},
-                                                    .id = {0}}}};
+    credman_credential_t cred = {
+        .type = CREDMAN_TYPE_PSK,
+        .tag = 1, // Should be nonzero! 0 is an invalid tag.
+        .params = {.psk = {.key = {.s = PSK_KEY, .len = PSK_KEY_LEN},
+                           // Leave the hint blank, see https://www.ietf.org/rfc/rfc4279.txt
+                           .hint = {0},
+                           .id = {.s = PSK_DEFAULT_IDENTITY, .len = PSK_DEFAULT_IDENTITY_LEN}}}};
     credman_add(&cred);
 
     sock_dtls_t *sock = gcoap_get_sock_dtls();

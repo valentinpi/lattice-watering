@@ -41,6 +41,9 @@ gnrc_netif_t *netif_ieee802154 = NULL;
 ipv6_addr_t host_ip = {0};
 sock_udp_ep_t host_ep = {0};
 
+const char PSK_DEFAULT_IDENTITY[] = "default";
+const size_t PSK_DEFAULT_IDENTITY_LEN = 7;
+
 uint8_t wdt_thread_stack[THREAD_STACKSIZE_SMALL];
 
 const uint32_t DATA_INTERVAL = 5;
