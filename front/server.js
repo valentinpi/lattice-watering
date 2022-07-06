@@ -11,7 +11,7 @@ var sqlite3 = require('sqlite3');
 var dtls = require('dtls');
 var db = require('./public/js/db');
 var ejs = require('ejs');
-var cbor = require('node-cbor');
+var cbor = require('cbor');
 
 //Websocket
 var io = require('socket.io')(http);
@@ -66,20 +66,18 @@ app.get('/plantDetailView', async function (req, res) {
 app.post('/pump_toggle', function (req, res) {
     var plantIP = req.query.nodeIP;
 
-    var pumpStateChange = 'Off';
-    if (req.body.pumpOn) {
-        console.log('Turning pump on at ip: ' + plantIP);
-        pumpStateChange = 'On';
-    } else {
-        console.log('Turning pump off at ip: ' + plantIP);
-        pumpStateChange = 'Off';
-    }
+    //var pumpStateChange = 'Off';
+    //if (req.body.pumpOn) {
+    //    console.log('Turning pump on at ip: ' + plantIP);
+    //    pumpStateChange = 'On';
+    //} else {
+    //    console.log('Turning pump off at ip: ' + plantIP);
+    //    pumpStateChange = 'Off';
+    //}
     //Send info to input IP with payload pumpOn/pumpOff
     const coap_req = coap.request({ hostname: plantIP, confirmable: false, method: 'POST' });
 
     coap_req.end();
-
-    //db.databaseAccess();
     res.status(204).send();
 });
 

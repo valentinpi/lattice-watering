@@ -90,7 +90,7 @@ async function plantDetailView() {
         div.classList.add('box');
     var br = document.createElement('br');
     var h3 = document.createElement('h3');
-    if (data[0].plant_name) {
+    if (!data[0].plant_name == 'NULL') {
         h3.textContent = data[0].plant_name + ' Plant';
     } else {
         h3.textContent = 'Plant ' + data[0].node_ip;
@@ -100,7 +100,7 @@ async function plantDetailView() {
         img.alt = 'Plant';
     var text_hum = document.createTextNode('Humidity: ' + data[0].humidity + '%');
     var form = document.createElement('form');
-    form.action = '/pump_toggle' + '?nodeIP=' + myIP;
+        form.action = '/pump_toggle' + '?nodeIP=' + myIP;
         form.method = 'POST';
     var input1 = document.createElement('input');
         input1.type = 'submit';

@@ -33,33 +33,60 @@ module.exports = {
 
     createTable: function(db) {
         db.run(`
-        CREATE TABLE plant_nodes (
+        CREATE TABLE IF NOT EXISTS plant_nodes (
             id INTEGER PRIMARY KEY AUTOINCREMENT NULL,
             node_ip TEXT,
-            plant_name TEXT,
             date_time TEXT,
             humidity INTEGER
         );
         `, (err) => {
             if (err) {
-                console.log("Create query error " + err);
+                console.log("Create table plant_nodes query error " + err);
                 return;
             }
             console.log('Table: "plant_nodes" in database: "lattice_watering.db" created');
         });
+        db.run(`
+        CREATE TABLE IF NOT EXISTS plant_status (
+            node_ip TEXT PRIMARY KEY,
+            pump_state BOOLEAN,
+            dry_value INTEGER,
+            wet_value INTEGER
+        );
+        `, (err) => {
+            if (err) {
+                console.log("Create table plant_status query error " + err);
+                return;
+            }
+            console.log('Table: "plant_status" in database: "lattice_watering.db" created');
+        });
     },
 
-    insertQuery: function(node_ip = '::1', plant_name = 'NULL', humidity = '42') {
+    insertPlantNode: function (node_ip = '::1', humidity = '0') {
         var db = this.databaseAccess();
         db.run(`
-        INSERT INTO plant_nodes (id, node_ip, plant_name, date_time, humidity)
-            VALUES (NULL, ?, ?, datetime('now','localtime'), ?);
-        `, node_ip, plant_name, humidity, (err) => {
+        INSERT INTO plant_nodes (id, node_ip, date_time, humidity)
+            VALUES (NULL, ?, datetime('now','localtime'), ?);
+        `, node_ip, humidity, (err) => {
             if (err) {
                 console.log('Insert query error: ' + err);
                 return;
             }
             console.log('Inserted row with data into table "plant_nodes"');
+        });
+    },
+
+    insertPlantStatus: function (node_ip = '::1', pump_state = 'TRUE', dry_value = '0', wet_value = '99999') {
+        var db = this.databaseAccess();
+        db.run(`
+        INSERT INTO plant_status (node_ip, pump_state, dry_value, wet_value)
+            VALUES (?, ?, ?, ?);
+        `, node_ip, pump_state, dry_value, wet_value, (err) => {
+            if (err) {
+                console.log('Insert query error: ' + err);
+                return;
+            }
+            console.log('Inserted row with data into table "plant_status"');
         });
     },
 
@@ -74,31 +101,11 @@ module.exports = {
                     resolve(data);
                 } else {
                     rows.forEach(row => {
-                        console.log(row.id + "\t" + row.node_ip + "\t" + row.plant_name + "\t" + row.date_time + "\t" + row.humidity);
+                        console.log(row.id + "\t" + row.node_ip + "\t" + row.pump_state + "\t" + row.dry_value + "\t" + row.wet_value + "\t" + row.date_time + "\t" + row.humidity);
                     });
                     resolve(data);
                 }
             });
-        })
-        var return_data = await myPromise;
-        return return_data;
-    },
-
-    selectCountIps: async function () {
-        var db = this.databaseAccess();
-        var data = 0;
-        //Returns amount of distinct ips in table
-        let myPromise = new Promise(function (resolve) {
-            db.all(`SELECT COUNT(DISTINCT node_ip) AS plant_num FROM plant_nodes`, (err, rows) => {
-                if (err) {
-                    console.log('Select query error: ' + err);
-                    resolve(data);
-                } else {
-                    data = rows[0].plant_num;
-                    resolve(data);
-                }
-            });
-
         })
         var return_data = await myPromise;
         return return_data;
@@ -112,22 +119,20 @@ module.exports = {
         let myPromise = new Promise(function (resolve) {
             db.all(`
             SELECT
-                id as id,
-                node_ip,
-                plant_name as plant_name,
-                MAX(date_time) as date_time,
-                humidity as humidity
-            FROM plant_nodes
+                ps.node_ip,
+                ps.pump_state,
+                ps.dry_value,
+                ps.wet_value,
+                MAX(pn.date_time) as date_time,
+                pn.humidity
+            FROM plant_status ps
+            JOIN plant_nodes pn ON pn.node_ip = ps.node_ip
             GROUP BY node_ip
             `, (err, rows) => {
                 if (err) {
                     console.log('Select query error: ' + err);
                     resolve(data);
                 } else {
-                    //rows.forEach(row => {
-                    //    console.log(row.id + "\t" + row.node_ip + "\t" + row.plant_name + "\t" + row.date_time + "\t" + row.humidity);
-                    //});
-                    //data = rows[0].plant_num;
                     data = rows;
                     resolve(data);
                 }
