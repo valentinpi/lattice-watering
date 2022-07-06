@@ -47,9 +47,9 @@ async function refreshPlants() {
         a.title = 'Configure desired humidity and show statistics';
         a.text = 'Settings ...';
 
-    while (element.hasChildNodes()) {
-        element.removeChild(element.firstChild);
-    }
+    // while (element.hasChildNodes()) {
+    //     element.removeChild(element.firstChild);
+    // }
 
     //Add boxes for every distinct plant_ip in table in db
     for (var i = 0; i < data.length; i++) {
@@ -99,7 +99,7 @@ async function plantDetailView() {
         img.src = '/img/placeholder_plant.png';
         img.alt = 'Plant';
     var text_hum = document.createTextNode('Humidity: ' + data[0].humidity + '%');
-    var form = document.createElement('form');
+    var form_pump = document.createElement('form');
     form.action = '/pump_toggle' + '?nodeIP=' + myIP;
         form.method = 'POST';
     var input1 = document.createElement('input');
@@ -115,6 +115,24 @@ async function plantDetailView() {
         a.title = 'Go back to all plants';
         a.text = 'Go back';
         a.href = '/';
+    var form_config = document.createElement('form');
+    form.action = '/calibrate_sensor' + '?nodeIP=' +myIP + '?wet_value='+wet_value+ '?dry_value='+dry_value;
+        form.method = 'POST';
+    var wet_value = document.createElement('input');
+        wet_value.type= 'text';
+        wet_value.name = 'wet_value';
+        wet_value.value = 'WET VALUE';
+        wet_value.size = "10";
+    var dry_value = document.createElement('input');
+        dry_value.type= 'text';
+        dry_value.name = 'dry_value';
+        dry_value.value = 'DRY VALUE';
+        dry_value.size = "10";
+    var set_value = document.createElement('input');
+        set_value.type= 'submit';
+        set_value.name = 'set_value';
+        set_value.value = 'SET VALUE';
+        set_value.size = "10";
 
     div.appendChild(h3);
     div.appendChild(img);
@@ -122,9 +140,13 @@ async function plantDetailView() {
     div.appendChild(br.cloneNode(true));
     div.appendChild(text_hum);
     div.appendChild(br.cloneNode(true));
-    form.appendChild(input1);
-    form.appendChild(input2);
-    div.appendChild(form);
+    form_pump.appendChild(input1);
+    form_pump.appendChild(input2);
+    form_config.appendChild(dry_value);
+    form_config.appendChild(wet_value);
+    form_config.appendChild(set_value);
+    div.appendChild(form_pump);
+    div.appendChild(form_config);
     div.appendChild(a);
     element.appendChild(div);
 

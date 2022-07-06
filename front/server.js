@@ -83,6 +83,26 @@ app.post('/pump_toggle', function (req, res) {
     res.status(204).send();
 });
 
+app.post('/calibrate_sensor', function (req, res) {
+    var plantIP = req.query.nodeIP;
+    var wet_value = req.query.wet_value;
+    var dry_value = req.query.dry_value;
+
+    //Send payload
+    var payload = {
+        dry_value: dry_value,
+        wet_value: wet_value
+    }
+    const payloadBytes = cbor.encode(JSON.stringify(payload));
+    const coap_req = coap.request({ hostname: plantIP, confirmable: false, method: 'POST' });
+    coap_req.write(payloadBytes)
+
+    coap_req.end();
+
+    //db.databaseAccess();
+    res.status(204).send();
+});
+
 app.listen(3000, () => {
     console.log('listening on port 3000 for frontend requests');
 });
