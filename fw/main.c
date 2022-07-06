@@ -6,8 +6,8 @@
 
 static bool pump_activated = false;
 
-static int32_t soil_dry_value = 2920;
-static int32_t soil_wet_value = 1400;
+int32_t soil_dry_value = 2920;
+int32_t soil_wet_value = 1400;
 
 void pump_init(void) {
     gpio_init(PUMP_PA13, GPIO_OUT);
