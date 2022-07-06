@@ -9,11 +9,6 @@ static bool pump_activated = false;
 int32_t soil_dry_value = 2920;
 int32_t soil_wet_value = 1400;
 
-void set_configs(int32_t wet, int32_t dry) {
-    soil_wet_value=wet;
-    soil_dry_value=dry;
-}
-
 void pump_init(void) {
     gpio_init(PUMP_PA13, GPIO_OUT);
     gpio_init(PUMP_PA28, GPIO_OUT);
