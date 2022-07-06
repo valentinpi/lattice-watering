@@ -56,12 +56,7 @@ async function refreshPlants() {
         while (div.hasChildNodes()) {
             div.removeChild(div.firstChild);
         }
-
-        if (data[i].plant_name) {
-            h3.textContent = data[i].plant_name + ' Plant';
-        } else {
-            h3.textContent = 'Plant ' + data[i].node_ip;
-        }
+        h3.textContent = 'Plant ' + data[i].node_ip;
         var text_hum = document.createTextNode('Humidity: ' + data[i].humidity + '%');
         a.href = 'plantView?node_ip=' + data[i].node_ip;
 
@@ -90,11 +85,7 @@ async function plantDetailView() {
         div.classList.add('box');
     var br = document.createElement('br');
     var h3 = document.createElement('h3');
-    if (!data[0].plant_name == 'NULL') {
-        h3.textContent = data[0].plant_name + ' Plant';
-    } else {
         h3.textContent = 'Plant ' + data[0].node_ip;
-    };
     var img = document.createElement('img');
         img.src = '/img/placeholder_plant.png';
         img.alt = 'Plant';
@@ -104,11 +95,11 @@ async function plantDetailView() {
         form.method = 'POST';
     var input1 = document.createElement('input');
         input1.type = 'submit';
-        input1.name = 'pumpOn';
+        input1.name = 'TRUE';
         input1.value = 'Turn Pump On';
     var input2 = document.createElement('input');
         input2.type= 'submit';
-        input2.name = 'pumpOff';
+        input2.name = 'FALSE';
         input2.value = 'Turn Pump Off';
     var a = document.createElement('a');
         a.id = 'plantSetting';
@@ -116,7 +107,7 @@ async function plantDetailView() {
         a.text = 'Go back';
         a.href = '/';
     var form_config = document.createElement('form');
-    form.action = '/calibrate_sensor' + '?nodeIP=' +myIP + '?wet_value='+wet_value+ '?dry_value='+dry_value;
+        form.action = '/calibrate_sensor' + '?nodeIP=' +myIP + '?wet_value='+wet_value+ '?dry_value='+dry_value;
         form.method = 'POST';
     var wet_value = document.createElement('input');
         wet_value.type= 'text';

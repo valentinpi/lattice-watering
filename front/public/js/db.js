@@ -76,7 +76,7 @@ module.exports = {
         });
     },
 
-    insertPlantStatus: function (node_ip = '::1', pump_state = 'TRUE', dry_value = '0', wet_value = '99999') {
+    insertPlantStatus: function (node_ip = '::1', pump_state = 'FALSE', dry_value = '0', wet_value = '99999') {
         var db = this.databaseAccess();
         db.run(`
         INSERT INTO plant_status (node_ip, pump_state, dry_value, wet_value)
@@ -100,13 +100,26 @@ module.exports = {
                     console.log('Select query error ' + err);
                     resolve(data);
                 } else {
+                    console.log('Table plant_nodes: ');
                     rows.forEach(row => {
-                        console.log(row.id + "\t" + row.node_ip + "\t" + row.pump_state + "\t" + row.dry_value + "\t" + row.wet_value + "\t" + row.date_time + "\t" + row.humidity);
+                        console.log(row.id + "\t" + row.node_ip + "\t" + row.date_time + "\t" + row.humidity);
                     });
                     resolve(data);
                 }
             });
-        })
+            db.all(`SELECT * FROM plant_status`, (err, rows) => {
+                if (err) {
+                    console.log('Select query error ' + err);
+                    resolve(data);
+                } else {
+                    console.log('Table plant_status: ');
+                    rows.forEach(row => {
+                        console.log(row.node_ip + "\t" + row.pump_state + "\t" + row.dry_value + "\t" + row.wet_value);
+                    });
+                    resolve(data);
+                }
+            });
+        });
         var return_data = await myPromise;
         return return_data;
     },
@@ -121,13 +134,11 @@ module.exports = {
             SELECT
                 ps.node_ip,
                 ps.pump_state,
-                ps.dry_value,
-                ps.wet_value,
                 MAX(pn.date_time) as date_time,
                 pn.humidity
             FROM plant_status ps
             JOIN plant_nodes pn ON pn.node_ip = ps.node_ip
-            GROUP BY node_ip
+            GROUP BY ps.node_ip
             `, (err, rows) => {
                 if (err) {
                     console.log('Select query error: ' + err);
@@ -143,22 +154,24 @@ module.exports = {
         return return_data;
     },
 
-    selectSinglePlant: async function (plantIP) {
+    selectSinglePlant: async function (nodeIP) {
         var db = this.databaseAccess();
         var data = 0;
         //Return infos of a single plant identified by its node_ip
         let myPromise = new Promise(function (resolve) {
             db.all(`
             SELECT
-                id as id,
-                node_ip,
-                plant_name as plant_name,
-                MAX(date_time) as date_time,
-                humidity as humidity
-            FROM plant_nodes
-            WHERE node_ip = ?
-            GROUP BY node_ip
-            `,plantIP, (err, row) => {
+                ps.node_ip,
+                ps.pump_state,
+                ps.dry_value,
+                ps.wet_value,
+                MAX(pn.date_time) as date_time,
+                pn.humidity
+            FROM plant_status ps
+            JOIN plant_nodes pn ON pn.node_ip = ps.node_ip
+            WHERE ps.node_ip = ?
+            GROUP BY ps.node_ip
+            `, nodeIP, (err, row) => {
                 if (err) {
                     console.log('Select query error: ' + err);
                     resolve(data);
@@ -167,7 +180,33 @@ module.exports = {
                     resolve(data);
                 }
             });
+        })
+        var return_data = await myPromise;
+        return return_data;
+    },
 
+    changePlantStatus: async function (nodeIP = '::1', pumpState = 'FALSE', dry_value = '0', wet_value = '99999') {
+        var db = this.databaseAccess();
+        var data = 0;
+        //Return infos of a single plant identified by its node_ip
+        let myPromise = new Promise(function (resolve) {
+            db.all(`
+            UPDATE plant_status
+            SET
+                pump_state = ?,
+                dry_value = ?,
+                wet_value = ?
+            WHERE node_ip = ?
+            `, nodeIP, pumpState, dry_value, wet_value, (err) => {
+                if (err) {
+                    console.log('Select query error: ' + err);
+                    data = 0;
+                    resolve(data);
+                } else {
+                    data = 1;
+                    resolve(data);
+                }
+            });
         })
         var return_data = await myPromise;
         return return_data;

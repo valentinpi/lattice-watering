@@ -65,26 +65,15 @@ app.get('/plantDetailView', async function (req, res) {
 
 app.post('/pump_toggle', function (req, res) {
     var plantIP = req.query.nodeIP;
-
-    //var pumpStateChange = 'Off';
-    //if (req.body.pumpOn) {
-    //    console.log('Turning pump on at ip: ' + plantIP);
-    //    pumpStateChange = 'On';
-    //} else {
-    //    console.log('Turning pump off at ip: ' + plantIP);
-    //    pumpStateChange = 'Off';
-    //}
-    //Send info to input IP with payload pumpOn/pumpOff
     const coap_req = coap.request({ hostname: plantIP, confirmable: false, method: 'POST' });
-
     coap_req.end();
     res.status(204).send();
 });
 
 app.post('/calibrate_sensor', function (req, res) {
     var plantIP = req.query.nodeIP;
-    var wet_value = req.query.wet_value;
     var dry_value = req.query.dry_value;
+    var wet_value = req.query.wet_value;
 
     //Send payload
     var payload = {
@@ -96,8 +85,6 @@ app.post('/calibrate_sensor', function (req, res) {
     coap_req.write(payloadBytes)
 
     coap_req.end();
-
-    //db.databaseAccess();
     res.status(204).send();
 });
 
@@ -115,9 +102,24 @@ server.on('request', (req, res) => {
     //console.log('server received coap message from: ' + req.url + ' | ' + req.url.split('/')[0]);
     //console.log('payload from coap message: ' + req.payload + ' | ' + req.payload[0]);
     //parsePayloadIntoDB(req.payload);
+    console.log(req.payload);
     console.log(cbor.decodeAllSync(req.payload));
     console.log(req.rsinfo.address);
-    db.insertQuery(req.rsinfo.address,'NULL',req.payload[0])
+    //db.insertQuery(req.rsinfo.address, 'NULL', req.payload[0]);
+
+    //TODO - If server receives a CBOR packet, insert new entry in plant_nodes and change the status of the
+    //corresponding node_ip in plant_status if present, otherwise add it
+    decodedData = cbor.decodeAllSync(req.payload);
+    var ip_addr = decodedData[2][0];
+    var humidity = decodedData[0][0];
+    var dry_value = decodedData[1][0];
+    var wet_value = decodedData[1][1];
+    var pump_activated = decodedData[0][1];
+
+    db.insertPlantNode(ip_addr, humidity);
+    if (db.changePlantStatus(ip_addr, pump_activated, dry_value, wet_value) == 0) {
+        db.insertPlantStatus(ip_addr, pump_activated, dry_value, wet_value)
+    }
 });
 
 server.on('response', (res) => {
@@ -140,6 +142,8 @@ function parsePayloadIntoDB(data) {
 server.listen(5683, () => {
     console.log('listening on port 5683 for coap requests without dtls');
 });
+
+db.selectAll();
 
 /*
 try {
