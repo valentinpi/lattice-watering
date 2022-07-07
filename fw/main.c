@@ -118,11 +118,6 @@ void *data_thread(void *arg) {
         nanocbor_fmt_int(&enc, soil_dry_value);
         nanocbor_fmt_int(&enc, soil_wet_value);
         mutex_unlock(&soil_mutex);
-        ipv6_addr_t ip = {0};
-        gnrc_netif_ipv6_addrs_get(netif_ieee802154, &ip, sizeof(ipv6_addr_t));
-        for (size_t i = 0; i < 16; i++) {
-            nanocbor_fmt_uint(&enc, ip.u8[i]);
-        }
         nanocbor_fmt_uint(&enc, stats.rx_bytes);
         nanocbor_fmt_uint(&enc, stats.rx_count);
         nanocbor_fmt_uint(&enc, stats.tx_bytes);

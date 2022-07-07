@@ -10,7 +10,7 @@ Accessible via IPv6 address `fc00::` and port 5683 (`CONFIG_GCOAP_PORT`).
 |---------|--------|-------------|
 | `/data` | POST   | Data Route  |
 
-Every 5 seconds, depending on the configuration, the nodes POST a non-confirmable CBOR packet of form:
+Every 5 seconds, depending on the configuration, the DTLS proxy receives a non-confirmable POST CBOR packet from the nodes and manipulates it into the form:
 ```
 --------------------------------------------------------
 | humidity (uint8, in percent) | pump_activated (bool) |
@@ -18,15 +18,15 @@ Every 5 seconds, depending on the configuration, the nodes POST a non-confirmabl
 ---------------------------------------------
 | dry_value (int32_t) | wet_value (int32_t) |
 ---------------------------------------------
------------------------
-| ip_addr (uint8[16]) |
------------------------
 -----------------------------------------
 | rx_bytes (uint32) | rx_count (uint32) |
 -----------------------------------------
 -----------------------------------------------------------------------------------------------------------------------
 | tx_bytes (uint32) | tx_unicast_count (uint32) | tx_mcast_count (uint32) | tx_success (uint32) |  tx_failed (uint32) |
 -----------------------------------------------------------------------------------------------------------------------
+-----------------------
+| ip_addr (uint8[16]) |
+-----------------------
 ```
 So the packet contains humidity information, the humdity sensor calibration, as well as info on the node itself: Whether its pump is activated and its current IPv6 statistics. Note that these statistics do not need to be saved. `count` refers to the number of packets. The data is aligned from left to right, top to bottom. We also post the IP address, as the packet will go through a tunnel, and our frontend uses some unique IPs for board identification.
 

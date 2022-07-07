@@ -13,8 +13,8 @@
 
 pub mod psk_key;
 
-use cbor;
-use coap::message::Codec;
+use cbor::{self, Decoder, Encoder};
+use coap_lite::Packet;
 use core::ffi::c_int;
 use libc::{in6_addr, sockaddr, sockaddr_in6, socklen_t, AF_INET6};
 use std::{
@@ -23,8 +23,6 @@ use std::{
     net::{Ipv6Addr, SocketAddr, SocketAddrV6, UdpSocket},
     time::Duration,
 };
-//use tokio_util::codec::Decoder;
-//use tokio_util::codec::Encoder;
 
 use tinydtls_sys::*;
 
@@ -198,82 +196,93 @@ fn main() {
     let mut sessions: Vec<*mut session_t> = Vec::new();
     loop {
         // TODO: Make this async for more clarity.
-        loop {
-            match dtls_socket.recv_from(&mut buf) {
-                Ok((size, peer)) => {
-                    let mut addr: sockaddr_in6 = get_ipv6_from_peer(peer);
+        buf = [0; 1024]; // Clear buffer
+        std::thread::sleep(Duration::from_millis(16));
+        // Receive DTLS
+        match dtls_socket.recv_from(&mut buf) {
+            Ok((size, peer)) => {
+                let mut addr: sockaddr_in6 = get_ipv6_from_peer(peer);
 
-                    let mut session_index = usize::MAX;
-                    unsafe {
-                        for i in 0..sessions.len() {
-                            if addr.sin6_addr.s6_addr
-                                == (*sessions[i]).addr.sin6.as_ref().sin6_addr.s6_addr
-                            {
-                                session_index = i;
-                            }
+                let mut session_index = usize::MAX;
+                unsafe {
+                    for i in 0..sessions.len() {
+                        if addr.sin6_addr.s6_addr
+                            == (*sessions[i]).addr.sin6.as_ref().sin6_addr.s6_addr
+                        {
+                            session_index = i;
                         }
                     }
+                }
 
-                    if session_index == usize::MAX {
-                        unsafe {
-                            if sessions.len() == MAX_SESSIONS as usize {
-                                debug_println!(
-                                    "Cannot create new sessions (sessions.len() == MAX_SESSIONS)"
-                                );
-                                continue;
-                            } else {
-                                let session = dtls_new_session(
-                                    &mut addr as *mut sockaddr_in6 as *mut sockaddr,
-                                    std::mem::size_of::<sockaddr_in6>() as socklen_t,
-                                );
-                                assert!(!session.is_null());
-                                sessions.push(session);
-                                debug_println!(format!(
-                                    "Created session, session count: {}",
-                                    sessions.len()
-                                ));
-                                session_index = sessions.len() - 1;
-                            }
+                if session_index == usize::MAX {
+                    unsafe {
+                        if sessions.len() == MAX_SESSIONS as usize {
+                            debug_println!(
+                                "Cannot create new sessions (sessions.len() == MAX_SESSIONS)"
+                            );
+                            continue;
+                        } else {
+                            let session = dtls_new_session(
+                                &mut addr as *mut sockaddr_in6 as *mut sockaddr,
+                                std::mem::size_of::<sockaddr_in6>() as socklen_t,
+                            );
+                            assert!(!session.is_null());
+                            sessions.push(session);
+                            debug_println!(format!(
+                                "Created session, session count: {}",
+                                sessions.len()
+                            ));
+                            session_index = sessions.len() - 1;
                         }
                     }
-
-                    unsafe {
-                        dtls_handle_message(
-                            context,
-                            sessions[session_index],
-                            buf.as_mut_ptr(),
-                            size as c_int,
-                        );
-                    }
                 }
-                Err(e) => {
-                    if e.kind() == io::ErrorKind::WouldBlock {
-                        continue;
-                    } else {
-                        debug_println!("Failed to receive message");
-                    }
+
+                unsafe {
+                    dtls_handle_message(
+                        context,
+                        sessions[session_index],
+                        buf.as_mut_ptr(),
+                        size as c_int,
+                    );
                 }
             }
-            buf = [0; 1024];
-            std::thread::sleep(Duration::from_millis(1));
-            match backend_socket.recv_from(&mut buf) {
-                Ok((_size, _peer)) => {
-                    //let codec = Codec::new();
-                    //codec.decode();
-
-                    //dtls_write(context, session, buf.as_mut_ptr(), size);
-                    break;
-                }
-                Err(e) => {
-                    if e.kind() == io::ErrorKind::WouldBlock {
-                        continue;
-                    } else {
-                        debug_println!("Failed to receive message");
-                    }
+            Err(e) => {
+                if e.kind() == io::ErrorKind::WouldBlock {
+                    continue;
+                } else {
+                    debug_println!("Failed to receive message");
+                    continue;
                 }
             }
-            buf = [0; 1024];
-            std::thread::sleep(Duration::from_millis(1));
+        }
+        buf = [0; 1024];
+        // Receive UDP
+        match backend_socket.recv_from(&mut buf) {
+            Ok((_size, _peer)) => match Packet::from_bytes(buf.as_ref()) {
+                Ok(pkt) => {
+                    let mut dec = Decoder::from_bytes(pkt.payload);
+                    let items = match dec.items().collect::<Result<Vec<_>, _>>() {
+                        Ok(result) => result,
+                        Err(_) => {
+                            debug_println!("Malformed CBOR packet");
+                            continue;
+                        }
+                    };
+                    debug_println!(format!("{}", items.len()));
+                }
+                Err(_) => {
+                    debug_println!("Non-CBOR payload");
+                    continue;
+                }
+            },
+            Err(e) => {
+                if e.kind() == io::ErrorKind::WouldBlock {
+                    continue;
+                } else {
+                    debug_println!("Failed to receive message");
+                    continue;
+                }
+            }
         }
     }
 }
