@@ -69,7 +69,7 @@ module.exports = {
             VALUES (NULL, ?, datetime('now','localtime'), ?);
         `, node_ip, humidity, (err) => {
             if (err) {
-                console.log('Insert query error: ' + err);
+                console.log('Insert plant_node query error: ' + err);
                 return;
             }
             console.log('Inserted row with data into table "plant_nodes"');
@@ -83,7 +83,7 @@ module.exports = {
             VALUES (?, ?, ?, ?);
         `, node_ip, pump_state, dry_value, wet_value, (err) => {
             if (err) {
-                console.log('Insert query error: ' + err);
+                console.log('Insert plant_status query error: ' + err);
                 return;
             }
             console.log('Inserted row with data into table "plant_status"');

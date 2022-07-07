@@ -1,5 +1,5 @@
 APPLICATION = lwfw
-RIOTBASE ?= $(CURDIR)/../../Tutorials/RIOT
+RIOTBASE ?= $(CURDIR)/../../RIOT
 
 include ../Makefile.vars
 
