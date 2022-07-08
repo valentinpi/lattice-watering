@@ -189,7 +189,7 @@ module.exports = {
         var db = this.databaseAccess();
         var data = 0;
         let myPromise = new Promise(function (resolve) {
-            db.all(`
+            db.run(`
             UPDATE plant_status
             SET
                 pump_state = ?,

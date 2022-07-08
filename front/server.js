@@ -141,11 +141,11 @@ server.listen(5683, () => {
 /* --------------------- TEST -------------------- */
 async function testAll(){
     //Testdata because no boards ...
-    var ip_addr = [254,128,0,0,0,0,0,0,2,4,37,25,24,1,11,0];
+    var ip_addr = [254,128,0,0,0,0,0,0,2,4,37,25,24,1,11,1];
     var humidity = 0;
     var pump_activated = false;
     var dry_value = 2920;
-    var wet_value = 1400;
+    var wet_value = 50;
     var dec_ip_addr = '';
     for (var i = 0; i < 8; i++) {
         dec_ip_addr += ip_addr[i*2];
@@ -162,14 +162,15 @@ async function testAll(){
     if (pump_activated) {pump_state = 1;}
 
     db.insertPlantNode(hex_ip_addr, humidity);
-    //db.insertPlantStatus(hex_ip_addr, pump_state, dry_value, wet_value);
-    var plantStatusPresent = await db.changePlantStatus(hex_ip_addr, pump_state, dry_value, wet_value);
-    if (plantStatusPresent == 0) {
+    if (Object.keys(await db.selectSinglePlant(hex_ip_addr)).length == 0) {
         console.log('no plant_status for new node found, creating one...')
         db.insertPlantStatus(hex_ip_addr, pump_state, dry_value, wet_value)
+    } else {
+        console.log('a plant_status for new node found, changing it...')
+        db.changePlantStatus(hex_ip_addr, pump_state, dry_value, wet_value);
     }
 
-    db.selectAll();
+    setTimeout(() => { db.selectAll(); }, 1000);
 };
 
 testAll();
