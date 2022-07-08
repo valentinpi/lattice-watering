@@ -33,73 +33,93 @@ module.exports = {
 
     createTable: function(db) {
         db.run(`
-        CREATE TABLE plant_nodes (
+        CREATE TABLE IF NOT EXISTS plant_nodes (
             id INTEGER PRIMARY KEY AUTOINCREMENT NULL,
             node_ip TEXT,
-            plant_name TEXT,
             date_time TEXT,
             humidity INTEGER
         );
         `, (err) => {
             if (err) {
-                console.log("Create query error " + err);
+                console.log("Create table plant_nodes query error " + err);
                 return;
             }
             console.log('Table: "plant_nodes" in database: "lattice_watering.db" created');
         });
+        db.run(`
+        CREATE TABLE IF NOT EXISTS plant_status (
+            node_ip TEXT PRIMARY KEY,
+            pump_state INTEGER,
+            dry_value INTEGER,
+            wet_value INTEGER
+        );
+        `, (err) => {
+            if (err) {
+                console.log("Create table plant_status query error " + err);
+                return;
+            }
+            console.log('Table: "plant_status" in database: "lattice_watering.db" created');
+        });
     },
 
-    insertQuery: function(node_ip = '::1', plant_name = 'NULL', humidity = '42') {
+    insertPlantNode: function (node_ip = '::1', humidity = 0) {
         var db = this.databaseAccess();
         db.run(`
-        INSERT INTO plant_nodes (id, node_ip, plant_name, date_time, humidity)
-            VALUES (NULL, ?, ?, datetime('now','localtime'), ?);
-        `, node_ip, plant_name, humidity, (err) => {
+        INSERT INTO plant_nodes (id, node_ip, date_time, humidity)
+            VALUES (NULL, ?, datetime('now','localtime'), ?);
+        `, node_ip, humidity, (err) => {
             if (err) {
-                console.log('Insert query error: ' + err);
+                console.log('Insert plant_node query error: ' + err);
                 return;
             }
             console.log('Inserted row with data into table "plant_nodes"');
         });
     },
 
+    insertPlantStatus: function (node_ip = '::1', pump_state = 0, dry_value = 0, wet_value = 99999) {
+        var db = this.databaseAccess();
+        db.run(`
+        INSERT INTO plant_status (node_ip, pump_state, dry_value, wet_value)
+            VALUES (?, ?, ?, ?);
+        `, node_ip, pump_state, dry_value, wet_value, (err) => {
+            if (err) {
+                console.log('Insert plant_status query error: ' + err);
+                return;
+            }
+            console.log('Inserted row with data into table "plant_status"');
+        });
+    },
+
     selectAll: async function () {
         var db = this.databaseAccess();
         var data = 0;
-        //Returns all rows from table
         let myPromise = new Promise(function (resolve) {
             db.all(`SELECT * FROM plant_nodes`, (err, rows) => {
                 if (err) {
                     console.log('Select query error ' + err);
-                    resolve(data);
+                    // resolve(data);
                 } else {
+                    console.log('Table plant_nodes: ');
                     rows.forEach(row => {
-                        console.log(row.id + "\t" + row.node_ip + "\t" + row.plant_name + "\t" + row.date_time + "\t" + row.humidity);
+                        console.log(row.id + "\t" + row.node_ip + "\t" + row.date_time + "\t" + row.humidity);
                     });
-                    resolve(data);
+                    // resolve(data);
                 }
             });
-        })
-        var return_data = await myPromise;
-        return return_data;
-    },
-
-    selectCountIps: async function () {
-        var db = this.databaseAccess();
-        var data = 0;
-        //Returns amount of distinct ips in table
-        let myPromise = new Promise(function (resolve) {
-            db.all(`SELECT COUNT(DISTINCT node_ip) AS plant_num FROM plant_nodes`, (err, rows) => {
+            db.all(`SELECT * FROM plant_status`, (err, rows) => {
                 if (err) {
-                    console.log('Select query error: ' + err);
-                    resolve(data);
+                    console.log('Select query error ' + err);
+                    // resolve(data);
                 } else {
-                    data = rows[0].plant_num;
-                    resolve(data);
+                    console.log('Table plant_status: ');
+                    rows.forEach(row => {
+                        console.log(row.node_ip + "\t" + row.pump_state + "\t" + row.dry_value + "\t" + row.wet_value);
+                    });
+                    // resolve(data);
                 }
             });
-
-        })
+            resolve(data);
+        });
         var return_data = await myPromise;
         return return_data;
     },
@@ -112,22 +132,18 @@ module.exports = {
         let myPromise = new Promise(function (resolve) {
             db.all(`
             SELECT
-                id as id,
-                node_ip,
-                plant_name as plant_name,
-                MAX(date_time) as date_time,
-                humidity as humidity
-            FROM plant_nodes
-            GROUP BY node_ip
+                ps.node_ip,
+                ps.pump_state,
+                MAX(pn.date_time) as date_time,
+                pn.humidity
+            FROM plant_status ps
+            JOIN plant_nodes pn ON pn.node_ip = ps.node_ip
+            GROUP BY ps.node_ip
             `, (err, rows) => {
                 if (err) {
                     console.log('Select query error: ' + err);
                     resolve(data);
                 } else {
-                    //rows.forEach(row => {
-                    //    console.log(row.id + "\t" + row.node_ip + "\t" + row.plant_name + "\t" + row.date_time + "\t" + row.humidity);
-                    //});
-                    //data = rows[0].plant_num;
                     data = rows;
                     resolve(data);
                 }
@@ -138,22 +154,24 @@ module.exports = {
         return return_data;
     },
 
-    selectSinglePlant: async function (plantIP) {
+    selectSinglePlant: async function (nodeIP) {
         var db = this.databaseAccess();
         var data = 0;
         //Return infos of a single plant identified by its node_ip
         let myPromise = new Promise(function (resolve) {
             db.all(`
             SELECT
-                id as id,
-                node_ip,
-                plant_name as plant_name,
-                MAX(date_time) as date_time,
-                humidity as humidity
-            FROM plant_nodes
-            WHERE node_ip = ?
-            GROUP BY node_ip
-            `,plantIP, (err, row) => {
+                ps.node_ip,
+                ps.pump_state,
+                ps.dry_value,
+                ps.wet_value,
+                MAX(pn.date_time) as date_time,
+                pn.humidity
+            FROM plant_status ps
+            JOIN plant_nodes pn ON pn.node_ip = ps.node_ip
+            WHERE ps.node_ip = ?
+            GROUP BY ps.node_ip
+            `, nodeIP, (err, row) => {
                 if (err) {
                     console.log('Select query error: ' + err);
                     resolve(data);
@@ -162,7 +180,32 @@ module.exports = {
                     resolve(data);
                 }
             });
+        })
+        var return_data = await myPromise;
+        return return_data;
+    },
 
+    changePlantStatus: async function (nodeIP = '::1', pumpState = 0, dry_value = 0, wet_value = 99999) {
+        var db = this.databaseAccess();
+        var data = 0;
+        let myPromise = new Promise(function (resolve) {
+            db.run(`
+            UPDATE plant_status
+            SET
+                pump_state = ?,
+                dry_value = ?,
+                wet_value = ?
+            WHERE node_ip = ?
+            `, pumpState, dry_value, wet_value, nodeIP, (err) => {
+                if (err) {
+                    console.log('Update query error: ' + err);
+                    data = 0;
+                    resolve(data);
+                } else {
+                    data = 1;
+                    resolve(data);
+                }
+            });
         })
         var return_data = await myPromise;
         return return_data;

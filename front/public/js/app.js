@@ -56,12 +56,7 @@ async function refreshPlants() {
         while (div.hasChildNodes()) {
             div.removeChild(div.firstChild);
         }
-
-        if (data[i].plant_name) {
-            h3.textContent = data[i].plant_name + ' Plant';
-        } else {
-            h3.textContent = 'Plant ' + data[i].node_ip;
-        }
+        h3.textContent = 'Plant ' + data[i].node_ip;
         var text_hum = document.createTextNode('Humidity: ' + data[i].humidity + '%');
         a.href = 'plantView?node_ip=' + data[i].node_ip;
 
@@ -90,31 +85,45 @@ async function plantDetailView() {
         div.classList.add('box');
     var br = document.createElement('br');
     var h3 = document.createElement('h3');
-    if (data[0].plant_name) {
-        h3.textContent = data[0].plant_name + ' Plant';
-    } else {
         h3.textContent = 'Plant ' + data[0].node_ip;
-    };
     var img = document.createElement('img');
         img.src = '/img/placeholder_plant.png';
         img.alt = 'Plant';
     var text_hum = document.createTextNode('Humidity: ' + data[0].humidity + '%');
     var form = document.createElement('form');
-    form.action = '/pump_toggle' + '?nodeIP=' + myIP;
+        form.action = '/pump_toggle' + '?nodeIP=' + myIP;
         form.method = 'POST';
     var input1 = document.createElement('input');
         input1.type = 'submit';
-        input1.name = 'pumpOn';
+        input1.name = 'TRUE';
         input1.value = 'Turn Pump On';
     var input2 = document.createElement('input');
         input2.type= 'submit';
-        input2.name = 'pumpOff';
+        input2.name = 'FALSE';
         input2.value = 'Turn Pump Off';
     var a = document.createElement('a');
         a.id = 'plantSetting';
         a.title = 'Go back to all plants';
         a.text = 'Go back';
         a.href = '/';
+    var form_config = document.createElement('form');
+        form.action = '/calibrate_sensor' + '?nodeIP=' +myIP + '?wet_value='+wet_value+ '?dry_value='+dry_value;
+        form.method = 'POST';
+    var wet_value = document.createElement('input');
+        wet_value.type= 'text';
+        wet_value.name = 'wet_value';
+        wet_value.value = 'WET VALUE';
+        wet_value.size = "10";
+    var dry_value = document.createElement('input');
+        dry_value.type= 'text';
+        dry_value.name = 'dry_value';
+        dry_value.value = 'DRY VALUE';
+        dry_value.size = "10";
+    var set_value = document.createElement('input');
+        set_value.type= 'submit';
+        set_value.name = 'set_value';
+        set_value.value = 'SET VALUE';
+        set_value.size = "10";
 
     div.appendChild(h3);
     div.appendChild(img);
@@ -122,9 +131,13 @@ async function plantDetailView() {
     div.appendChild(br.cloneNode(true));
     div.appendChild(text_hum);
     div.appendChild(br.cloneNode(true));
-    form.appendChild(input1);
-    form.appendChild(input2);
-    div.appendChild(form);
+    form_pump.appendChild(input1);
+    form_pump.appendChild(input2);
+    form_config.appendChild(dry_value);
+    form_config.appendChild(wet_value);
+    form_config.appendChild(set_value);
+    div.appendChild(form_pump);
+    div.appendChild(form_config);
     div.appendChild(a);
     element.appendChild(div);
 

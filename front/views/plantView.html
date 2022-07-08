@@ -18,7 +18,7 @@
     <table class="plantSelection" cellpadding="1" cellspacing="1" style="width: 100%">
         <tr>
             <td colspan="2">
-                <div class="scrollmenu" id="scrollmenu">
+                 <div class="scrollmenu" id="scrollmenu">
                     <!--<div class="box">
                         Plant 1<br />
                         <img src="/img/placeholder_plant.png" alt="Plant"><br />
@@ -28,8 +28,14 @@
                             <input type="submit" name="pumpOn" value="Turn Pump On">
                             <input type="submit" name="pumpOff" value="Turn Pump Off">
                         </form>
+                    </br>
+                        <form action="/calibrate_sensor" method="POST">
+                            <input type="text" name="wet_value" value="WET VALUE" size="10">
+                            <input type="text" name="wet_value" value="DRY VALUE" size="10"></br>
+                            <input type="submit" name="set_value" value="SET VALUE">
+                        </form>
                         <a id="plantSettings" title="Go back to all plants." href="/">Go back!</a><br />
-                    </div>-->
+                    </div>--> 
                 </div>
                 <div id="plantChart"></div>
             </td>

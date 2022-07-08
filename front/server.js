@@ -11,7 +11,7 @@ var sqlite3 = require('sqlite3');
 var dtls = require('dtls');
 var db = require('./public/js/db');
 var ejs = require('ejs');
-var cbor = require('node-cbor');
+var cbor = require('cbor');
 
 //Websocket
 var io = require('socket.io')(http);
@@ -53,8 +53,9 @@ app.get('/', function (req, res) {
 });
 
 app.get('/plantRefresh', async function (req, res) {
-    let plant_refresh = await db.selectPlantInfos();
-    res.json(plant_refresh);
+    let plantRefresh = await db.selectPlantInfos();
+    db.selectAll();
+    res.json(plantRefresh);
 });
 
 app.get('/plantDetailView', async function (req, res) {
@@ -65,21 +66,26 @@ app.get('/plantDetailView', async function (req, res) {
 
 app.post('/pump_toggle', function (req, res) {
     var plantIP = req.query.nodeIP;
-
-    var pumpStateChange = 'Off';
-    if (req.body.pumpOn) {
-        console.log('Turning pump on at ip: ' + plantIP);
-        pumpStateChange = 'On';
-    } else {
-        console.log('Turning pump off at ip: ' + plantIP);
-        pumpStateChange = 'Off';
-    }
-    //Send info to input IP with payload pumpOn/pumpOff
     const coap_req = coap.request({ hostname: plantIP, confirmable: false, method: 'POST' });
+    coap_req.end();
+    res.status(204).send();
+});
+
+app.post('/calibrate_sensor', function (req, res) {
+    var plantIP = req.query.nodeIP;
+    var dry_value = req.query.dry_value;
+    var wet_value = req.query.wet_value;
+
+    //Send payload
+    var payload = {
+        dry_value: dry_value,
+        wet_value: wet_value
+    }
+    const payloadBytes = cbor.encode(JSON.stringify(payload));
+    const coap_req = coap.request({ hostname: plantIP, confirmable: false, method: 'POST' });
+    coap_req.write(payloadBytes)
 
     coap_req.end();
-
-    //db.databaseAccess();
     res.status(204).send();
 });
 
@@ -88,18 +94,37 @@ app.listen(3000, () => {
 });
 
 /* -------------------- Chart -------------------- */
-
+//TODO
 
 /* --------------------- COAP -------------------- */
 var server = coap.createServer({ type: 'udp6' });
 
 server.on('request', (req, res) => {
-    //console.log('server received coap message from: ' + req.url + ' | ' + req.url.split('/')[0]);
-    //console.log('payload from coap message: ' + req.payload + ' | ' + req.payload[0]);
-    //parsePayloadIntoDB(req.payload);
-    console.log(cbor.decodeAllSync(req.payload));
-    console.log(req.rsinfo.address);
-    db.insertQuery(req.rsinfo.address,'NULL',req.payload[0])
+    console.log('Received COAP-CBOR request');
+
+    //TODO - If server receives a CBOR packet, insert new entry in plant_nodes and change the status of the
+    //corresponding node_ip in plant_status if present, otherwise add it
+    var decodedData = cbor.decodeAllSync(req.payload);
+    var ip_addr = decodedData.slice(4,20);
+    var humidity = decodedData[0];
+    var pump_activated = decodedData[1];
+    var dry_value = decodedData[2];
+    var wet_value = decodedData[3];
+
+    var hex_ip_addr = '';
+    for (var i = 0; i < 8; i++) {
+        hex_ip_addr += ip_addr[i*2].toString(16);
+        hex_ip_addr += ip_addr[i*2+1].toString(16);
+        if(!(i==7)) {hex_ip_addr += ':';}
+    }
+
+    console.log(`ip_addr: ${ip_addr}\nhumidity: ${humidity}\npump_activated: ${pump_activated}\ndry_value: ${dry_value}\nwet_value: ${wet_value}\nhex_ip_addr: ${hex_ip_addr}`);
+
+    db.insertPlantNode(hex_ip_addr, humidity);
+    
+    if (db.changePlantStatus(hex_ip_addr, pump_activated, dry_value, wet_value) == 0) {
+        db.insertPlantStatus(hex_ip_addr, pump_activated, dry_value, wet_value)
+    }
 });
 
 server.on('response', (res) => {
@@ -109,31 +134,43 @@ server.on('response', (res) => {
     })
 });
 
-function parsePayloadIntoDB(data) {
-    data = JSON.parse(data);
-    var title = data.title;
-    var node_ip = data.node_ip;
-    var humidity = data.humidity;
-
-    console.log('title:\t\t' + title + '\nnode_ip:\t' + node_ip + '\nhumidity:\t' + humidity);
-    //db.insertQuery(node_ip,'NULL',humidity);
-}
-
 server.listen(5683, () => {
-    console.log('listening on port 5683 for coap requests without dtls');
+    console.log('listening on port 5683 for coap requests');
 });
 
-/*
-try {
-    server.listen(("localhost", 5684, "cert.key", "cert.crt"), () => {
-        console.log('listening on port 5683 for coap requests with dtls');
-    });
-} catch (err) {
-    console.log("No dtls active: " + err);
-    console.log("First you need to generate a private key and public certificate");
+/* --------------------- TEST -------------------- */
+async function testAll(){
+    //Testdata because no boards ...
+    var ip_addr = [254,128,0,0,0,0,0,0,2,4,37,25,24,1,11,1];
+    var humidity = 0;
+    var pump_activated = false;
+    var dry_value = 2920;
+    var wet_value = 50;
+    var dec_ip_addr = '';
+    for (var i = 0; i < 8; i++) {
+        dec_ip_addr += ip_addr[i*2];
+        dec_ip_addr += ip_addr[i*2+1];
+        if(!(i==7)) {dec_ip_addr += ':';}
+    }
+    var hex_ip_addr = '';
+    for (var i = 0; i < 8; i++) {
+        hex_ip_addr += ip_addr[i*2].toString(16);
+        hex_ip_addr += ip_addr[i*2+1].toString(16);
+        if(!(i==7)) {hex_ip_addr += ':';}
+    }
+    var pump_state = 0;
+    if (pump_activated) {pump_state = 1;}
 
-    server.listen(5683, () => {
-        console.log('listening on port 5683 for coap requests without dtls');
-    });
+    db.insertPlantNode(hex_ip_addr, humidity);
+    if (Object.keys(await db.selectSinglePlant(hex_ip_addr)).length == 0) {
+        console.log('no plant_status for new node found, creating one...')
+        db.insertPlantStatus(hex_ip_addr, pump_state, dry_value, wet_value)
+    } else {
+        console.log('a plant_status for new node found, changing it...')
+        db.changePlantStatus(hex_ip_addr, pump_state, dry_value, wet_value);
+    }
+
+    setTimeout(() => { db.selectAll(); }, 1000);
 };
-*/
+
+testAll();
