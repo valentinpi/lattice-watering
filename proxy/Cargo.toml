@@ -3,10 +3,8 @@ name = "proxy"
 version = "1.0.0"
 edition = "2021"
 
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
-
 [dependencies]
-cbor = "0.4.1"
-coap-lite = "0.9.1"                                      # We use this one since `coap` does not really provide message manipulation primitives.
+cbor_event = "2.2.0"
+coap-lite = "0.9.1"                                                            # We use this one since `coap` does not really provide message manipulation primitives by default.
 libc = "0.2.126"
-tinydtls-sys = { version = "0.1.1", features = ["psk"] }
+tinydtls-sys = { version = "0.1.1", features = ["psk", "vendored", "static"] }

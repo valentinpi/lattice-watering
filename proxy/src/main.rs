@@ -13,13 +13,13 @@
 
 pub mod psk_key;
 
-use cbor::{self, Decoder, Encoder};
+use cbor_event::{de::Deserializer, se::Serializer};
 use coap_lite::Packet;
 use core::ffi::c_int;
 use libc::{in6_addr, sockaddr, sockaddr_in6, socklen_t, AF_INET6};
 use std::{
     ffi::c_void,
-    io,
+    io::{self, Cursor},
     net::{Ipv6Addr, SocketAddr, SocketAddrV6, UdpSocket},
     time::Duration,
 };
@@ -32,6 +32,8 @@ const PSK_DEFAULT_IDENTITY: &str = "default";
 const PREFIX: &'static str = "[LWPROXY]";
 const MAX_SESSIONS: u64 = 16;
 
+const DELAY: u64 = 16;
+
 macro_rules! debug_fmt {
     ($s:expr) => {
         format!("{} {}", PREFIX, $s).as_str()
@@ -42,6 +44,20 @@ macro_rules! debug_println {
     ($s:expr) => {
         println!("{}", debug_fmt!($s));
     };
+}
+
+fn get_ipv6_string_from_bytes(addr: [u8; 16]) -> String {
+    Ipv6Addr::new(
+        addr[0] as u16 * 0x100 + addr[1] as u16,
+        addr[2] as u16 * 0x100 + addr[3] as u16,
+        addr[4] as u16 * 0x100 + addr[5] as u16,
+        addr[6] as u16 * 0x100 + addr[7] as u16,
+        addr[8] as u16 * 0x100 + addr[9] as u16,
+        addr[10] as u16 * 0x100 + addr[11] as u16,
+        addr[12] as u16 * 0x100 + addr[13] as u16,
+        addr[14] as u16 * 0x100 + addr[15] as u16,
+    )
+    .to_string()
 }
 
 fn get_ipv6_from_peer(peer: SocketAddr) -> sockaddr_in6 {
@@ -71,44 +87,75 @@ unsafe extern "C" fn server_write_callback(
     buf: *mut u8,
     len: usize,
 ) -> i32 {
-    debug_println!("WRITE");
+    debug_println!("WRITE CALLBACK");
 
     let socket = (*ctx).app as *mut UdpSocket;
     let addr = session.as_ref().unwrap().addr.sin6.as_ref();
 
     assert!(addr.sin6_family == AF_INET6 as u16);
 
-    (*socket)
-        .send_to(
-            std::slice::from_raw_parts(buf, len as usize),
-            SocketAddrV6::new(
-                Ipv6Addr::from(addr.sin6_addr.s6_addr),
-                u16::from_be(addr.sin6_port),
-                addr.sin6_flowinfo,
-                addr.sin6_scope_id,
-            ),
-        )
-        .expect(debug_fmt!("Failed to send message"));
+    let res = (*socket).send_to(
+        std::slice::from_raw_parts(buf, len as usize),
+        SocketAddrV6::new(
+            Ipv6Addr::from(addr.sin6_addr.s6_addr),
+            u16::from_be(addr.sin6_port),
+            addr.sin6_flowinfo,
+            addr.sin6_scope_id,
+        ),
+    );
 
-    0
+    match res {
+        Ok(_) => len as i32,
+        Err(_) => {
+            debug_println!("Failed to send message");
+
+            -1
+        }
+    }
 }
 
 unsafe extern "C" fn server_read_callback(
     _ctx: *mut dtls_context_t,
-    _session: *mut session_t,
+    session: *mut session_t,
     buf: *mut u8,
     len: usize,
 ) -> i32 {
-    let backend = UdpSocket::bind("::1:5685").expect(debug_fmt!("Could not bind socket"));
-    backend
+    debug_println!("READ CALLBACK");
+
+    // TODO: Try to make this variable persistent.
+    let backend_socket: UdpSocket =
+        UdpSocket::bind(":::5686").expect(debug_fmt!("Could not bind socket"));
+
+    backend_socket
         .connect("::1:5683")
         .expect(debug_fmt!("Could not connect socket"));
-    backend
-        .send(std::slice::from_raw_parts(buf, len as usize))
-        .expect(debug_fmt!("Could not send data to backend"));
-    debug_println!("Forwarded message to backend.");
 
-    0
+    let addr = (*session).addr.sin6.as_ref().sin6_addr.s6_addr;
+    debug_println!(format!("Message from {}", get_ipv6_string_from_bytes(addr)).as_str());
+
+    let slice = std::slice::from_raw_parts(buf, len);
+    let coap_err = Packet::from_bytes(slice);
+    match coap_err {
+        Ok(mut pkt) => {
+            // Append sender IP for frontend
+            let mut ser = Serializer::new_vec();
+            ser.write_raw_bytes(pkt.payload.as_ref()).unwrap(); // Should never fail
+            for octet in addr {
+                ser.write_unsigned_integer(octet as u64).unwrap(); // Should never fail
+            }
+            pkt.payload = ser.finalize();
+
+            backend_socket
+                .send(pkt.to_bytes().unwrap().as_ref())
+                .expect(debug_fmt!("Could not send data to backend"));
+            debug_println!("Forwarded message to backend");
+        }
+        Err(_) => {
+            debug_println!("Malformed CoAP package");
+        }
+    }
+
+    0 // Ignored
 }
 
 unsafe extern "C" fn server_event_callback(
@@ -118,7 +165,7 @@ unsafe extern "C" fn server_event_callback(
     code: u16,
 ) -> i32 {
     debug_println!(format!(
-        "EVENT - LEVEL: {} - CODE: {}",
+        "EVENT CALLBACK - LEVEL: {} - CODE: {}",
         match level {
             dtls_alert_level_t::DTLS_ALERT_LEVEL_FATAL => {
                 "FATAL"
@@ -133,7 +180,7 @@ unsafe extern "C" fn server_event_callback(
         code
     ));
 
-    0
+    0 // Ignored
 }
 
 unsafe extern "C" fn server_get_psk_info(
@@ -158,9 +205,10 @@ unsafe extern "C" fn server_get_psk_info(
             PSK_DEFAULT_IDENTITY.len() as i32
         }
         dtls_credentials_type_t::DTLS_PSK_KEY => {
-            // TODO: Maybe optimize this dirty copy, not many bits, however.
             assert!(PSK_KEY.len() <= result_length);
-            std::slice::from_raw_parts_mut(result, result_length).copy_from_slice(PSK_KEY.as_ref());
+            let slice = std::slice::from_raw_parts_mut(result, result_length);
+            slice.copy_from_slice(PSK_KEY.as_ref());
+            assert!(slice == PSK_KEY);
             PSK_KEY.len() as i32
         }
         _ => {
@@ -171,7 +219,7 @@ unsafe extern "C" fn server_get_psk_info(
 
 fn main() {
     let mut dtls_socket = UdpSocket::bind(":::5684").expect(debug_fmt!("Could not bind socket"));
-    let mut backend_socket = UdpSocket::bind(":::5685").expect(debug_fmt!("Could not bind socket"));
+    let backend_socket = UdpSocket::bind(":::5685").expect(debug_fmt!("Could not bind socket"));
     dtls_socket
         .set_nonblocking(true)
         .expect(debug_fmt!("Could not enable nonblocking mode"));
@@ -192,12 +240,12 @@ fn main() {
     assert!(!context.is_null());
     unsafe { dtls_set_handler(context, &mut handlers) };
 
-    let mut buf: [u8; 1024] = [0; 1024];
+    let mut buf: [u8; 1024];
     let mut sessions: Vec<*mut session_t> = Vec::new();
     loop {
         // TODO: Make this async for more clarity.
         buf = [0; 1024]; // Clear buffer
-        std::thread::sleep(Duration::from_millis(16));
+        std::thread::sleep(Duration::from_millis(DELAY));
         // Receive DTLS
         match dtls_socket.recv_from(&mut buf) {
             Ok((size, peer)) => {
@@ -260,15 +308,70 @@ fn main() {
         match backend_socket.recv_from(&mut buf) {
             Ok((_size, _peer)) => match Packet::from_bytes(buf.as_ref()) {
                 Ok(pkt) => {
-                    let mut dec = Decoder::from_bytes(pkt.payload);
-                    let items = match dec.items().collect::<Result<Vec<_>, _>>() {
-                        Ok(result) => result,
-                        Err(_) => {
-                            debug_println!("Malformed CBOR packet");
-                            continue;
+                    // Remove IP and send to appropriate client
+                    // These branches are horrible
+                    let mut des = Deserializer::from(Cursor::new(pkt.payload));
+                    let mut ip: [u8; 16] = [0; 16];
+                    for i in 0..16 {
+                        ip[i] = match des.unsigned_integer() {
+                            Ok(octet) => {
+                                if u8::try_from(octet).is_ok() {
+                                    octet as u8
+                                } else {
+                                    debug_println!("Malformed CoAP packet");
+                                    continue;
+                                }
+                            }
+                            Err(_) => {
+                                debug_println!("Malformed CoAP packet");
+                                continue;
+                            }
                         }
-                    };
-                    debug_println!(format!("{}", items.len()));
+                    }
+                    let mut ser = Serializer::new_vec();
+
+                    // Try to probe for a `/calibrate_sensor` packet
+                    match des.negative_integer() {
+                        Ok(dry_value) => match des.negative_integer() {
+                            Ok(wet_value) => {
+                                if i32::try_from(dry_value).is_ok()
+                                    && i32::try_from(wet_value).is_ok()
+                                {
+                                    ser.write_negative_integer(dry_value).unwrap();
+                                    ser.write_negative_integer(wet_value).unwrap();
+                                } else {
+                                    debug_println!("Malformed CoAP packet");
+                                    continue;
+                                }
+                            }
+                            Err(_) => {}
+                        },
+                        Err(_) => {}
+                    }
+
+                    // Check if for the IP an appropriate session exists
+                    let mut session_index = usize::MAX;
+                    unsafe {
+                        for i in 0..sessions.len() {
+                            if ip == (*sessions[i]).addr.sin6.as_ref().sin6_addr.s6_addr {
+                                session_index = i;
+                            }
+                        }
+                    }
+                    if session_index != usize::MAX {
+                        // Send
+                        let mut new_pkt = ser.finalize();
+                        unsafe {
+                            dtls_write(
+                                context,
+                                sessions[session_index],
+                                new_pkt.as_mut_ptr(),
+                                new_pkt.len(),
+                            );
+                        }
+                    } else {
+                        debug_println!("No such session available");
+                    }
                 }
                 Err(_) => {
                     debug_println!("Non-CBOR payload");

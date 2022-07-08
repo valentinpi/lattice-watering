@@ -29,3 +29,7 @@ gen_psk:
     mv psk_key.h ../fw
     mv psk_key.rs ../proxy/src
 
+update_riotos:
+    #!/usr/bin/bash
+    cd ~/dev/RIOT
+    git pull

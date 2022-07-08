@@ -96,6 +96,10 @@ void *data_thread(void *arg) {
     uint8_t buf[256];
     memset(buf, 0, 256);
 
+    // NOTE: We wait a bit to let RIOT initialize. Occasionally the board seems to be blocked after restart otherwise.
+    // So the first Client Hello would not send.
+    ztimer_sleep(ZTIMER_SEC, 5);
+
     // Put packet metadata
     coap_pkt_t pdu = {0};
     gcoap_req_init(&pdu, buf, 256, COAP_POST, "/data");
