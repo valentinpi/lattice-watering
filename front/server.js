@@ -94,7 +94,7 @@ app.listen(3000, () => {
 });
 
 /* -------------------- Chart -------------------- */
-
+//TODO
 
 /* --------------------- COAP -------------------- */
 var server = coap.createServer({ type: 'udp6' });
@@ -120,10 +120,10 @@ server.on('request', (req, res) => {
 
     console.log(`ip_addr: ${ip_addr}\nhumidity: ${humidity}\npump_activated: ${pump_activated}\ndry_value: ${dry_value}\nwet_value: ${wet_value}\nhex_ip_addr: ${hex_ip_addr}`);
 
-    db.insertPlantNode(ip_addr, humidity);
+    db.insertPlantNode(hex_ip_addr, humidity);
     
-    if (db.changePlantStatus(ip_addr, pump_activated, dry_value, wet_value) == 0) {
-        db.insertPlantStatus(ip_addr, pump_activated, dry_value, wet_value)
+    if (db.changePlantStatus(hex_ip_addr, pump_activated, dry_value, wet_value) == 0) {
+        db.insertPlantStatus(hex_ip_addr, pump_activated, dry_value, wet_value)
     }
 });
 
@@ -138,17 +138,38 @@ server.listen(5683, () => {
     console.log('listening on port 5683 for coap requests');
 });
 
-/*
-try {
-    server.listen(("localhost", 5684, "cert.key", "cert.crt"), () => {
-        console.log('listening on port 5683 for coap requests with dtls');
-    });
-} catch (err) {
-    console.log("No dtls active: " + err);
-    console.log("First you need to generate a private key and public certificate");
+/* --------------------- TEST -------------------- */
+async function testAll(){
+    //Testdata because no boards ...
+    var ip_addr = [254,128,0,0,0,0,0,0,2,4,37,25,24,1,11,0];
+    var humidity = 0;
+    var pump_activated = false;
+    var dry_value = 2920;
+    var wet_value = 1400;
+    var dec_ip_addr = '';
+    for (var i = 0; i < 8; i++) {
+        dec_ip_addr += ip_addr[i*2];
+        dec_ip_addr += ip_addr[i*2+1];
+        if(!(i==7)) {dec_ip_addr += ':';}
+    }
+    var hex_ip_addr = '';
+    for (var i = 0; i < 8; i++) {
+        hex_ip_addr += ip_addr[i*2].toString(16);
+        hex_ip_addr += ip_addr[i*2+1].toString(16);
+        if(!(i==7)) {hex_ip_addr += ':';}
+    }
+    var pump_state = 0;
+    if (pump_activated) {pump_state = 1;}
 
-    server.listen(5683, () => {
-        console.log('listening on port 5683 for coap requests without dtls');
-    });
+    db.insertPlantNode(hex_ip_addr, humidity);
+    //db.insertPlantStatus(hex_ip_addr, pump_state, dry_value, wet_value);
+    var plantStatusPresent = await db.changePlantStatus(hex_ip_addr, pump_state, dry_value, wet_value);
+    if (plantStatusPresent == 0) {
+        console.log('no plant_status for new node found, creating one...')
+        db.insertPlantStatus(hex_ip_addr, pump_state, dry_value, wet_value)
+    }
+
+    db.selectAll();
 };
-*/
+
+testAll();

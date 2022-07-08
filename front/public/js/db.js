@@ -49,7 +49,7 @@ module.exports = {
         db.run(`
         CREATE TABLE IF NOT EXISTS plant_status (
             node_ip TEXT PRIMARY KEY,
-            pump_state BOOLEAN,
+            pump_state INTEGER,
             dry_value INTEGER,
             wet_value INTEGER
         );
@@ -62,7 +62,7 @@ module.exports = {
         });
     },
 
-    insertPlantNode: function (node_ip = '::1', humidity = '0') {
+    insertPlantNode: function (node_ip = '::1', humidity = 0) {
         var db = this.databaseAccess();
         db.run(`
         INSERT INTO plant_nodes (id, node_ip, date_time, humidity)
@@ -76,7 +76,7 @@ module.exports = {
         });
     },
 
-    insertPlantStatus: function (node_ip = '::1', pump_state = 'FALSE', dry_value = '0', wet_value = '99999') {
+    insertPlantStatus: function (node_ip = '::1', pump_state = 0, dry_value = 0, wet_value = 99999) {
         var db = this.databaseAccess();
         db.run(`
         INSERT INTO plant_status (node_ip, pump_state, dry_value, wet_value)
@@ -93,32 +93,32 @@ module.exports = {
     selectAll: async function () {
         var db = this.databaseAccess();
         var data = 0;
-        //Returns all rows from table
         let myPromise = new Promise(function (resolve) {
             db.all(`SELECT * FROM plant_nodes`, (err, rows) => {
                 if (err) {
                     console.log('Select query error ' + err);
-                    resolve(data);
+                    // resolve(data);
                 } else {
                     console.log('Table plant_nodes: ');
                     rows.forEach(row => {
                         console.log(row.id + "\t" + row.node_ip + "\t" + row.date_time + "\t" + row.humidity);
                     });
-                    resolve(data);
+                    // resolve(data);
                 }
             });
             db.all(`SELECT * FROM plant_status`, (err, rows) => {
                 if (err) {
                     console.log('Select query error ' + err);
-                    resolve(data);
+                    // resolve(data);
                 } else {
                     console.log('Table plant_status: ');
                     rows.forEach(row => {
                         console.log(row.node_ip + "\t" + row.pump_state + "\t" + row.dry_value + "\t" + row.wet_value);
                     });
-                    resolve(data);
+                    // resolve(data);
                 }
             });
+            resolve(data);
         });
         var return_data = await myPromise;
         return return_data;
@@ -185,10 +185,9 @@ module.exports = {
         return return_data;
     },
 
-    changePlantStatus: async function (nodeIP = '::1', pumpState = 'FALSE', dry_value = '0', wet_value = '99999') {
+    changePlantStatus: async function (nodeIP = '::1', pumpState = 0, dry_value = 0, wet_value = 99999) {
         var db = this.databaseAccess();
         var data = 0;
-        //Return infos of a single plant identified by its node_ip
         let myPromise = new Promise(function (resolve) {
             db.all(`
             UPDATE plant_status
@@ -197,9 +196,9 @@ module.exports = {
                 dry_value = ?,
                 wet_value = ?
             WHERE node_ip = ?
-            `, nodeIP, pumpState, dry_value, wet_value, (err) => {
+            `, pumpState, dry_value, wet_value, nodeIP, (err) => {
                 if (err) {
-                    console.log('Select query error: ' + err);
+                    console.log('Update query error: ' + err);
                     data = 0;
                     resolve(data);
                 } else {
