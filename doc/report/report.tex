@@ -18,32 +18,30 @@
     \begin{center}
         \large \textsc{Lattice Watering}
 
-        \vspace{\baselineskip}
+        \vspace{0.15cm}
 
-        \normalsize Handout
+        \normalsize Report
 
-        \vspace{\baselineskip}
+        \vspace{0.15cm}
 
         Christian Müller, Jonas Heinemann, Kaan Dönmez, Valentin Pickel
 
-        \vspace{\baselineskip}
+        \vspace{0.15cm}
 
-        Software Project on Internet Communications
-        
-        Summer Term 2022
+        Software Project on Internet Communications, Summer Term 2022
 
-        Freie Universität Berlin
+        Institute for Computer Science, Freie Universität Berlin
 
-        \vspace{\baselineskip}
+        \vspace{0.15cm}
 
         July 18, 2022
-    \end{center}
 
-    \rule{\linewidth}{0.5pt}
+        \rule{\linewidth}{0.5pt}
+    \end{center}
 
     \section{Introduction}
 
-    We may start from scratch by reminiscing the the first meeting of all course participants on April 4th. This software project course should dive into the ecosystem internet. To do so, a rough split was set between the worlds of the \emph{Internet of Things} (IoT), which deals with low power devices in large networks, and the conventional internet and its vastly more potent desktop computers and servers. Especially, us students should become aware of design decisions with respect to the communication solutions that our software should utilize. The project \emph{Lattice Watering} eyes out the first of both worlds.
+    We may start from scratch by reminiscing the the first meeting of all course participants on April 4th. This software project course should dive into the ecosystem internet. To do so, a rough split was set between the worlds of the \emph{Internet of Things} (IoT), which deals with low power devices in large networks plagued with packet loss, and the conventional internet and its vastly more potent desktop computers and servers. Especially, us students should become aware of design decisions with respect to the communication solutions that our software should utilize. The project \emph{Lattice Watering} eyes out the first of both worlds.
 
     \subsection{Idea Outline}
 
@@ -90,14 +88,7 @@
         \caption{Circuit for the pump P.}
     \end{figure}
 
-    Thus, we obtain:
-    \[
-        I_2 = \frac{\qty{5}{\volt}}{\qty{200}{\ohm}} = \qty{25}{\milli\ampere}
-    \]
-    And:
-    \[
-        I_3 = \frac{\qty{5}{\volt}}{\qty{200}{\ohm}} = \qty{25}{\milli\ampere}
-    \]
+    We shall not go into the details of the electronics of that circuit and why it would work under ideal conditions. We built the circuit, but as it turns out the transistor we had available failed.
 
     \section{Network Structure}
 
@@ -149,6 +140,29 @@
     \end{figure}
 
     \section{Application Structure}
+
+    In total, we have developed \emph{five} different applications which all work together.
+    \begin{itemize}
+        \item \texttt{fw}: The firmware that is deployed on the nodes themselves reads out sensor values and sends them the host.
+        \item \texttt{br}: The border router acts as a mediator between the lossy SixLoWPAN and the local Ethos network with the host. It allows the nodes that are reachable to send messages to the host computer.
+        \item \texttt{proxy}: The proxy receives DTLS traffic from the nodes, decrypts them, appends a target IP and forwards them to the backend software written in Node.JS.
+        \item \texttt{front}: The backend software serves the webpage for the frontend and manages the database.
+        \item \texttt{www}: The website written in JavaScript, which may or may not be considered a seperate application, offers the user
+    \end{itemize}
+
+    To enable DTLS for our application, we had to first include the \texttt{gcoap\_dtls} package in RIOT with a PRNG (Pseudo Random Number Generator) and an appropriate library, in this case \texttt{tinydtls}. However, Node.JS support for DTLS is in quite a rough state as this time, as none of the libraries we were trying out worked with. To be precise, we tried the following libraries:
+
+    - dtls -> Das hattest du inkludiert, aber darin ist gar nix drinnen. S. https://www.npmjs.com/package/dtls
+- openssl-dtls https://www.npmjs.com/package/openssl-dtls
+- node-mbed-dtls https://www.npmjs.com/package/node-mbed-dtls
+- werift-dtls -> Eventuell funktioniert das jetzt, ich sollte das nochmal anschauen https://www.npmjs.com/package/werift-dtls
+- nodejs-dtls -> Enthält nur einen Client. https://www.npmjs.com/package/nodejs-dtls
+- @nodertc/dtls -> Enthält nur einen Client. https://www.npmjs.com/package/@nodertc/dtls
+
+    - node-dtls-proxy https://www.npmjs.com/package/node-dtls-proxy
+- goldy https://github.com/ibm-security-innovation/goldy
+
+    There was also a short unsuccessful attempt at writing a very small proxy using python-dtls, but this was conceptually flawed, as the proxy needs to know where to route the packets from the frontend. In the end, as the board uses \texttt{tinydtls}, we decided to use Rust to write a small proxy using \texttt{tinydtls-sys}.
 
     \section{Closing Words}
 
