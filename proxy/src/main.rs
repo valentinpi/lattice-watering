@@ -242,7 +242,7 @@ fn main() {
 
     let mut buf: [u8; 1024];
     let mut sessions: Vec<*mut session_t> = Vec::new();
-    loop {
+    'main_loop: loop {
         // TODO: Make this async for more clarity.
         buf = [0; 1024]; // Clear buffer
         std::thread::sleep(Duration::from_millis(DELAY));
@@ -306,84 +306,81 @@ fn main() {
         buf = [0; 1024];
         // Receive UDP
         match backend_socket.recv_from(&mut buf) {
-            Ok((_size, _peer)) => match Packet::from_bytes(buf.as_ref()) {
-                Ok(pkt) => {
-                    // Remove IP and send to appropriate client
-                    // These branches are horrible
-                    let mut des = Deserializer::from(Cursor::new(pkt.payload));
-                    let mut ip: [u8; 16] = [0; 16];
-                    for i in 0..16 {
-                        ip[i] = match des.unsigned_integer() {
-                            Ok(octet) => {
-                                if u8::try_from(octet).is_ok() {
-                                    octet as u8
-                                } else {
-                                    debug_println!("Malformed CoAP packet");
-                                    continue;
+            Ok((size, _peer)) => {
+                match Packet::from_bytes(buf[0..size].as_ref()) {
+                    Ok(mut pkt) => {
+                        // Remove IP and send to appropriate client
+                        // TODO: These branches are horrible. How else can one do this safely and whilst giving directions?
+                        let mut des = Deserializer::from(Cursor::new(pkt.payload));
+                        let mut ip: [u8; 16] = [0; 16];
+                        match des.bytes() {
+                            Ok(vec) => {
+                                if vec.len() != 16 {
+                                    debug_println!(format!("Malformed CoAP packet").as_str());
+                                    continue 'main_loop;
                                 }
+                                ip.copy_from_slice(vec.as_ref());
                             }
-                            Err(_) => {
-                                debug_println!("Malformed CoAP packet");
-                                continue;
+                            Err(err) => {
+                                debug_println!(format!("Malformed CoAP packet - {}", err).as_str());
+                                continue 'main_loop;
                             }
                         }
-                    }
-                    let mut ser = Serializer::new_vec();
 
-                    // Try to probe for a `/calibrate_sensor` packet
-                    match des.negative_integer() {
-                        Ok(dry_value) => match des.negative_integer() {
-                            Ok(wet_value) => {
-                                if i32::try_from(dry_value).is_ok()
-                                    && i32::try_from(wet_value).is_ok()
-                                {
-                                    ser.write_negative_integer(dry_value).unwrap();
-                                    ser.write_negative_integer(wet_value).unwrap();
-                                } else {
-                                    debug_println!("Malformed CoAP packet");
-                                    continue;
+                        let mut ser = Serializer::new_vec();
+                        // Try to probe for a `/calibrate_sensor` packet
+                        match des.negative_integer() {
+                            Ok(dry_value) => match des.negative_integer() {
+                                Ok(wet_value) => {
+                                    if i32::try_from(dry_value).is_ok()
+                                        && i32::try_from(wet_value).is_ok()
+                                    {
+                                        ser.write_negative_integer(dry_value).unwrap();
+                                        ser.write_negative_integer(wet_value).unwrap();
+                                    } else {
+                                        debug_println!("Malformed CoAP packet");
+                                        continue;
+                                    }
                                 }
-                            }
+                                Err(_) => {}
+                            },
                             Err(_) => {}
-                        },
-                        Err(_) => {}
-                    }
+                        }
 
-                    // Check if for the IP an appropriate session exists
-                    let mut session_index = usize::MAX;
-                    unsafe {
-                        for i in 0..sessions.len() {
-                            if ip == (*sessions[i]).addr.sin6.as_ref().sin6_addr.s6_addr {
-                                session_index = i;
+                        // Check if for the IP an appropriate session exists
+                        let mut session_index = usize::MAX;
+                        unsafe {
+                            for i in 0..sessions.len() {
+                                if ip == (*sessions[i]).addr.sin6.as_ref().sin6_addr.s6_addr {
+                                    session_index = i;
+                                }
                             }
                         }
-                    }
-                    if session_index != usize::MAX {
-                        // Send
-                        let mut new_pkt = ser.finalize();
-                        unsafe {
-                            dtls_write(
-                                context,
-                                sessions[session_index],
-                                new_pkt.as_mut_ptr(),
-                                new_pkt.len(),
-                            );
+                        if session_index != usize::MAX {
+                            // Send
+                            pkt.payload = ser.finalize();
+                            let mut pkt_bytes = pkt.to_bytes().unwrap(); // Should not fail.
+                            unsafe {
+                                dtls_write(
+                                    context,
+                                    sessions[session_index],
+                                    pkt_bytes.as_mut_ptr(),
+                                    pkt_bytes.len(),
+                                );
+                                debug_println!("Forwarded packet to node");
+                            }
+                        } else {
+                            debug_println!("No such session available");
                         }
-                    } else {
-                        debug_println!("No such session available");
+                    }
+                    Err(_) => {
+                        debug_println!("Non-CBOR payload");
                     }
                 }
-                Err(_) => {
-                    debug_println!("Non-CBOR payload");
-                    continue;
-                }
-            },
-            Err(e) => {
-                if e.kind() == io::ErrorKind::WouldBlock {
-                    continue;
-                } else {
+            }
+            Err(err) => {
+                if err.kind() != io::ErrorKind::WouldBlock {
                     debug_println!("Failed to receive message");
-                    continue;
                 }
             }
         }
