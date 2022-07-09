@@ -113,7 +113,7 @@ void *data_thread(void *arg) {
 
         // Write data
         nanocbor_encoder_t enc = {0};
-        nanocbor_encoder_init(&enc, pdu.payload, 28);
+        nanocbor_encoder_init(&enc, pdu.payload, 256 - meta_len);
         nanocbor_fmt_uint(&enc, humidity);
         mutex_lock(&pump_mutex);
         nanocbor_fmt_bool(&enc, pump_activated);

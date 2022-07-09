@@ -1,4 +1,4 @@
-"use strict"
+"use strict";
 
 function startup(isIndex = 0) {
     if (isIndex) {
@@ -24,8 +24,8 @@ function dateTime() {
 
 function checkFormat(i) {
     if (i < 10) {
-        i = "0" + i
-    };
+        i = "0" + i;
+    }
     return i;
 };
 
