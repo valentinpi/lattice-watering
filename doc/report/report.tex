@@ -141,6 +141,37 @@
 
     \section{Application Structure}
 
+    \begin{figure}[!hbtp]
+        \centering
+        \begin{tikzpicture}[>=stealth, semithick, scale=0.9]
+            \small
+            \newcommand{\column}[3]{
+                \draw[#1] (0, #3) rectangle (6, #3-0.5);
+                \node[right] at (0, #3-0.25) {#2};
+            }
+            \column{fill=gray!25}{\textbf{\texttt{plant\_nodes TABLE}}}{0};
+            \column{}{\texttt{id INTEGER PRIMARY KEY NOT NULL}}{-0.5};
+            \column{}{\texttt{node\_ip TEXT UNIQUE NOT NULL}}{-1};
+            \column{}{\texttt{pump\_activated INTEGER}}{-1.5};
+            \column{}{\texttt{dry\_value INTEGER}}{-2};
+            \column{}{\texttt{wet\_value INTEGER}}{-2.5};
+            \renewcommand{\column}[3]{
+                \draw[#1] (7.5, #3) rectangle (16, #3-0.5);
+                \node[right] at (7.5, #3-0.25) {#2};
+            }
+            \column{fill=gray!25}{\textbf{\texttt{plant\_humidities TABLE}}}{0};
+            \column{}{\texttt{id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL}}{-0.5};
+            \column{}{\texttt{node INTEGER NOT NULL}}{-1};
+            \column{}{\texttt{date\_time TEXT}}{-1.5};
+            \column{}{\texttt{humidity INTEGER}}{-2};
+            \column{}{\texttt{FOREIGN KEY (node) REFERENCES plant\_nodes(id)}}{-2.5};
+            \draw (6, -0.75) -- (7.5, -1.25);
+            \node[above right] at (6, -0.75) {1};
+            \node[below left] at (7.5, -1.25) {\(n\)};
+        \end{tikzpicture}
+        \caption{The SQLite database schema. The left table persists the current configurations for each node. The network structure guarantees the uniqueness of the IPs, so it suffices to use them as an identifier in our use case. One may consider replacing this with an application-specific ID which would have to persist on the nodes themselves, e.g. via EEPROM. One can find this exact structure in \texttt{front/db.js}}
+    \end{figure}
+
     In total, we have developed \emph{five} different applications which all work together.
     \begin{itemize}
         \item \texttt{fw}: The firmware that is deployed on the nodes themselves reads out sensor values and sends them the host.

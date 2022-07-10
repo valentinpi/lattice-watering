@@ -54,7 +54,7 @@ module.exports = {
         `);
         _create_table('plant_humidities', `
             CREATE TABLE IF NOT EXISTS plant_humidities (
-                id INTEGER PRIMARY KEY AUTOINCREMENT NULL,
+                id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
                 node INTEGER NOT NULL,
                 date_time TEXT,
                 humidity INTEGER,
