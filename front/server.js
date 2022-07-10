@@ -21,6 +21,7 @@ var request = require('coap').request;
 var Agent = require('coap').Agent;
 const cons = require('consolidate');
 const { createBrotliCompress } = require('zlib');
+const { change_plant_node } = require('./db');
 var url;
 
 /* ---------------- Express Setup ---------------- */
@@ -73,6 +74,9 @@ app.post('/calibrate_sensor', function (req, res) {
     var plantIP = req.query.nodeIP;
     var wet_value = req.query.wet_value;
     var dry_value = req.query.dry_value;
+
+    // change values in database
+    change_plant_node(plantIP,false,dry_value,wet_value);
 
     //Send payload
     // TODO: Proxy is missing

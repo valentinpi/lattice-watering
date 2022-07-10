@@ -1,5 +1,7 @@
 "use strict";
 
+const { select_plant_info } = require("../../db");
+
 function startup(isIndex = 0) {
     if (isIndex) {
         //Index with plant overview
@@ -60,10 +62,15 @@ async function refreshPlants() {
         h3_top.textContent = 'Plant';
         h3_bottom.textContent = data[i].node_ip;
         var text_hum = document.createTextNode('Humidity: ' + data[i].humidity + '%');
+        
+        var plant_info = select_plant_info(myIP);
+        var humidity = data[i].humidity;
+        var low = plant_info.dry_value != "undefined" ? plant_info.dry_value : 5000;
+        var high = plant_info.dry_value != "undefined" ? plant_info.dry_value : 5000;
         // toggle pump if moisture level is under 20% till it is 60%
-        if (data[i].humidity < 20){
+        if (humidity < low){
             post('/pump_toggle' + '?nodeIP=' + myIP);
-            while (data[i].humidity <= 60){
+            while (humidity<= high){
                 // pass or sleep
             }
             post('/pump_toggle' + '?nodeIP=' + myIP);
@@ -92,6 +99,11 @@ async function plantDetailView() {
     let data = await response.json();
     console.log(data);
 
+    // get dry and wet value from database
+    var plant_infos = select_plant_info(myIP);
+    var dry_value= plant_infos[2];
+    var wet_value= plant_infos[3];
+
     // Creating the Box with plant and info
     var element = document.getElementById("scrollmenu");
     element.insertAdjacentHTML('afterend', `\
@@ -114,8 +126,8 @@ async function plantDetailView() {
     <br/>
     <form action="/calibrate_sensor" method="POST">
         <input type="hidden" name="node_ip" value="${myIP}">
-        <input type="text" name="dry_value" value="Dry Value" size="10">
-        <input type="text" name="wet_value" value="Wet Value" size="10">
+        <input type="text" name="dry_value" value="${dry_value}" size="10">
+        <input type="text" name="wet_value" value="${wet_value}" size="10">
         <br/>
         <br/>
         <input type="submit" value="Calibrate sensor" size="10">
