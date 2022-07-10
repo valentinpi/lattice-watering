@@ -295,11 +295,8 @@ fn main() {
                 }
             }
             Err(e) => {
-                if e.kind() == io::ErrorKind::WouldBlock {
-                    continue;
-                } else {
+                if e.kind() != io::ErrorKind::WouldBlock {
                     debug_println!("Failed to receive message");
-                    continue;
                 }
             }
         }
@@ -374,7 +371,7 @@ fn main() {
                         }
                     }
                     Err(_) => {
-                        debug_println!("Non-CBOR payload");
+                        debug_println!("Non-CoAP payload");
                     }
                 }
             }

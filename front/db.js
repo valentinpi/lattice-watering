@@ -16,15 +16,6 @@ function _create_table(table_name, query) {
     });
 };
 
-function _insert_query_error(table_name, err) {
-    if (err) {
-        console.log(`Insert "${table_name}" query error: ${err}`);
-    }
-    else {
-        //console.log(`Inserted row with data into table "${table_name}"`);
-    }
-}
-
 module.exports = {
     /* DB CREATION */
     init: function() {
@@ -73,7 +64,7 @@ module.exports = {
     },
     /* INSERTION */
     change_plant_node: async function(node_ip, pump_activated, dry_value, wet_value) {
-        return await new Promise(function (resolve) {
+        await new Promise(function (resolve) {
             db.run(`
                 INSERT INTO plant_nodes (node_ip, pump_activated, dry_value, wet_value)
                     VALUES (?, ?, ?, ?)
@@ -84,7 +75,7 @@ module.exports = {
                 WHERE node_ip = ?;
             `, node_ip, pump_activated, dry_value, wet_value, pump_activated, dry_value, wet_value, node_ip, (err) => {
                 if (err) {
-                    console.log(`Select query error: ${err}`);
+                    console.log(`Insert query error: ${err}`);
                     resolve(0);
                 } else {
                     resolve(1);
@@ -93,10 +84,19 @@ module.exports = {
         });
     },
     insert_plant_humidity: async function (node_ip, humidity) {
-        db.run(`
-            INSERT INTO plant_humidities (node, date_time, humidity)
-                VALUES ((SELECT id FROM plant_nodes WHERE node_ip = ?), datetime('now','localtime'), ?);
-        `, node_ip, humidity, (err) => _insert_query_error("plant_humidities", err));
+        await new Promise(function (resolve) {
+            db.run(`
+                INSERT INTO plant_humidities (node, date_time, humidity)
+                    VALUES ((SELECT id FROM plant_nodes WHERE node_ip = ?), datetime('now','localtime'), ?);
+            `, node_ip, humidity, (err) => {
+                if (err) {
+                    console.log(`Insert query error: ${err}`);
+                    resolve(0);
+                } else {
+                    resolve(1);
+                }
+            });
+        })
     },
     select_all: async function () {
         var data = 0;
@@ -106,25 +106,25 @@ module.exports = {
                     console.log(`Select query error ${err}`);
                 } else {
                     console.log('Table plant_nodes: ');
-                    rows.forEach(row => {
-                        console.log(row.id + "\t" + row.node_ip + "\t" + row.pump_activated + "\t" + row.dry_value + "\t" + row.wet_value);
-                    });
+                    console.table(rows);
                 }
+                resolve(data);
             });
+        });
+        await myPromise;
+        myPromise = new Promise(function (resolve) {
             db.all(`SELECT * FROM plant_humidities;`, (err, rows) => {
                 if (err) {
                     console.log(`Select query error ${err}`);
                 } else {
                     console.log('Table plant_humidities: ');
-                    rows.forEach(row => {
-                        console.log(row.id + "\t" + row.node + "\t" + row.date_time + "\t" + row.humidity);
-                    });
+                    console.table(rows);
                 }
+                resolve(data);
             });
-            resolve(data);
         });
-        var return_data = await myPromise;
-        return return_data;
+        await myPromise;
+        return data;
     },
     select_plant_infos: async function () {
         var data = 0;
