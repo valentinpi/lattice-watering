@@ -326,24 +326,46 @@ fn main() {
 
                         let mut ser = Serializer::new_vec();
                         // Try to probe for a `/calibrate_sensor` packet
-                        match des.negative_integer() {
-                            Ok(dry_value) => match des.negative_integer() {
-                                Ok(wet_value) => {
-                                    if i32::try_from(dry_value).is_ok()
-                                        && i32::try_from(wet_value).is_ok()
-                                    {
+                        match des.cbor_type() {
+                            Ok(dry_value_type) => {
+                                match dry_value_type {
+                                    cbor_event::Type::UnsignedInteger => {
+                                        let dry_value = des.unsigned_integer().unwrap();
+                                        ser.write_unsigned_integer(dry_value).unwrap();
+                                    }
+                                    cbor_event::Type::NegativeInteger => {
+                                        let dry_value = des.negative_integer().unwrap();
                                         ser.write_negative_integer(dry_value).unwrap();
-                                        ser.write_negative_integer(wet_value).unwrap();
-                                    } else {
+                                    }
+                                    _ => {
                                         debug_println!("Malformed CoAP packet");
                                         continue;
                                     }
                                 }
-                                Err(_) => {}
-                            },
+
+                                match des.cbor_type() {
+                                    Ok(wet_value_type) => match wet_value_type {
+                                        cbor_event::Type::UnsignedInteger => {
+                                            let wet_value = des.unsigned_integer().unwrap();
+                                            ser.write_unsigned_integer(wet_value).unwrap();
+                                        }
+                                        cbor_event::Type::NegativeInteger => {
+                                            let wet_value = des.negative_integer().unwrap();
+                                            ser.write_negative_integer(wet_value).unwrap();
+                                        }
+                                        _ => {
+                                            debug_println!("Malformed CoAP packet");
+                                            continue;
+                                        }
+                                    },
+                                    Err(_) => {
+                                        debug_println!("Malformed CoAP packet");
+                                        continue;
+                                    }
+                                }
+                            }
                             Err(_) => {}
                         }
-
                         // Check if for the IP an appropriate session exists
                         let mut session_index = usize::MAX;
                         unsafe {
@@ -357,6 +379,22 @@ fn main() {
                             // Send
                             pkt.payload = ser.finalize();
                             let mut pkt_bytes = pkt.to_bytes().unwrap(); // Should not fail.
+                                                                         //backend_socket.send_to(
+                                                                         //    pkt_bytes.as_ref(),
+                                                                         //    (
+                                                                         //        Ipv6Addr::new(
+                                                                         //            ip[0] as u16 * 0x100 + ip[1] as u16,
+                                                                         //            ip[2] as u16 * 0x100 + ip[3] as u16,
+                                                                         //            ip[4] as u16 * 0x100 + ip[5] as u16,
+                                                                         //            ip[6] as u16 * 0x100 + ip[7] as u16,
+                                                                         //            ip[8] as u16 * 0x100 + ip[9] as u16,
+                                                                         //            ip[10] as u16 * 0x100 + ip[11] as u16,
+                                                                         //            ip[12] as u16 * 0x100 + ip[13] as u16,
+                                                                         //            ip[14] as u16 * 0x100 + ip[15] as u16,
+                                                                         //        ),
+                                                                         //        5683,
+                                                                         //    ),
+                                                                         //);
                             unsafe {
                                 dtls_write(
                                     context,

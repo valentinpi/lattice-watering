@@ -79,32 +79,41 @@ async function refreshPlants() {
 async function plantDetailView() {
     var myUrl = location.search;
     var myIP = myUrl.split('=')[1];
-    let response = await (fetch('/plantDetailView' + '?nodeIP=' + myIP));
+    let response = await (fetch('/plantDetailView' + '?node_ip=' + myIP));
     let data = await response.json();
+    console.log(data);
 
     // Creating the Box with plant and info
     var element = document.getElementById("scrollmenu");
     element.insertAdjacentHTML('afterend', `\
 <div class="box">
     <h3>
-        Plant ${data[0].node_ip}
+        Plant
+        <br/>
+        <br/>
+        ${data[0].node_ip}
     </h3>
     <img src="/img/placeholder_plant.png" alt="Plant">
-    <br>
-    <br>
+    <br/>
+    <br/>
     Humidity: ${data[0].humidity}%
-    <br>
-    <form action="/pump_toggle?nodeIP=${myUrl.split('=')[1]}" method="POST">
+    <br/>
+    <form action="/pump_toggle?node_ip=${myIP}" method="POST">
+        <br/>
         <input type="submit" name="TOGGLE" value="Toggle Pump">
     </form>
-    <form action="/calibrate_sensor?nodeIP=${myIP}?wet_value=wet_value?dry_value=dry_value" method="POST">
-        <input type="text" name="dry_value" value="DRY VALUE" size="10">
-        <input type="text" name="wet_value" value="WET VALUE" size="10">
-        <input type="submit" name="set_value" value="SET VALUE" size="10">
+    <br/>
+    <form action="/calibrate_sensor" method="POST">
+        <input type="hidden" name="node_ip" value="${myIP}">
+        <input type="text" name="dry_value" value="Dry Value" size="10">
+        <input type="text" name="wet_value" value="Wet Value" size="10">
+        <br/>
+        <br/>
+        <input type="submit" size="10">
     </form>
+    <br/>
     <a href="/" text="Go back", title="Go back to plants overview" id="plantSetting"></a>
 </div>`);
-    console.log(`<form action="/pump_toggle?nodeIP=${myUrl.split('=')[1]}" method="POST">`);
 
     //var t = setTimeout(refreshPlants, 2000);
 };

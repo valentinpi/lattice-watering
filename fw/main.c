@@ -153,14 +153,15 @@ ssize_t pump_handler(coap_pkt_t *pkt, uint8_t *buf, size_t len, void *context) {
 }
 
 ssize_t calibration_handler(coap_pkt_t *pkt, uint8_t *buf, size_t len, void *context) {
-    (void)pkt;
+    (void)buf;
+    (void)len;
     (void)context;
 
     mutex_lock(&soil_mutex);
     nanocbor_value_t dec = {0};
-    nanocbor_decoder_init(&dec, buf, len);
+    nanocbor_decoder_init(&dec, pkt->payload, pkt->payload_len);
     nanocbor_get_int32(&dec, &soil_dry_value);
-    nanocbor_get_int32(&dec, &soil_wet_value);
+    err = nanocbor_get_int32(&dec, &soil_wet_value);
     mutex_unlock(&soil_mutex);
 
     return 0;
@@ -183,8 +184,10 @@ int main(void) {
                   "data");
 
     /* CoAP Methods */
-    coap_resource_t res[2] = {{.methods = COAP_POST, .handler = pump_handler, .path = "/pump_toggle"},
-                              {.methods = COAP_POST, .handler = calibration_handler, .path = "/calibrate_sensor"}};
+    // NOTE: Strangely, this does not work if the methods are switched. Does the default selection strategy go through
+    // the resource paths alphabetically or something?!
+    coap_resource_t res[2] = {{.methods = COAP_POST, .handler = calibration_handler, .path = "/calibrate_sensor"},
+                              {.methods = COAP_POST, .handler = pump_handler, .path = "/pump_toggle"}};
     gcoap_listener_t listener = {.resources = res, .resources_len = sizeof(res)};
     gcoap_register_listener(&listener);
 

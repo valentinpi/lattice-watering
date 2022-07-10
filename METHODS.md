@@ -24,9 +24,9 @@ Every 5 seconds, depending on the configuration, the DTLS proxy receives a non-c
 -----------------------------------------------------------------------------------------------------------------------
 | tx_bytes (uint32) | tx_unicast_count (uint32) | tx_mcast_count (uint32) | tx_success (uint32) |  tx_failed (uint32) |
 -----------------------------------------------------------------------------------------------------------------------
------------------------------------
-| ip_addr (uint8[16], CBOR array) |
------------------------------------
+-----------------------
+| ip_addr (uint8[16]) |
+-----------------------
 ```
 So the packet contains humidity information, the humdity sensor calibration, as well as info on the node itself: Whether its pump is activated and its current IPv6 statistics. Note that these statistics do not need to be saved. `count` refers to the number of packets. The data is aligned from left to right, top to bottom. We also post the IP address, as the packet will go through a tunnel, and our frontend uses some unique IPs for board identification.
 

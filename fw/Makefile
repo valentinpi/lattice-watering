@@ -13,8 +13,7 @@ USEMODULE += credman_load
 USEMODULE += periph_adc
 USEMODULE += periph_gpio
 USEMODULE += periph_wdt
-#USEMODULE += prng_sha256prng
-USEMODULE += prng_sha1prng
+USEMODULE += prng_sha256prng
 USEMODULE += ps
 USEMODULE += shell
 USEMODULE += shell_commands
@@ -40,7 +39,7 @@ CFLAGS += -DCONFIG_DTLS_PSK
 
 # NOTE: To fix weird timing issue: When trying to send the handshake, the timeout is just far too slow.
 #       We use 10 seconds.
-CFLAGS += -DCONFIG_GCOAP_DTLS_HANDSHAKE_TIMEOUT_MSEC=30000
+CFLAGS += -DCONFIG_GCOAP_DTLS_HANDSHAKE_TIMEOUT_MSEC=10000
 # NOTE: We do not run a DTLS server on the nodes and we only connect to the proxy, so we can safely deactivate
 #       this, avoiding constantly closing and reopening the existing session.
 CFLAGS += -DCONFIG_GCOAP_DTLS_MINIMUM_AVAILABLE_SESSIONS=0

@@ -55,7 +55,7 @@ module.exports = {
         _create_table('plant_humidities', `
             CREATE TABLE IF NOT EXISTS plant_humidities (
                 id INTEGER PRIMARY KEY AUTOINCREMENT NULL,
-                node INTEGER,
+                node INTEGER NOT NULL,
                 date_time TEXT,
                 humidity INTEGER,
                 FOREIGN KEY (node) REFERENCES plant_nodes(id)
@@ -64,7 +64,7 @@ module.exports = {
     },
     /* INSERTION */
     change_plant_node: async function(node_ip, pump_activated, dry_value, wet_value) {
-        await new Promise(function (resolve) {
+        return await new Promise(function (resolve) {
             db.run(`
                 INSERT INTO plant_nodes (node_ip, pump_activated, dry_value, wet_value)
                     VALUES (?, ?, ?, ?)
@@ -84,7 +84,7 @@ module.exports = {
         });
     },
     insert_plant_humidity: async function (node_ip, humidity) {
-        await new Promise(function (resolve) {
+        return await new Promise(function (resolve) {
             db.run(`
                 INSERT INTO plant_humidities (node, date_time, humidity)
                     VALUES ((SELECT id FROM plant_nodes WHERE node_ip = ?), datetime('now','localtime'), ?);
@@ -96,7 +96,7 @@ module.exports = {
                     resolve(1);
                 }
             });
-        })
+        });
     },
     select_all: async function () {
         var data = 0;
