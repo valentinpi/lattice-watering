@@ -100,7 +100,9 @@ var server = coap.createServer({ type: 'udp6' });
 })();
 
 server.on('request', (req, _) => {
-    console.log('Received CoAP-CBOR request');
+    if (req.url != '/data') {
+        return;
+    }
 
     let decodedData = cbor.decodeAllSync(req.payload);
     let humidity = decodedData[0];
@@ -116,6 +118,8 @@ server.on('request', (req, _) => {
     let tx_failed = decodedData[10];
     let ip_addr = new Uint8Array(decodedData.slice(11, 27));
     let ip_addr_str = ip.toString(Buffer.from(ip_addr), 0, 16);
+
+    console.log(`Received CoAP-CBOR /data POST from ${ip_addr_str}`);
 
     //console.log(
     //    `ip_addr: ${ip_addr}\n`,
@@ -134,7 +138,7 @@ server.on('request', (req, _) => {
     
     db.change_plant_node(ip_addr_str, pump_activated, dry_value, wet_value);
     db.insert_plant_humidity(ip_addr_str, humidity);
-    db.select_all();
+    //db.select_all();
 });
 
 server.on('response', (res) => {

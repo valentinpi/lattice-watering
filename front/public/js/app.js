@@ -109,7 +109,7 @@ async function plantDetailView() {
         <input type="text" name="wet_value" value="Wet Value" size="10">
         <br/>
         <br/>
-        <input type="submit" size="10">
+        <input type="submit" value="Calibrate sensor" size="10">
     </form>
     <br/>
     <a href="/" text="Go back", title="Go back to plants overview" id="plantSetting"></a>
