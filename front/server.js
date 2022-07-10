@@ -76,14 +76,10 @@ app.post('/calibrate_sensor', function (req, res) {
     var dry_value = req.query.dry_value;
 
     // change values in database
-    change_plant_node(plantIP,false,dry_value,wet_value);
+    db.change_plant_node(plantIP,false,dry_value,wet_value);
 
     //Send payload
     // TODO: Proxy is missing
-    var payload = {
-        dry_value: dry_value,
-        wet_value: wet_value
-    }
     const payload = cbor.encode(ip.toBuffer(plant_ip), dry_value, wet_value);
     const coap_req = coap.request({ hostname: "::", pathname: "/calibrate_sensor", confirmable: false, method: 'POST', port: 5685 });
     coap_req.setOption('Content-Format', "application/cbor");
@@ -193,5 +189,10 @@ async function testAll(){
 
     setTimeout(() => { db.selectAll(); }, 1000);
 };
+
+
+
+db.change_plant_node("::", 0, 0, 0);
+db.insert_plant_humidity("::", 50);
 
 //testAll();

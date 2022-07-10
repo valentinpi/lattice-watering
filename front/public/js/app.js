@@ -1,6 +1,5 @@
 "use strict";
 
-const { select_plant_info } = require("../../db");
 
 function startup(isIndex = 0) {
     if (isIndex) {
@@ -62,18 +61,23 @@ async function refreshPlants() {
         h3_top.textContent = 'Plant';
         h3_bottom.textContent = data[i].node_ip;
         var text_hum = document.createTextNode('Humidity: ' + data[i].humidity + '%');
-        
-        var plant_info = select_plant_info(myIP);
+ 
         var humidity = data[i].humidity;
-        var low = plant_info.dry_value != "undefined" ? plant_info.dry_value : 5000;
-        var high = plant_info.dry_value != "undefined" ? plant_info.dry_value : 5000;
+        var low = 20;
+        var high = 60;
         // toggle pump if moisture level is under 20% till it is 60%
+        // https://www.greenwaybiotech.com/blogs/gardening-articles/how-soil-moisture-affects-your-plants-growth
+
         if (humidity < low){
-            post('/pump_toggle' + '?nodeIP=' + myIP);
+            await (fetch('/pump_toggle' + '?node_ip=' + myIP));
+            response = await (fetch('/plantRefresh'));
             while (humidity<= high){
-                // pass or sleep
+                // sleep
+                await new Promise(r => setTimeout(r, 2000));
+                data = await response.json();
+                humidity = data[i].humidity;
             }
-            post('/pump_toggle' + '?nodeIP=' + myIP);
+            await (fetch('/pump_toggle' + '?node_ip=' + myIP));
 
         }
         a.href = 'plantView?node_ip=' + data[i].node_ip;
@@ -100,9 +104,8 @@ async function plantDetailView() {
     console.log(data);
 
     // get dry and wet value from database
-    var plant_infos = select_plant_info(myIP);
-    var dry_value= plant_infos[2];
-    var wet_value= plant_infos[3];
+    var dry_value= data[0].dry_value;
+    var wet_value= data[0].wet_value;;
 
     // Creating the Box with plant and info
     var element = document.getElementById("scrollmenu");
@@ -192,27 +195,3 @@ function plantChart() {
                 )
         })
 };
-
-// post function
-function post(path, params, method='post') {
-
-    // The rest of this code assumes you are not using a library.
-    // It can be made less verbose if you use one.
-    const form = document.createElement('form');
-    form.method = method;
-    form.action = path;
-  
-    for (const key in params) {
-      if (params.hasOwnProperty(key)) {
-        const hiddenField = document.createElement('input');
-        hiddenField.type = 'hidden';
-        hiddenField.name = key;
-        hiddenField.value = params[key];
-  
-        form.appendChild(hiddenField);
-      }
-    }
-  
-    document.body.appendChild(form);
-    form.submit();
-  };
