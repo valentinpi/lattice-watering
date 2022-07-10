@@ -60,6 +60,15 @@ async function refreshPlants() {
         h3_top.textContent = 'Plant';
         h3_bottom.textContent = data[i].node_ip;
         var text_hum = document.createTextNode('Humidity: ' + data[i].humidity + '%');
+        // toggle pump if moisture level is under 20% till it is 60%
+        if (data[i].humidity < 20){
+            post('/pump_toggle' + '?nodeIP=' + myIP);
+            while (data[i].humidity <= 60){
+                // pass or sleep
+            }
+            post('/pump_toggle' + '?nodeIP=' + myIP);
+
+        }
         a.href = 'plantView?node_ip=' + data[i].node_ip;
 
         div.appendChild(h3_top.cloneNode(true));
@@ -171,3 +180,27 @@ function plantChart() {
                 )
         })
 };
+
+// post function
+function post(path, params, method='post') {
+
+    // The rest of this code assumes you are not using a library.
+    // It can be made less verbose if you use one.
+    const form = document.createElement('form');
+    form.method = method;
+    form.action = path;
+  
+    for (const key in params) {
+      if (params.hasOwnProperty(key)) {
+        const hiddenField = document.createElement('input');
+        hiddenField.type = 'hidden';
+        hiddenField.name = key;
+        hiddenField.value = params[key];
+  
+        form.appendChild(hiddenField);
+      }
+    }
+  
+    document.body.appendChild(form);
+    form.submit();
+  };

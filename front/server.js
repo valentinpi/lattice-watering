@@ -70,12 +70,15 @@ app.post('/pump_toggle', function (req, res) {
 });
 
 app.post('/calibrate_sensor', function (req, res) {
-    var plant_ip = req.body.node_ip;
-    var dry_value = parseInt(req.body.dry_value, 10);
-    var wet_value = parseInt(req.body.wet_value, 10);
-    if (isNaN(dry_value) || isNaN(wet_value)) {
-        console.log("Calibration parameters are invalid");
-        return;
+    var plantIP = req.query.nodeIP;
+    var wet_value = req.query.wet_value;
+    var dry_value = req.query.dry_value;
+
+    //Send payload
+    // TODO: Proxy is missing
+    var payload = {
+        dry_value: dry_value,
+        wet_value: wet_value
     }
     const payload = cbor.encode(ip.toBuffer(plant_ip), dry_value, wet_value);
     const coap_req = coap.request({ hostname: "::", pathname: "/calibrate_sensor", confirmable: false, method: 'POST', port: 5685 });
