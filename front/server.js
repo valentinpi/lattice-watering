@@ -74,9 +74,17 @@ app.post('/pump_toggle', function (req, res) {
 
 app.post('/calibrate_sensor', function (req, res) {
     var plant_ip = req.body.node_ip;
-    var wet_value = req.body.wet_value;
-    var dry_value = req.body.dry_value;
-    // Send to proxy
+    var dry_value = parseInt(req.body.dry_value, 10);
+    var wet_value = parseInt(req.body.wet_value, 10);
+    if (isNaN(dry_value) || isNaN(wet_value)) {
+        console.log("Calibration parameters are invalid");
+        return;
+    }
+
+    // change values in database
+    db.change_plant_node(plant_ip, false, dry_value, wet_value);
+
+    //Send payload
     const payload = cbor.encode(ip.toBuffer(plant_ip), dry_value, wet_value);
     const coap_req = coap.request({ hostname: "::", pathname: "/calibrate_sensor", confirmable: false, method: 'POST', port: 5685 });
     coap_req.setOption('Content-Format', "application/cbor");
@@ -130,6 +138,7 @@ const create_image = async (chart_data, chart_time) => {
                         text: 'Date and time of measurement'
                     },
                     ticks: {
+                        max: 10,
                         stepSize: 1
                         //callback: function (value, index, values) {
                         //    return xLabels[index];  // gives points of top x axis
