@@ -5,7 +5,7 @@ function startup(isIndex = 0) {
     if (isIndex) {
         // index with plant overview
         date_time();
-        refreshPlants();
+        refresh_plants();
     } else {
         // plant_view with more details to one specific node_ip
         date_time();

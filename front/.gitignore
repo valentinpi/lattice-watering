@@ -1,8 +1,0 @@
-node_modules/
-lattice_watering.db
-front/node_modules
-front/node_modules/*
-test.js
-passport.js
-user.js
-node_modules/*

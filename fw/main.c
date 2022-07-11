@@ -158,7 +158,6 @@ ssize_t calibration_handler(coap_pkt_t *pkt, uint8_t *buf, size_t len, void *con
     (void)context;
 
     mutex_lock(&soil_mutex);
-    printf("%" PRId32 " %" PRId32 "\n", soil_dry_value, soil_wet_value);
     nanocbor_value_t dec = {0};
     nanocbor_decoder_init(&dec, pkt->payload, pkt->payload_len);
     nanocbor_get_int32(&dec, &soil_dry_value);
