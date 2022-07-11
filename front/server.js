@@ -90,14 +90,14 @@ app.listen(3000, () => {
 
 /* -------------------- Chart -------------------- */
 app.get('/plant_chart', async function (req, res) {
-    var plant_ip = req.query.node_ip;
+    let plant_ip = req.query.node_ip;
     let result = await db.select_plant_info(plant_ip);
-    var chart_data = [];
-    var chart_time = [];
+    let chart_data = [];
+    let chart_time = [];
     result.forEach(row => {
         chart_data.push(row.humidity);
         chart_time.push(row.date_time);
-        console.log(row.node_ip + "\t" + row.pump_activated + "\t" + row.dry_value + "\t" + row.wet_value + "\t" + row.date_time + "\t" + row.humidity);
+        //console.log(row.node_ip + "\t" + row.pump_activated + "\t" + row.dry_value + "\t" + row.wet_value + "\t" + row.date_time + "\t" + row.humidity);
     });
     fs.writeFileSync('./public/img/mychart.png', await create_image(chart_data, chart_time));
 });

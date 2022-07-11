@@ -101,15 +101,16 @@ async function refresh_plants() {
         div2.appendChild(h1);
         element.appendChild(div2);
     }
-    var t = setTimeout(refresh_plants, 2500);
+
+    setTimeout(refresh_plants, 2500);
 };
 
 /* ------------------ plant_view ------------------ */
 async function plant_detail_view() {
-    var myUrl = location.search;
-    var myIP = myUrl.split('=')[1];
-    let chart_response = await (fetch('/plant_chart' + '?node_ip=' + myIP));
-    let response = await (fetch('/plant_detail_view' + '?node_ip=' + myIP));
+    let my_url = location.search;
+    let my_ip = my_url.split('=')[1];
+    await (fetch('/plant_chart' + '?node_ip=' + my_ip));
+    let response = await (fetch('/plant_detail_view' + '?node_ip=' + my_ip));
     let data = await response.json();
 
     // get dry and wet value from database
@@ -118,40 +119,45 @@ async function plant_detail_view() {
 
     // Creating the Box with plant and info
     var element = document.getElementById("plant_chart");
-    element.insertAdjacentHTML('afterend', `\
-<div class="box">
-    <h3>
-        Plant
-        <br/>
-        <br/>
-        ${data[0].node_ip}
-    </h3>
-    <img src="/img/placeholder_plant.png" alt="Plant">
-    <br/>
-    <br/>
-    Humidity: ${data[0].humidity}%
-    <br/>
-    <form action="/pump_toggle?node_ip=${myIP}" method="POST">
-        <br/>
-        <input type="submit" name="TOGGLE" value="Toggle Pump">
-    </form>
-    <br/>
-    <form action="/calibrate_sensor" method="POST">
-        <input type="hidden" name="node_ip" value="${myIP}">
-        <input type="text" name="dry_value" value="${dry_value}" size="10">
-        <input type="text" name="wet_value" value="${wet_value}" size="10">
-        <br/>
-        <br/>
-        <input type="submit" value="Calibrate sensor" size="10">
-    </form>
-    <br/>
-    <a href="/" text="Go back", title="Go back to plants overview" id="plantSetting"></a>
-</div>
-<div class="boxChart">
-    <img src="/img/mychart.png" alt="Plant Chart">
-</div>`);
 
-    //var t = setTimeout(refreshPlants, 2000);
+    while (element.hasChildNodes()) {
+        element.removeChild(element.firstChild);
+    }
+
+    element.innerHTML = `\
+        <div class="box">
+            <h3>
+                Plant
+                <br/>
+                <br/>
+                ${data[0].node_ip}
+            </h3>
+            <img src="/img/placeholder_plant.png" alt="Plant">
+            <br/>
+            <br/>
+            Humidity: ${data[0].humidity}%
+            <br/>
+            <form action="/pump_toggle?node_ip=${my_ip}" method="POST">
+                <br/>
+                <input type="submit" name="TOGGLE" value="Toggle Pump">
+            </form>
+            <br/>
+            <form action="/calibrate_sensor" method="POST">
+                <input type="hidden" name="node_ip" value="${my_ip}">
+                <input type="text" name="dry_value" value="${dry_value}" size="10">
+                <input type="text" name="wet_value" value="${wet_value}" size="10">
+                <br/>
+                <br/>
+                <input type="submit" value="Calibrate sensor" size="10">
+            </form>
+            <br/>
+            <a href="/" text="Go back", title="Go back to plants overview" id="plant_setting"></a>
+        </div>
+        <div class="box_chart">
+            <img src="/img/mychart.png" alt="Plant Chart">
+        </div>`;
+
+    setTimeout(plant_detail_view, 2500);
 };
 
 function plant_chart() {
