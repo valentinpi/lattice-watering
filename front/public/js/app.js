@@ -1,5 +1,6 @@
 "use strict";
 
+
 function startup(isIndex = 0) {
     if (isIndex) {
         //Index with plant overview
@@ -8,7 +9,6 @@ function startup(isIndex = 0) {
     } else {
         //PlantView with more details to one specific node_ip
         dateTime();
-        //plantChart();
         plantDetailView();
     }
 };
@@ -37,7 +37,12 @@ async function refreshPlants() {
     var element = document.getElementById("scrollmenu");
     var div = document.createElement('div');
         div.classList.add('box');
+    var div2 = document.createElement('div');
+        div2.classList.add('boxnonodes');
     var br = document.createElement('br');
+    var h3 = document.createElement('h3');
+    var h1 = document.createElement('h1');
+        h1.textContent = 'No nodes in reach';
     var h3_top = document.createElement('h3');
     var h3_bottom = document.createElement('h3');
     var img = document.createElement('img');
@@ -53,38 +58,66 @@ async function refreshPlants() {
     }
 
     //Add boxes for every distinct plant_ip in table in db
-    for (var i = 0; i < data.length; i++) {
-        while (div.hasChildNodes()) {
-            div.removeChild(div.firstChild);
-        }
-        h3_top.textContent = 'Plant';
-        h3_bottom.textContent = data[i].node_ip;
-        var text_hum = document.createTextNode('Humidity: ' + data[i].humidity + '%');
-        a.href = 'plantView?node_ip=' + data[i].node_ip;
+    if (data.length > 0) {
+        for (var i = 0; i < data.length; i++) {
+            while (div.hasChildNodes()) {
+                div.removeChild(div.firstChild);
+            }
 
-        div.appendChild(h3_top.cloneNode(true));
-        div.appendChild(h3_bottom.cloneNode(true));
-        div.appendChild(img.cloneNode(true));
-        div.appendChild(br.cloneNode(true));
-        div.appendChild(br.cloneNode(true));
-        div.appendChild(text_hum);
-        div.appendChild(br.cloneNode(true));
-        div.appendChild(a.cloneNode(true));
-        element.appendChild(div.cloneNode(true));
+            h3_top.textContent = 'Plant';
+            h3_bottom.textContent = data[i].node_ip;
+            var text_hum = document.createTextNode('Humidity: ' + data[i].humidity + '%');
+ 
+            var humidity = data[i].humidity;
+            var low = 20;
+            var high = 60;
+            // toggle pump if moisture level is under 20% till it is 60%
+            // https://www.greenwaybiotech.com/blogs/gardening-articles/how-soil-moisture-affects-your-plants-growth
+
+            //if (humidity < low){
+            //    await (fetch('/pump_toggle' + '?node_ip=' + data[i].node_ip));
+            //    while (humidity<= high){
+            //        // sleep
+            //        response = await (fetch('/plantRefresh'));
+            //        await new Promise(r => setTimeout(r, 2000));
+            //        data = await response.json();
+            //        humidity = data[i].humidity;
+            //    }
+            //    await (fetch('/pump_toggle' + '?node_ip=' + data[i].node_ip));
+            //}
+            a.href = 'plantView?node_ip=' + data[i].node_ip;
+        
+            div.appendChild(h3_top.cloneNode(true));
+            div.appendChild(h3_bottom.cloneNode(true));
+            div.appendChild(img.cloneNode(true));
+            div.appendChild(br.cloneNode(true));
+            div.appendChild(br.cloneNode(true));
+            div.appendChild(text_hum);
+            div.appendChild(br.cloneNode(true));
+            div.appendChild(a.cloneNode(true));
+            element.appendChild(div.cloneNode(true));
+        }
+    } else {
+        div2.appendChild(h1);
+        element.appendChild(div2);
     }
-    var t = setTimeout(refreshPlants, 2000);
+    var t = setTimeout(refreshPlants, 5000);
 };
 
 /* ------------------ plantView ------------------ */
 async function plantDetailView() {
     var myUrl = location.search;
     var myIP = myUrl.split('=')[1];
+    let chartResponse = await (fetch('/plantChart' + '?node_ip=' + myIP));
     let response = await (fetch('/plantDetailView' + '?node_ip=' + myIP));
     let data = await response.json();
-    console.log(data);
+
+    // get dry and wet value from database
+    var dry_value= data[0].dry_value;
+    var wet_value= data[0].wet_value;;
 
     // Creating the Box with plant and info
-    var element = document.getElementById("scrollmenu");
+    var element = document.getElementById("plantChart");
     element.insertAdjacentHTML('afterend', `\
 <div class="box">
     <h3>
@@ -105,14 +138,17 @@ async function plantDetailView() {
     <br/>
     <form action="/calibrate_sensor" method="POST">
         <input type="hidden" name="node_ip" value="${myIP}">
-        <input type="text" name="dry_value" value="Dry Value" size="10">
-        <input type="text" name="wet_value" value="Wet Value" size="10">
+        <input type="text" name="dry_value" value="${dry_value}" size="10">
+        <input type="text" name="wet_value" value="${wet_value}" size="10">
         <br/>
         <br/>
         <input type="submit" value="Calibrate sensor" size="10">
     </form>
     <br/>
     <a href="/" text="Go back", title="Go back to plants overview" id="plantSetting"></a>
+</div>
+<div class="boxChart">
+    <img src="/img/mychart.png" alt="Plant Chart">
 </div>`);
 
     //var t = setTimeout(refreshPlants, 2000);

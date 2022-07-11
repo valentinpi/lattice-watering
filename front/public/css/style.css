@@ -49,6 +49,17 @@ button {
     border-spacing: 0;
 }
 
+    .plantSelection a {
+        color: blue;
+        text-align: center;
+        padding: 3%;
+        text-decoration: none;
+    }
+
+        .plantSelection a:hover {
+            color: dodgerblue;
+        }
+
 .scrollmenu {
     overflow-x: scroll;
     overflow-y: hidden;
@@ -62,6 +73,8 @@ button {
         text-align: center;
         padding: 3%;
         text-decoration: none;
+        height: auto;
+        width: auto;
     }
 
         .scrollmenu a:hover {
@@ -85,6 +98,30 @@ button {
         .box hover {
             background-color: bisque;
         }
+
+.boxChart {
+    display: inline-block;
+    background-color: ghostwhite;
+    border: 5px solid #00CC66;
+    border-radius: 16px;
+    width: 75%;
+    margin: 0.5%;
+}
+
+    .boxChart img {
+        width: 95%;
+    }
+
+    .boxChart hover {
+        background-color: bisque;
+    }
+
+.boxnonodes {
+    display: contents;
+    background-color: bisque;
+    margin: 3%;
+    padding: 3%;
+}
 
 .botRow {
     background-color: #DFFEE4;

@@ -10,6 +10,15 @@ var bodyParser = require('body-parser');
 var db = require('./db');
 var cbor = require('cbor');
 var ip = require('ip');
+const { ChartJSNodeCanvas } = require('chartjs-node-canvas');
+const fs = require('fs');
+
+const width = 1000;
+const height = 300;
+const chartCallback = (ChartJS) => {
+    console.log('chart built')
+};
+const canvasRenderService = new ChartJSNodeCanvas({ width, height, chartCallback });
 
 // Websocket
 var io = require('socket.io')(http);
@@ -21,6 +30,7 @@ var request = require('coap').request;
 var Agent = require('coap').Agent;
 const cons = require('consolidate');
 const { createBrotliCompress } = require('zlib');
+const { change_plant_node } = require('./db');
 var url;
 
 /* ---------------- Express Setup ---------------- */
@@ -70,13 +80,15 @@ app.post('/pump_toggle', function (req, res) {
 });
 
 app.post('/calibrate_sensor', function (req, res) {
-    var plant_ip = req.body.node_ip;
-    var dry_value = parseInt(req.body.dry_value, 10);
-    var wet_value = parseInt(req.body.wet_value, 10);
-    if (isNaN(dry_value) || isNaN(wet_value)) {
-        console.log("Calibration parameters are invalid");
-        return;
-    }
+    var plantIP = req.query.nodeIP;
+    var wet_value = req.query.wet_value;
+    var dry_value = req.query.dry_value;
+
+    // change values in database
+    db.change_plant_node(plantIP,false,dry_value,wet_value);
+
+    //Send payload
+    // TODO: Proxy is missing
     const payload = cbor.encode(ip.toBuffer(plant_ip), dry_value, wet_value);
     const coap_req = coap.request({ hostname: "::", pathname: "/calibrate_sensor", confirmable: false, method: 'POST', port: 5685 });
     coap_req.setOption('Content-Format', "application/cbor");
@@ -90,7 +102,69 @@ app.listen(3000, () => {
 });
 
 /* -------------------- Chart -------------------- */
-//TODO
+app.get('/plantChart', async function (req, res) {
+    var plantIP = req.query.nodeIP;
+    let result = await db.select_plant_info(plantIP);
+    var chartData = [];
+    var chartTime = [];
+    result.forEach(row => {
+        chartData.push(row.humidity);
+        chartTime.push(row.date_time);
+        console.log(row.node_ip + "\t" + row.pump_activated + "\t" + row.dry_value + "\t" + row.wet_value + "\t" + row.date_time + "\t" + row.humidity);
+    });
+
+    console.log('making image')
+    fs.writeFileSync('./public/img/mychart.png', await createImage(chartData, chartTime));
+    res.send('done');
+});
+
+const createImage = async (chartData, chartTime) => {
+    const configuration = {
+        type: 'line',
+        data: {
+            labels: chartTime,
+            datasets: [{
+                label: 'lmao',
+                data: chartData,
+                fill: true,
+                borderColor: 'rgb(75, 192, 192)',
+                axis: 'x'
+            }]
+        },
+        options: {
+            scales: {
+                x: {
+                    type: 'category',
+                    display: true,
+                    position: 'bottom',
+                    title: {
+                        display: true,
+                        text: 'Date and time of measurement'
+                    },
+                    ticks: {
+                        stepSize: 1
+                        //callback: function (value, index, values) {
+                        //    return xLabels[index];  // gives points of top x axis
+                        //}
+                    }
+                },
+                y: {
+                    display: true,
+                    title: {
+                        display: true,
+                        text: 'Humidity in %'
+                    },
+                    ticks: {
+                        max: 100,
+                        stepSize: 10 //defines y axis step scale
+                    }
+                }
+            }
+        }
+    }
+    const dataUrl = await canvasRenderService.renderToBuffer(configuration); // converts chart to image
+    return dataUrl;
+};
 
 /* --------------------- COAP -------------------- */
 var server = coap.createServer({ type: 'udp6' });
@@ -155,7 +229,7 @@ server.listen(5683, () => {
 /* --------------------- TEST -------------------- */
 async function testAll(){
     //Testdata because no boards ...
-    var ip_addr = [254,128,0,0,0,0,0,0,2,4,37,25,24,1,11,1];
+    var ip_addr = [254,128,0,0,0,0,0,0,2,4,37,25,24,1,11,0];
     var humidity = 0;
     var pump_activated = false;
     var dry_value = 2920;
@@ -175,16 +249,14 @@ async function testAll(){
     var pump_state = 0;
     if (pump_activated) {pump_state = 1;}
 
-    db.insertPlantNode(hex_ip_addr, humidity);
-    if (Object.keys(await db.selectSinglePlant(hex_ip_addr)).length == 0) {
-        console.log('no plant_status for new node found, creating one...')
-        db.insertPlantStatus(hex_ip_addr, pump_state, dry_value, wet_value)
-    } else {
-        console.log('a plant_status for new node found, changing it...')
-        db.changePlantStatus(hex_ip_addr, pump_state, dry_value, wet_value);
-    }
+    db.change_plant_node(hex_ip_addr, pump_state, dry_value, wet_value);
+    db.insert_plant_humidity(hex_ip_addr, humidity);
 
-    setTimeout(() => { db.selectAll(); }, 1000);
+    setTimeout(() => { db.select_all(); }, 1000);
 };
+
+db.select_all();
+db.change_plant_node("::", 0, 0, 0);
+db.insert_plant_humidity("::", 50);
 
 //testAll();
