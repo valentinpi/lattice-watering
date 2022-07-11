@@ -101,7 +101,7 @@ async function refresh_plants() {
         div2.appendChild(h1);
         element.appendChild(div2);
     }
-    var t = setTimeout(refresh_plants, 5000);
+    var t = setTimeout(refresh_plants, 2500);
 };
 
 /* ------------------ plant_view ------------------ */

@@ -1,32 +1,23 @@
 "use strict"
 
 // Webserver
-var express = require('express');
-var app = require("express")();
-var http = require('http').Server(app);
-var morgan = require('morgan');
-var engines = require('consolidate');
-var body_parser = require('body-parser');
-var db = require('./db');
-var cbor = require('cbor');
-var ip = require('ip');
-const { ChartJSNodeCanvas } = require('chartjs-node-canvas');
+const app = require("express")();
+const body_parser = require('body-parser');
+const cbor = require('cbor');
+const coap = require('coap');
+const db = require('./db');
+const engines = require('consolidate');
+const express = require('express');
 const fs = require('fs');
+const ip = require('ip');
+const morgan = require('morgan');
+const url = require('url');
 
-const width = 1000;
-const height = 300;
-const chart_callback = (_) => {
-    console.log('chart built');
-};
-const canvas_render_service = new ChartJSNodeCanvas({ width, height, chart_callback });
-
-// Websocket
-var io = require('socket.io')(http);
-
-// CoAP
-var coap = require('coap');
-var url = require('url');
-var url;
+// We draw the charts on the server and pass them to the frontend
+const { ChartJSNodeCanvas } = require('chartjs-node-canvas');
+const CHART_WIDTH = 1000;
+const CHART_HEIGHT = 300;
+const canvas_render_service = new ChartJSNodeCanvas({ width: CHART_WIDTH, height: CHART_HEIGHT });
 
 /* ---------------- Express Setup ---------------- */
 app.use(morgan('dev'));
@@ -46,11 +37,11 @@ app.get('/plant_view', function (req, res) {
     res.render('./plant_view.html', { node_ip: node_ip });
 });
 
-app.get('/', function (req, res) {
+app.get('/', function (_, res) {
     res.render('./index.html');
 });
 
-app.get('/plant_refresh', async function (req, res) {
+app.get('/plant_refresh', async function (_, res) {
     let plantRefresh = await db.select_plant_infos();
     res.json(plantRefresh);
 });
@@ -108,10 +99,7 @@ app.get('/plant_chart', async function (req, res) {
         chart_time.push(row.date_time);
         console.log(row.node_ip + "\t" + row.pump_activated + "\t" + row.dry_value + "\t" + row.wet_value + "\t" + row.date_time + "\t" + row.humidity);
     });
-
-    console.log('making image')
     fs.writeFileSync('./public/img/mychart.png', await create_image(chart_data, chart_time));
-    res.send('done');
 });
 
 const create_image = async (chart_data, chart_time) => {
@@ -120,7 +108,7 @@ const create_image = async (chart_data, chart_time) => {
         data: {
             labels: chart_time,
             datasets: [{
-                label: 'lmao',
+                label: 'Humidity',
                 data: chart_data,
                 fill: true,
                 borderColor: 'rgb(75, 192, 192)',
@@ -165,10 +153,7 @@ const create_image = async (chart_data, chart_time) => {
 
 /* --------------------- COAP -------------------- */
 var server = coap.createServer({ type: 'udp6' });
-
-(async () => {
-    await db.init();
-})();
+db.init();
 
 server.on('request', (req, _) => {
     if (req.url != '/data') {
@@ -180,6 +165,7 @@ server.on('request', (req, _) => {
     let pump_activated = decoded_data[1];
     let dry_value = decoded_data[2];
     let wet_value = decoded_data[3];
+    /*
     let rx_bytes = decoded_data[4];
     let rx_count = decoded_data[5];
     let tx_bytes = decoded_data[6];
@@ -187,27 +173,30 @@ server.on('request', (req, _) => {
     let tx_mcast_count = decoded_data[8];
     let tx_success = decoded_data[9];
     let tx_failed = decoded_data[10];
+    */
     let ip_addr = new Uint8Array(decoded_data.slice(11, 27));
     let ip_addr_str = ip.toString(Buffer.from(ip_addr), 0, 16);
 
     console.log(`Received CoAP-CBOR /data POST from ${ip_addr_str}`);
 
-    //console.log(
-    //    `ip_addr: ${ip_addr}\n`,
-    //    `\bip_addr_str: ${ip_addr_str}\n`,
-    //    `\bhumidity: ${humidity}\n`,
-    //    `\bpump_activated: ${pump_activated}\n`,
-    //    `\bdry_value: ${dry_value}\n`,
-    //    `\bwet_value: ${wet_value}\n`,
-    //    `\brx_bytes: ${rx_bytes}\n`,
-    //    `\brx_count: ${rx_count}\n`,
-    //    `\btx_bytes: ${tx_bytes}\n`,
-    //    `\btx_unicast_count: ${tx_unicast_count}\n`,
-    //    `\btx_mcast_count: ${tx_mcast_count}\n`,
-    //    `\btx_success: ${tx_success}\n`,
-    //    `\btx_failed: ${tx_failed}`);
+    /*
+    console.log(
+        `ip_addr: ${ip_addr}\n`,
+        `\bip_addr_str: ${ip_addr_str}\n`,
+        `\bhumidity: ${humidity}\n`,
+        `\bpump_activated: ${pump_activated}\n`,
+        `\bdry_value: ${dry_value}\n`,
+        `\bwet_value: ${wet_value}\n`,
+        `\brx_bytes: ${rx_bytes}\n`,
+        `\brx_count: ${rx_count}\n`,
+        `\btx_bytes: ${tx_bytes}\n`,
+        `\btx_unicast_count: ${tx_unicast_count}\n`,
+        `\btx_mcast_count: ${tx_mcast_count}\n`,
+        `\btx_success: ${tx_success}\n`,
+        `\btx_failed: ${tx_failed}`);
+    */
     
-    db.change_plant_node(ip_addr_str, pump_activated, dry_value, wet_value);
+    db.change_plant_node(ip_addr_str, pump_activated, dry_value, wet_value, 20, 60, 5);
     db.insert_plant_humidity(ip_addr_str, humidity);
     //db.select_all();
 });
@@ -224,6 +213,7 @@ server.listen(5683, () => {
 });
 
 /* --------------------- TEST -------------------- */
+/*
 async function test_all(){
     //Testdata because no boards ...
     var ip_addr = [254,128,0,0,0,0,0,0,2,4,37,25,24,1,11,0];
@@ -256,4 +246,5 @@ db.select_all();
 db.change_plant_node("::", 0, 0, 0);
 db.insert_plant_humidity("::", 50);
 
-//testAll();
+testAll();
+*/

@@ -43,13 +43,19 @@ module.exports = {
     /* TABLE CREATION */
     create_tables: function(db) {
         // NOTE: We must assert that the `node_ip` column is unique.
+        // The watering thresholds allow us to implement the following functionality: If the humidity is below 
+        // `watering_threshold_bottom`, the plant will be watered for five seconds, then we will wait for the
+        // `watering_threshold_timeout` to run out and check again until `watering_threshold_target` is reached.
         _create_table('plant_nodes', `
             CREATE TABLE IF NOT EXISTS plant_nodes (
                 id INTEGER PRIMARY KEY NOT NULL,
                 node_ip TEXT UNIQUE NOT NULL,
                 pump_activated INTEGER,
                 dry_value INTEGER,
-                wet_value INTEGER
+                wet_value INTEGER,
+                watering_threshold_bottom INTEGER,
+                watering_threshold_target INTEGER,
+                watering_threshold_timeout INTEGER
             );
         `);
         _create_table('plant_humidities', `
@@ -61,9 +67,19 @@ module.exports = {
                 FOREIGN KEY (node) REFERENCES plant_nodes(id)
             );
         `);
+        // The watering times are in seconds.
+        _create_table('plant_watering_schedules', `
+            CREATE TABLE IF NOT EXISTS plant_watering_schedules (
+                id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+                node INTEGER NOT NULL,
+                watering_begin INTEGER,
+                watering_end INTEGER,
+                FOREIGN KEY (node) REFERENCES plant_nodes(id)
+            );
+        `);
     },
     /* INSERTION */
-    change_plant_node: async function(node_ip, pump_activated, dry_value, wet_value) {
+    change_plant_node: async function(node_ip, pump_activated, dry_value, wet_value, watering_threshold_bottom, watering_threshold_target, watering_threshold_timeout) {
         return await new Promise(function (resolve) {
             db.run(`
                 INSERT INTO plant_nodes (node_ip, pump_activated, dry_value, wet_value)
@@ -71,9 +87,12 @@ module.exports = {
                 ON CONFLICT(node_ip) DO UPDATE SET
                     pump_activated = ?,
                     dry_value = ?,
-                    wet_value = ?
+                    wet_value = ?,
+                    watering_threshold_bottom = ?,
+                    watering_threshold_target = ?,
+                    watering_threshold_timeout = ?
                 WHERE node_ip = ?;
-            `, node_ip, pump_activated, dry_value, wet_value, pump_activated, dry_value, wet_value, node_ip, (err) => {
+            `, node_ip, pump_activated, dry_value, wet_value, pump_activated, dry_value, wet_value, watering_threshold_bottom, watering_threshold_target, watering_threshold_timeout, node_ip, (err) => {
                 if (err) {
                     console.log(`Insert query error: ${err}`);
                     resolve(0);
@@ -98,6 +117,22 @@ module.exports = {
             });
         });
     },
+    insert_plant_watering_schedule: async function (node_ip, watering_begin, watering_end) {
+        return await new Promise(function (resolve) {
+            db.run(`
+                INSERT INTO plant_watering_schedules (node, watering_begin, watering_end)
+                    VALUES ((SELECT id FROM plant_nodes WHERE node_ip = ?), ?, ?);
+            `, node_ip, watering_begin, watering_end, node_ip, (err) => {
+                if (err) {
+                    console.log(`Insert query error: ${err}`);
+                    resolve(0);
+                } else {
+                    resolve(1);
+                }
+            });
+        });
+    },
+    /* SELECTION */
     select_all: async function () {
         var data = 0;
         let myPromise = new Promise(function (resolve) {
@@ -178,5 +213,21 @@ module.exports = {
             });
         })
         return return_data;
-    }
+    },
+    /* REMOVING */
+    delete_plant_watering_schedule: async function (node_ip, watering_begin, watering_end) {
+        return await new Promise(function (resolve) {
+            db.run(`
+                DELETE FROM plant_watering_schedules
+                WHERE node = (SELECT id FROM plant_nodes WHERE node_ip = ?) AND watering_begin = ? AND watering_end = ?;
+            `, node_ip, watering_begin, watering_end, (err) => {
+                if (err) {
+                    console.log(`Insert query error: ${err}`);
+                    resolve(0);
+                } else {
+                    resolve(1);
+                }
+            });
+        });
+    },
 };
