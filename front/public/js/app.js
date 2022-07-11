@@ -1,5 +1,6 @@
 "use strict";
 
+
 function startup(isIndex = 0) {
     if (isIndex) {
         //Index with plant overview
@@ -43,6 +44,8 @@ async function refreshPlants() {
     var h3 = document.createElement('h3');
     var h1 = document.createElement('h1');
         h1.textContent = 'No nodes in reach';
+    var h3_top = document.createElement('h3');
+    var h3_bottom = document.createElement('h3');
     var img = document.createElement('img');
         img.src = '/img/placeholder_plant.png';
         img.alt = 'Plant';
@@ -61,11 +64,33 @@ async function refreshPlants() {
             while (div.hasChildNodes()) {
                 div.removeChild(div.firstChild);
             }
-            h3.textContent = 'Plant ' + data[i].node_ip;
-            var text_hum = document.createTextNode('Humidity: ' + data[i].humidity + '%');
-            a.href = 'plantView?node_ip=' + data[i].node_ip;
 
-            div.appendChild(h3.cloneNode(true));
+            h3_top.textContent = 'Plant';
+            h3_bottom.textContent = data[i].node_ip;
+            var text_hum = document.createTextNode('Humidity: ' + data[i].humidity + '%');
+ 
+            var humidity = data[i].humidity;
+            var low = 20;
+            var high = 60;
+            // toggle pump if moisture level is under 20% till it is 60%
+            // https://www.greenwaybiotech.com/blogs/gardening-articles/how-soil-moisture-affects-your-plants-growth
+
+            if (humidity < low){
+                await (fetch('/pump_toggle' + '?node_ip=' + myIP));
+                response = await (fetch('/plantRefresh'));
+                while (humidity<= high){
+                    // sleep
+                    await new Promise(r => setTimeout(r, 2000));
+                    data = await response.json();
+                    humidity = data[i].humidity;
+                }
+                await (fetch('/pump_toggle' + '?node_ip=' + myIP));
+
+            }
+            a.href = 'plantView?node_ip=' + data[i].node_ip;
+        
+            div.appendChild(h3_top.cloneNode(true));
+            div.appendChild(h3_bottom.cloneNode(true));
             div.appendChild(img.cloneNode(true));
             div.appendChild(br.cloneNode(true));
             div.appendChild(br.cloneNode(true));
@@ -85,11 +110,15 @@ async function refreshPlants() {
 async function plantDetailView() {
     var myUrl = location.search;
     var myIP = myUrl.split('=')[1];
-    let chartResponse = await (fetch('/plantChart' + '?nodeIP=' + myIP));
-    let response = await (fetch('/plantDetailView' + '?nodeIP=' + myIP));
+    let chartResponse = await (fetch('/plantChart' + '?node_ip=' + myIP));
+    let response = await (fetch('/plantDetailView' + '?node_ip=' + myIP));
     let data = await response.json();
 
-    //Creating the Box with plant and info
+    // get dry and wet value from database
+    var dry_value= data[0].dry_value;
+    var wet_value= data[0].wet_value;;
+
+    // Creating the Box with plant and info
     var element = document.getElementById("scrollmenu");
     var div = document.createElement('div');
         div.classList.add('box');
@@ -122,12 +151,12 @@ async function plantDetailView() {
     var wet_value = document.createElement('input');
         wet_value.type= 'text';
         wet_value.name = 'wet_value';
-        wet_value.placeholder = 'Wet value';
+        wet_value.value = 'WET VALUE';
         wet_value.size = "10";
     var dry_value = document.createElement('input');
         dry_value.type= 'text';
         dry_value.name = 'dry_value';
-        dry_value.placeholder = 'Dry Value';
+        dry_value.value = 'DRY VALUE';
         dry_value.size = "10";
     var set_value = document.createElement('input');
         set_value.type= 'submit';
@@ -135,35 +164,78 @@ async function plantDetailView() {
         set_value.value = 'SET VALUE';
         set_value.size = "10";
 
-    var div2 = document.createElement('div');
-        div2.classList.add('boxChart');
-    var chart = document.createElement('img');
-        chart.src = '/img/mychart.png';
-        chart.alt = 'Plant Chart';
-
     div.appendChild(h3);
     div.appendChild(img);
     div.appendChild(br.cloneNode(true));
     div.appendChild(br.cloneNode(true));
     div.appendChild(text_hum);
     div.appendChild(br.cloneNode(true));
-    form.appendChild(input1);
-    form.appendChild(input2);
+    form_pump.appendChild(input1);
+    form_pump.appendChild(input2);
     form_config.appendChild(dry_value);
     form_config.appendChild(wet_value);
-    //form.config.appendChild(br.cloneNode(true));
     form_config.appendChild(set_value);
-    div.appendChild(form);
-    div.appendChild(br.cloneNode(true));
+    div.appendChild(form_pump);
     div.appendChild(form_config);
     div.appendChild(a);
-    div2.append(chart);
     element.appendChild(div);
-    element.appendChild(div2);
+<div class="boxChart">
+    <img src="/img/mychart.png" alt="Plant Chart">
+</div>`);
 
     //var t = setTimeout(refreshPlants, 2000);
 };
 
 function plantChart() {
-    
+    // set the dimensions and margins of the graph
+    var margin = { top: 10, right: 30, bottom: 30, left: 60 },
+        width = 460 - margin.left - margin.right,
+        height = 400 - margin.top - margin.bottom;
+
+    // append the svg object to the body of the page
+    var svg = d3.select("#plantChart")
+        .append("svg")
+        .attr("width", width + margin.left + margin.right)
+        .attr("height", height + margin.top + margin.bottom)
+        .append("g")
+        .attr("transform",
+            "translate(" + margin.left + "," + margin.top + ")");
+
+    //Read the data
+    d3.csv("https://raw.githubusercontent.com/holtzy/data_to_viz/master/Example_dataset/3_TwoNumOrdered_comma.csv",
+
+        // When reading the csv, I must format variables:
+        function (d) {
+            return { date: d3.timeParse("%Y-%m-%d")(d.date), value: d.value }
+        },
+
+        // Now I can use this dataset:
+        function (data) {
+
+            // Add X axis --> it is a date format
+            var x = d3.scaleTime()
+                .domain(d3.extent(data, function (d) { return d.date; }))
+                .range([0, width]);
+            svg.append("g")
+                .attr("transform", "translate(0," + height + ")")
+                .call(d3.axisBottom(x));
+
+            // Add Y axis
+            var y = d3.scaleLinear()
+                .domain([0, d3.max(data, function (d) { return +d.value; })])
+                .range([height, 0]);
+            svg.append("g")
+                .call(d3.axisLeft(y));
+
+            // Add the line
+            svg.append("path")
+                .datum(data)
+                .attr("fill", "none")
+                .attr("stroke", "steelblue")
+                .attr("stroke-width", 1.5)
+                .attr("d", d3.line()
+                    .x(function (d) { return x(d.date) })
+                    .y(function (d) { return y(d.value) })
+                )
+        })
 };

@@ -31,9 +31,8 @@ var request = require('coap').request;
 var Agent = require('coap').Agent;
 const cons = require('consolidate');
 const { createBrotliCompress } = require('zlib');
-const { exit } = require('process');
+const { change_plant_node } = require('./db');
 var url;
-var debug = false;
 
 /* ---------------- Express Setup ---------------- */
 app.use(morgan('dev'));
@@ -49,10 +48,10 @@ app.use(bodyParser.urlencoded({
 /* ------------------- Frontend ------------------ */
 app.get('/plantView', function (req, res) {
     // NOTE: A bit of a small workaround.
-    var nodeURL = new url.URL(`localhost:3000/${req.url}`);
-    console.log(nodeURL);
-    var nodeIP = nodeURL.node_ip;
-    res.render('./plantView.html', { node_ip: nodeIP });
+    var node_url = new url.URL(`localhost:3000/${req.url}`);
+    console.log(node_url);
+    var node_ip = node_url.node_ip;
+    res.render('./plantView.html', { node_ip: node_ip });
 });
 
 app.get('/', function (req, res) {
@@ -65,33 +64,36 @@ app.get('/plantRefresh', async function (req, res) {
 });
 
 app.get('/plantDetailView', async function (req, res) {
-    var plantIP = req.query.nodeIP;
-    let plantDetailView = await db.select_plant_info(plantIP);
+    var plant_ip = req.query.node_ip;
+    let plantDetailView = await db.select_plant_info(plant_ip);
     res.json(plantDetailView);
 });
 
 app.post('/pump_toggle', function (req, res) {
-    var plantIP = req.query.nodeIP;
-    const coap_req = coap.request({ hostname: plantIP, confirmable: false, method: 'POST' });
+    var plant_ip = req.query.node_ip;
+    let payload = cbor.encode(ip.toBuffer(plant_ip));
+    // Send to proxy
+    const coap_req = coap.request({ hostname: "::", pathname: "/pump_toggle", confirmable: false, method: 'POST', port: 5685 });
+    coap_req.setOption('Content-Format', "application/cbor");
+    coap_req.write(payload);
     coap_req.end();
     res.status(204).send();
 });
 
 app.post('/calibrate_sensor', function (req, res) {
     var plantIP = req.query.nodeIP;
-    var dry_value = req.query.dry_value;
     var wet_value = req.query.wet_value;
+    var dry_value = req.query.dry_value;
+
+    // change values in database
+    db.change_plant_node(plantIP,false,dry_value,wet_value);
 
     //Send payload
-    var payload = {
-        ip_addr: plantIP,
-        dry_value: dry_value,
-        wet_value: wet_value
-    }
-    const payloadBytes = cbor.encode(JSON.stringify(payload));
-    const coap_req = coap.request({ hostname: plantIP, confirmable: false, method: 'POST' });
-    coap_req.write(payloadBytes)
-
+    // TODO: Proxy is missing
+    const payload = cbor.encode(ip.toBuffer(plant_ip), dry_value, wet_value);
+    const coap_req = coap.request({ hostname: "::", pathname: "/calibrate_sensor", confirmable: false, method: 'POST', port: 5685 });
+    coap_req.setOption('Content-Format', "application/cbor");
+    coap_req.write(payload);
     coap_req.end();
     res.status(204).send();
 });
@@ -173,7 +175,9 @@ var server = coap.createServer({ type: 'udp6' });
 })();
 
 server.on('request', (req, _) => {
-    console.log('Received COAP-CBOR request');
+    if (req.url != '/data') {
+        return;
+    }
 
     let decodedData = cbor.decodeAllSync(req.payload);
     let humidity = decodedData[0];
@@ -190,24 +194,26 @@ server.on('request', (req, _) => {
     let ip_addr = new Uint8Array(decodedData.slice(11, 27));
     let ip_addr_str = ip.toString(Buffer.from(ip_addr), 0, 16);
 
-    console.log(
-        `ip_addr: ${ip_addr}\n`,
-        `\bip_addr_str: ${ip_addr_str}\n`,
-        `\bhumidity: ${humidity}\n`,
-        `\bpump_activated: ${pump_activated}\n`,
-        `\bdry_value: ${dry_value}\n`,
-        `\bwet_value: ${wet_value}\n`,
-        `\brx_bytes: ${rx_bytes}\n`,
-        `\brx_count: ${rx_count}\n`,
-        `\btx_bytes: ${tx_bytes}\n`,
-        `\btx_unicast_count: ${tx_unicast_count}\n`,
-        `\btx_mcast_count: ${tx_mcast_count}\n`,
-        `\btx_success: ${tx_success}\n`,
-        `\btx_failed: ${tx_failed}`);
+    console.log(`Received CoAP-CBOR /data POST from ${ip_addr_str}`);
+
+    //console.log(
+    //    `ip_addr: ${ip_addr}\n`,
+    //    `\bip_addr_str: ${ip_addr_str}\n`,
+    //    `\bhumidity: ${humidity}\n`,
+    //    `\bpump_activated: ${pump_activated}\n`,
+    //    `\bdry_value: ${dry_value}\n`,
+    //    `\bwet_value: ${wet_value}\n`,
+    //    `\brx_bytes: ${rx_bytes}\n`,
+    //    `\brx_count: ${rx_count}\n`,
+    //    `\btx_bytes: ${tx_bytes}\n`,
+    //    `\btx_unicast_count: ${tx_unicast_count}\n`,
+    //    `\btx_mcast_count: ${tx_mcast_count}\n`,
+    //    `\btx_success: ${tx_success}\n`,
+    //    `\btx_failed: ${tx_failed}`);
     
     db.change_plant_node(ip_addr_str, pump_activated, dry_value, wet_value);
     db.insert_plant_humidity(ip_addr_str, humidity);
-    db.select_all();
+    //db.select_all();
 });
 
 server.on('response', (res) => {
@@ -250,5 +256,9 @@ async function testAll(){
     setTimeout(() => { db.select_all(); }, 1000);
 };
 
-db.select_all();
+
+
+db.change_plant_node("::", 0, 0, 0);
+db.insert_plant_humidity("::", 50);
+
 //testAll();
