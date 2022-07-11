@@ -161,7 +161,7 @@ ssize_t calibration_handler(coap_pkt_t *pkt, uint8_t *buf, size_t len, void *con
     nanocbor_value_t dec = {0};
     nanocbor_decoder_init(&dec, pkt->payload, pkt->payload_len);
     nanocbor_get_int32(&dec, &soil_dry_value);
-    err = nanocbor_get_int32(&dec, &soil_wet_value);
+    nanocbor_get_int32(&dec, &soil_wet_value);
     mutex_unlock(&soil_mutex);
 
     return 0;

@@ -32,10 +32,13 @@ $ just gen_psk
 - Use the integer types `inttypes.h` provides.
 - Buffers are to be zeroed out asap.
 - Use `#pragma once`.
+- Use `snake_case`.
 
 ### JS Coding Conventions
 
 - Use `use strict` in all scripts.
+- Use `snake_case`.
+- Always use `let` instead of `var`.
 
 ### Design Decisions
 

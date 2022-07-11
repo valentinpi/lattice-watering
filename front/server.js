@@ -6,7 +6,7 @@ var app = require("express")();
 var http = require('http').Server(app);
 var morgan = require('morgan');
 var engines = require('consolidate');
-var bodyParser = require('body-parser');
+var body_parser = require('body-parser');
 var db = require('./db');
 var cbor = require('cbor');
 var ip = require('ip');
@@ -15,10 +15,10 @@ const fs = require('fs');
 
 const width = 1000;
 const height = 300;
-const chartCallback = (ChartJS) => {
-    console.log('chart built')
+const chart_callback = (_) => {
+    console.log('chart built');
 };
-const canvasRenderService = new ChartJSNodeCanvas({ width, height, chartCallback });
+const canvas_render_service = new ChartJSNodeCanvas({ width, height, chart_callback });
 
 // Websocket
 var io = require('socket.io')(http);
@@ -26,11 +26,6 @@ var io = require('socket.io')(http);
 // CoAP
 var coap = require('coap');
 var url = require('url');
-var request = require('coap').request;
-var Agent = require('coap').Agent;
-const cons = require('consolidate');
-const { createBrotliCompress } = require('zlib');
-const { change_plant_node } = require('./db');
 var url;
 
 /* ---------------- Express Setup ---------------- */
@@ -39,37 +34,35 @@ app.set('views', __dirname + '/views');
 app.engine('html', engines.mustache);
 app.set('view engine', 'ejs');
 app.use(express.static(__dirname + '/public'));
-app.use(bodyParser.json()); // get information from html forms
-app.use(bodyParser.urlencoded({
+app.use(body_parser.json()); // get information from html forms
+app.use(body_parser.urlencoded({
     extended: true
 }));
 
 /* ------------------- Frontend ------------------ */
-app.get('/plantView', function (req, res) {
-    // NOTE: A bit of a small workaround.
+app.get('/plant_view', function (req, res) {
     var node_url = new url.URL(`localhost:3000/${req.url}`);
-    console.log(node_url);
     var node_ip = node_url.node_ip;
-    res.render('./plantView.html', { node_ip: node_ip });
+    res.render('./plant_view.html', { node_ip: node_ip });
 });
 
 app.get('/', function (req, res) {
     res.render('./index.html');
 });
 
-app.get('/plantRefresh', async function (req, res) {
+app.get('/plant_refresh', async function (req, res) {
     let plantRefresh = await db.select_plant_infos();
     res.json(plantRefresh);
 });
 
-app.get('/plantDetailView', async function (req, res) {
-    var plant_ip = req.query.node_ip;
-    let plantDetailView = await db.select_plant_info(plant_ip);
-    res.json(plantDetailView);
+app.get('/plant_detail_view', async function (req, res) {
+    let plant_ip = req.query.node_ip;
+    let plant_detail_view = await db.select_plant_info(plant_ip);
+    res.json(plant_detail_view);
 });
 
 app.post('/pump_toggle', function (req, res) {
-    var plant_ip = req.query.node_ip;
+    var plant_ip = req.body.node_ip;
     let payload = cbor.encode(ip.toBuffer(plant_ip));
     // Send to proxy
     const coap_req = coap.request({ hostname: "::", pathname: "/pump_toggle", confirmable: false, method: 'POST', port: 5685 });
@@ -80,15 +73,10 @@ app.post('/pump_toggle', function (req, res) {
 });
 
 app.post('/calibrate_sensor', function (req, res) {
-    var plantIP = req.query.nodeIP;
-    var wet_value = req.query.wet_value;
-    var dry_value = req.query.dry_value;
-
-    // change values in database
-    db.change_plant_node(plantIP,false,dry_value,wet_value);
-
-    //Send payload
-    // TODO: Proxy is missing
+    var plant_ip = req.body.node_ip;
+    var wet_value = req.body.wet_value;
+    var dry_value = req.body.dry_value;
+    // Send to proxy
     const payload = cbor.encode(ip.toBuffer(plant_ip), dry_value, wet_value);
     const coap_req = coap.request({ hostname: "::", pathname: "/calibrate_sensor", confirmable: false, method: 'POST', port: 5685 });
     coap_req.setOption('Content-Format', "application/cbor");
@@ -102,30 +90,30 @@ app.listen(3000, () => {
 });
 
 /* -------------------- Chart -------------------- */
-app.get('/plantChart', async function (req, res) {
-    var plantIP = req.query.nodeIP;
-    let result = await db.select_plant_info(plantIP);
-    var chartData = [];
-    var chartTime = [];
+app.get('/plant_chart', async function (req, res) {
+    var plant_ip = req.query.node_ip;
+    let result = await db.select_plant_info(plant_ip);
+    var chart_data = [];
+    var chart_time = [];
     result.forEach(row => {
-        chartData.push(row.humidity);
-        chartTime.push(row.date_time);
+        chart_data.push(row.humidity);
+        chart_time.push(row.date_time);
         console.log(row.node_ip + "\t" + row.pump_activated + "\t" + row.dry_value + "\t" + row.wet_value + "\t" + row.date_time + "\t" + row.humidity);
     });
 
     console.log('making image')
-    fs.writeFileSync('./public/img/mychart.png', await createImage(chartData, chartTime));
+    fs.writeFileSync('./public/img/mychart.png', await create_image(chart_data, chart_time));
     res.send('done');
 });
 
-const createImage = async (chartData, chartTime) => {
+const create_image = async (chart_data, chart_time) => {
     const configuration = {
         type: 'line',
         data: {
-            labels: chartTime,
+            labels: chart_time,
             datasets: [{
                 label: 'lmao',
-                data: chartData,
+                data: chart_data,
                 fill: true,
                 borderColor: 'rgb(75, 192, 192)',
                 axis: 'x'
@@ -162,8 +150,8 @@ const createImage = async (chartData, chartTime) => {
             }
         }
     }
-    const dataUrl = await canvasRenderService.renderToBuffer(configuration); // converts chart to image
-    return dataUrl;
+    const data_url = await canvas_render_service.renderToBuffer(configuration); // converts chart to image
+    return data_url;
 };
 
 /* --------------------- COAP -------------------- */
@@ -178,19 +166,19 @@ server.on('request', (req, _) => {
         return;
     }
 
-    let decodedData = cbor.decodeAllSync(req.payload);
-    let humidity = decodedData[0];
-    let pump_activated = decodedData[1];
-    let dry_value = decodedData[2];
-    let wet_value = decodedData[3];
-    let rx_bytes = decodedData[4];
-    let rx_count = decodedData[5];
-    let tx_bytes = decodedData[6];
-    let tx_unicast_count = decodedData[7];
-    let tx_mcast_count = decodedData[8];
-    let tx_success = decodedData[9];
-    let tx_failed = decodedData[10];
-    let ip_addr = new Uint8Array(decodedData.slice(11, 27));
+    let decoded_data = cbor.decodeAllSync(req.payload);
+    let humidity = decoded_data[0];
+    let pump_activated = decoded_data[1];
+    let dry_value = decoded_data[2];
+    let wet_value = decoded_data[3];
+    let rx_bytes = decoded_data[4];
+    let rx_count = decoded_data[5];
+    let tx_bytes = decoded_data[6];
+    let tx_unicast_count = decoded_data[7];
+    let tx_mcast_count = decoded_data[8];
+    let tx_success = decoded_data[9];
+    let tx_failed = decoded_data[10];
+    let ip_addr = new Uint8Array(decoded_data.slice(11, 27));
     let ip_addr_str = ip.toString(Buffer.from(ip_addr), 0, 16);
 
     console.log(`Received CoAP-CBOR /data POST from ${ip_addr_str}`);
@@ -227,7 +215,7 @@ server.listen(5683, () => {
 });
 
 /* --------------------- TEST -------------------- */
-async function testAll(){
+async function test_all(){
     //Testdata because no boards ...
     var ip_addr = [254,128,0,0,0,0,0,0,2,4,37,25,24,1,11,0];
     var humidity = 0;

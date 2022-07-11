@@ -3,26 +3,26 @@
 
 function startup(isIndex = 0) {
     if (isIndex) {
-        //Index with plant overview
-        dateTime();
+        // index with plant overview
+        date_time();
         refreshPlants();
     } else {
-        //PlantView with more details to one specific node_ip
-        dateTime();
-        plantDetailView();
+        // plant_view with more details to one specific node_ip
+        date_time();
+        plant_detail_view();
     }
 };
 
-function dateTime() {
+function date_time() {
     var today = new Date();
-    var date = checkFormat(today.getDate()) + '.' + checkFormat((today.getMonth() + 1)) + '.' + today.getFullYear();
-    var time = checkFormat(today.getHours()) + ":" + checkFormat(today.getMinutes()) + ":" + checkFormat(today.getSeconds());
+    var date = check_format(today.getDate()) + '.' + check_format((today.getMonth() + 1)) + '.' + today.getFullYear();
+    var time = check_format(today.getHours()) + ":" + check_format(today.getMinutes()) + ":" + check_format(today.getSeconds());
 
-    document.getElementById("displayDateTime").innerHTML = time + ', ' + date;
-    var t = setTimeout(dateTime, 500);
+    document.getElementById("display_date_time").innerHTML = time + ', ' + date;
+    var t = setTimeout(date_time, 500);
 };
 
-function checkFormat(i) {
+function check_format(i) {
     if (i < 10) {
         i = "0" + i;
     }
@@ -30,8 +30,8 @@ function checkFormat(i) {
 };
 
 /* -------------------- index -------------------- */
-async function refreshPlants() {
-    let response = await (fetch('/plantRefresh'));
+async function refresh_plants() {
+    let response = await (fetch('/plant_refresh'));
     let data = await response.json();
 
     var element = document.getElementById("scrollmenu");
@@ -49,7 +49,7 @@ async function refreshPlants() {
         img.src = '/img/placeholder_plant.png';
         img.alt = 'Plant';
     var a = document.createElement('a');
-        a.id = 'plantSetting';
+        a.id = 'plant_setting';
         a.title = 'Configure desired humidity and show statistics';
         a.text = 'Settings ...';
 
@@ -57,7 +57,7 @@ async function refreshPlants() {
         element.removeChild(element.firstChild);
     }
 
-    //Add boxes for every distinct plant_ip in table in db
+    // Add boxes for every distinct plant_ip in table in db
     if (data.length > 0) {
         for (var i = 0; i < data.length; i++) {
             while (div.hasChildNodes()) {
@@ -85,7 +85,7 @@ async function refreshPlants() {
             //    }
             //    await (fetch('/pump_toggle' + '?node_ip=' + data[i].node_ip));
             //}
-            a.href = 'plantView?node_ip=' + data[i].node_ip;
+            a.href = 'plant_view?node_ip=' + data[i].node_ip;
         
             div.appendChild(h3_top.cloneNode(true));
             div.appendChild(h3_bottom.cloneNode(true));
@@ -101,23 +101,23 @@ async function refreshPlants() {
         div2.appendChild(h1);
         element.appendChild(div2);
     }
-    var t = setTimeout(refreshPlants, 5000);
+    var t = setTimeout(refresh_plants, 5000);
 };
 
-/* ------------------ plantView ------------------ */
-async function plantDetailView() {
+/* ------------------ plant_view ------------------ */
+async function plant_detail_view() {
     var myUrl = location.search;
     var myIP = myUrl.split('=')[1];
-    let chartResponse = await (fetch('/plantChart' + '?node_ip=' + myIP));
-    let response = await (fetch('/plantDetailView' + '?node_ip=' + myIP));
+    let chart_response = await (fetch('/plant_chart' + '?node_ip=' + myIP));
+    let response = await (fetch('/plant_detail_view' + '?node_ip=' + myIP));
     let data = await response.json();
 
     // get dry and wet value from database
-    var dry_value= data[0].dry_value;
-    var wet_value= data[0].wet_value;;
+    var dry_value = data[0].dry_value;
+    var wet_value = data[0].wet_value;;
 
     // Creating the Box with plant and info
-    var element = document.getElementById("plantChart");
+    var element = document.getElementById("plant_chart");
     element.insertAdjacentHTML('afterend', `\
 <div class="box">
     <h3>
@@ -154,14 +154,14 @@ async function plantDetailView() {
     //var t = setTimeout(refreshPlants, 2000);
 };
 
-function plantChart() {
+function plant_chart() {
     // set the dimensions and margins of the graph
     var margin = { top: 10, right: 30, bottom: 30, left: 60 },
         width = 460 - margin.left - margin.right,
         height = 400 - margin.top - margin.bottom;
 
     // append the svg object to the body of the page
-    var svg = d3.select("#plantChart")
+    var svg = d3.select("#plant_chart")
         .append("svg")
         .attr("width", width + margin.left + margin.right)
         .attr("height", height + margin.top + margin.bottom)

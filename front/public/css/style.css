@@ -10,7 +10,7 @@ button {
 }
 */
 
-.topRow {
+.top_row {
     background-color: #DFFEE4;
     font-family: Arial, Helvetica, sans-serif;
     font-size: 16px;
@@ -24,20 +24,20 @@ button {
 }
 
     /* Title Field */
-    .topRow td:first-child {
+    .top_row td:first-child {
         font-size: 16px;
         font-weight: 700;
         text-align: left;
     }
 
     /* Time and Date field */
-    .topRow td:last-child {
+    .top_row td:last-child {
         font-size: 14px;
         font-weight: 400;
         text-align: right;
     }
 
-.plantSelection {
+.plant_selection {
     background-color: beige;
     font-family: Arial, Helvetica, sans-serif;
     font-size: 16px;
@@ -49,14 +49,14 @@ button {
     border-spacing: 0;
 }
 
-    .plantSelection a {
+    .plant_selection a {
         color: blue;
         text-align: center;
         padding: 3%;
         text-decoration: none;
     }
 
-        .plantSelection a:hover {
+        .plant_selection a:hover {
             color: dodgerblue;
         }
 
@@ -99,7 +99,7 @@ button {
             background-color: bisque;
         }
 
-.boxChart {
+.box_chart {
     display: inline-block;
     background-color: ghostwhite;
     border: 5px solid #00CC66;
@@ -108,11 +108,11 @@ button {
     margin: 0.5%;
 }
 
-    .boxChart img {
+    .box_chart img {
         width: 95%;
     }
 
-    .boxChart hover {
+    .box_chart hover {
         background-color: bisque;
     }
 
@@ -123,7 +123,7 @@ button {
     padding: 3%;
 }
 
-.botRow {
+.bot_row {
     background-color: #DFFEE4;
     font-family: Arial, Helvetica, sans-serif;
     font-size: 12px;
