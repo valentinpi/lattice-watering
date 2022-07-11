@@ -7,6 +7,7 @@
 \usepackage{tikz}
 \usepackage[european]{circuitikz}
 \usepackage{titlesec}
+\usepackage{xcolor}
 
 \setlength{\parindent}{0pt}
 
@@ -20,23 +21,17 @@
 
         \vspace{0.15cm}
 
-        \normalsize Report
-
-        \vspace{0.15cm}
-
         Christian Müller, Jonas Heinemann, Kaan Dönmez, Valentin Pickel
 
         \vspace{0.15cm}
 
-        Software Project on Internet Communications, Summer Term 2022
+        Report for the Software Project on Internet Communications, Summer Term 2022
 
-        Institute for Computer Science, Freie Universität Berlin
+        Institute for Computer Science, Freie Universität Berlin, Submission Date: July 18, 2022
 
-        \vspace{0.15cm}
+        \vspace*{\baselineskip}
 
-        July 18, 2022
-
-        \rule{\linewidth}{0.5pt}
+        \rule[0.5\baselineskip]{\linewidth}{0.5pt}
     \end{center}
 
     \section{Introduction}
@@ -144,6 +139,33 @@
     \begin{figure}[!hbtp]
         \centering
         \begin{tikzpicture}[>=stealth, semithick, scale=0.9]
+            \draw (0, 0) rectangle (2, -2) node[pos=0.5] {\texttt{node}};
+            \draw[draw=gray!75] (4, 0) rectangle (4+2, -2) node[pos=0.5] {\textcolor{gray!75}{\texttt{br}}};
+            \draw (7, 1) rectangle (8+9, -3) node[pos=0.5] {};
+            \draw (9, 0) rectangle (9+2.5, -2) node[align=center, pos=0.5, text width=2cm] {
+                \texttt{proxy}\\
+                \texttt{sessions[i]}
+            };
+            \draw (14, 0) rectangle (14+2, -2) node[pos=0.5] {\texttt{front}};
+            \draw (2, -0.5) -- (9, -0.5);
+            \node[above right] at (2, -0.5) {\texttt{5684}};
+            \node[above left] at (9, -0.5) {\texttt{5684}};
+            \draw (2, -1.5) -- (9, -1.5);
+            \node[below right] at (2, -1.5) {\texttt{5684}};
+            \node[below left] at (9, -1.5) {\texttt{5684}};
+            \node[above right] at (11.5, -0.5) {\texttt{5686}};
+            \node[below right] at (11.5, -1.5) {\texttt{5685}};
+            \node[above left] at (14, -0.5) {\texttt{5683}};
+            \node[below left] at (14, -1.5) {\texttt{5683}};
+            \draw[dashed] (11.5, -0.5) -- (14, -0.5);
+            \draw[dashed] (11.5, -1.5) -- (14, -1.5);
+        \end{tikzpicture}
+        \caption{The DTLS proxy. Secure channels are represented by thick lines, insecure channels by thin lines. We have denoted the UDP ports. The \texttt{br} is greyed out as it only routes the packets. Note that each node has its own DTLS session registered in the proxy, the index \texttt{i} is for illustration. There can be at most 16 as of writing. Also the \texttt{proxy} has two sockets for communication with the backend, simply due to constraints with the C FFI in Rust which we were not able to fix by this time.}
+    \end{figure}
+
+    \begin{figure}[!hbtp]
+        \centering
+        \begin{tikzpicture}[>=stealth, semithick, scale=0.9]
             \small
             \newcommand{\column}[3]{
                 \draw[#1] (0, #3) rectangle (6, #3-0.5);
@@ -169,7 +191,7 @@
             \node[above right] at (6, -0.75) {1};
             \node[below left] at (7.5, -1.25) {\(n\)};
         \end{tikzpicture}
-        \caption{The SQLite database schema. The left table persists the current configurations for each node. The network structure guarantees the uniqueness of the IPs, so it suffices to use them as an identifier in our use case. One may consider replacing this with an application-specific ID which would have to persist on the nodes themselves, e.g. via EEPROM. One can find this exact structure in \texttt{front/db.js}}
+        \caption{The SQLite database schema. The left table persists the current configurations for each node. The network structure guarantees the uniqueness of the IPs, so it suffices to use them as an identifier in our use case. One may consider replacing this with an application-specific ID which would have to persist on the nodes themselves, e.g. via EEPROM. One can find this exact structure in \texttt{front/db.js}.}
     \end{figure}
 
     In total, we have developed \emph{five} different applications which all work together.
