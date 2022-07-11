@@ -154,6 +154,7 @@ module.exports = {
     select_plant_info: async function (node_ip) {
         var data = 0;
         // Return infos of a single plant identified by its node_ip
+        // AND ph.date_time >= DATETIME('now', 'localtime', '-10 days')
         let return_data = await new Promise(function (resolve) {
             db.all(`
             SELECT
@@ -166,7 +167,6 @@ module.exports = {
             FROM plant_nodes pn
             JOIN plant_humidities ph ON pn.id = ph.node
             WHERE pn.node_ip = ?
-            AND ph.date_time >= DATETIME('now', 'localtime', '-10 days')
             `, node_ip, (err, row) => {
                 if (err) {
                     console.log(`Select query error: ${err}`);

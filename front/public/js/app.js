@@ -9,7 +9,6 @@ function startup(isIndex = 0) {
     } else {
         //PlantView with more details to one specific node_ip
         dateTime();
-        //plantChart();
         plantDetailView();
     }
 };
@@ -75,18 +74,17 @@ async function refreshPlants() {
             // toggle pump if moisture level is under 20% till it is 60%
             // https://www.greenwaybiotech.com/blogs/gardening-articles/how-soil-moisture-affects-your-plants-growth
 
-            if (humidity < low){
-                await (fetch('/pump_toggle' + '?node_ip=' + myIP));
-                response = await (fetch('/plantRefresh'));
-                while (humidity<= high){
-                    // sleep
-                    await new Promise(r => setTimeout(r, 2000));
-                    data = await response.json();
-                    humidity = data[i].humidity;
-                }
-                await (fetch('/pump_toggle' + '?node_ip=' + myIP));
-
-            }
+            //if (humidity < low){
+            //    await (fetch('/pump_toggle' + '?node_ip=' + data[i].node_ip));
+            //    while (humidity<= high){
+            //        // sleep
+            //        response = await (fetch('/plantRefresh'));
+            //        await new Promise(r => setTimeout(r, 2000));
+            //        data = await response.json();
+            //        humidity = data[i].humidity;
+            //    }
+            //    await (fetch('/pump_toggle' + '?node_ip=' + data[i].node_ip));
+            //}
             a.href = 'plantView?node_ip=' + data[i].node_ip;
         
             div.appendChild(h3_top.cloneNode(true));
@@ -119,66 +117,36 @@ async function plantDetailView() {
     var wet_value= data[0].wet_value;;
 
     // Creating the Box with plant and info
-    var element = document.getElementById("scrollmenu");
-    var div = document.createElement('div');
-        div.classList.add('box');
-    var br = document.createElement('br');
-    var h3 = document.createElement('h3');
-        h3.textContent = 'Plant ' + data[0].node_ip;
-    var img = document.createElement('img');
-        img.src = '/img/placeholder_plant.png';
-        img.alt = 'Plant';
-    var text_hum = document.createTextNode('Humidity: ' + data[0].humidity + '%');
-    var form = document.createElement('form');
-        form.action = '/pump_toggle' + '?nodeIP=' + myIP;
-        form.method = 'POST';
-    var input1 = document.createElement('input');
-        input1.type = 'submit';
-        input1.name = 'TRUE';
-        input1.value = 'Turn Pump On';
-    var input2 = document.createElement('input');
-        input2.type= 'submit';
-        input2.name = 'FALSE';
-        input2.value = 'Turn Pump Off';
-    var a = document.createElement('a');
-        a.id = 'plantSetting';
-        a.title = 'Go back to all plants';
-        a.text = 'Go back';
-        a.href = '/';
-    var form_config = document.createElement('form');
-        form.action = '/calibrate_sensor' + '?nodeIP=' +myIP + '?wet_value='+wet_value+ '?dry_value='+dry_value;
-        form.method = 'POST';
-    var wet_value = document.createElement('input');
-        wet_value.type= 'text';
-        wet_value.name = 'wet_value';
-        wet_value.value = 'WET VALUE';
-        wet_value.size = "10";
-    var dry_value = document.createElement('input');
-        dry_value.type= 'text';
-        dry_value.name = 'dry_value';
-        dry_value.value = 'DRY VALUE';
-        dry_value.size = "10";
-    var set_value = document.createElement('input');
-        set_value.type= 'submit';
-        set_value.name = 'set_value';
-        set_value.value = 'SET VALUE';
-        set_value.size = "10";
-
-    div.appendChild(h3);
-    div.appendChild(img);
-    div.appendChild(br.cloneNode(true));
-    div.appendChild(br.cloneNode(true));
-    div.appendChild(text_hum);
-    div.appendChild(br.cloneNode(true));
-    form_pump.appendChild(input1);
-    form_pump.appendChild(input2);
-    form_config.appendChild(dry_value);
-    form_config.appendChild(wet_value);
-    form_config.appendChild(set_value);
-    div.appendChild(form_pump);
-    div.appendChild(form_config);
-    div.appendChild(a);
-    element.appendChild(div);
+    var element = document.getElementById("plantChart");
+    element.insertAdjacentHTML('afterend', `\
+<div class="box">
+    <h3>
+        Plant
+        <br/>
+        <br/>
+        ${data[0].node_ip}
+    </h3>
+    <img src="/img/placeholder_plant.png" alt="Plant">
+    <br/>
+    <br/>
+    Humidity: ${data[0].humidity}%
+    <br/>
+    <form action="/pump_toggle?node_ip=${myIP}" method="POST">
+        <br/>
+        <input type="submit" name="TOGGLE" value="Toggle Pump">
+    </form>
+    <br/>
+    <form action="/calibrate_sensor" method="POST">
+        <input type="hidden" name="node_ip" value="${myIP}">
+        <input type="text" name="dry_value" value="${dry_value}" size="10">
+        <input type="text" name="wet_value" value="${wet_value}" size="10">
+        <br/>
+        <br/>
+        <input type="submit" value="Calibrate sensor" size="10">
+    </form>
+    <br/>
+    <a href="/" text="Go back", title="Go back to plants overview" id="plantSetting"></a>
+</div>
 <div class="boxChart">
     <img src="/img/mychart.png" alt="Plant Chart">
 </div>`);

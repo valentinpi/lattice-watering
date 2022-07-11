@@ -19,7 +19,6 @@ const chartCallback = (ChartJS) => {
     console.log('chart built')
 };
 const canvasRenderService = new ChartJSNodeCanvas({ width, height, chartCallback });
-var xLabels = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11']
 
 // Websocket
 var io = require('socket.io')(http);
@@ -256,8 +255,7 @@ async function testAll(){
     setTimeout(() => { db.select_all(); }, 1000);
 };
 
-
-
+db.select_all();
 db.change_plant_node("::", 0, 0, 0);
 db.insert_plant_humidity("::", 50);
 
