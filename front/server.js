@@ -10,6 +10,16 @@ var bodyParser = require('body-parser');
 var db = require('./db');
 var cbor = require('cbor');
 var ip = require('ip');
+const { ChartJSNodeCanvas } = require('chartjs-node-canvas');
+const fs = require('fs');
+
+const width = 1000;
+const height = 300;
+const chartCallback = (ChartJS) => {
+    console.log('chart built')
+};
+const canvasRenderService = new ChartJSNodeCanvas({ width, height, chartCallback });
+var xLabels = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11']
 
 // Websocket
 var io = require('socket.io')(http);
@@ -74,6 +84,7 @@ app.post('/calibrate_sensor', function (req, res) {
 
     //Send payload
     var payload = {
+        ip_addr: plantIP,
         dry_value: dry_value,
         wet_value: wet_value
     }
@@ -90,7 +101,69 @@ app.listen(3000, () => {
 });
 
 /* -------------------- Chart -------------------- */
-//TODO
+app.get('/plantChart', async function (req, res) {
+    var plantIP = req.query.nodeIP;
+    let result = await db.select_plant_info(plantIP);
+    var chartData = [];
+    var chartTime = [];
+    result.forEach(row => {
+        chartData.push(row.humidity);
+        chartTime.push(row.date_time);
+        console.log(row.node_ip + "\t" + row.pump_activated + "\t" + row.dry_value + "\t" + row.wet_value + "\t" + row.date_time + "\t" + row.humidity);
+    });
+
+    console.log('making image')
+    fs.writeFileSync('./public/img/mychart.png', await createImage(chartData, chartTime));
+    res.send('done');
+});
+
+const createImage = async (chartData, chartTime) => {
+    const configuration = {
+        type: 'line',
+        data: {
+            labels: chartTime,
+            datasets: [{
+                label: 'lmao',
+                data: chartData,
+                fill: true,
+                borderColor: 'rgb(75, 192, 192)',
+                axis: 'x'
+            }]
+        },
+        options: {
+            scales: {
+                x: {
+                    type: 'category',
+                    display: true,
+                    position: 'bottom',
+                    title: {
+                        display: true,
+                        text: 'Date and time of measurement'
+                    },
+                    ticks: {
+                        stepSize: 1
+                        //callback: function (value, index, values) {
+                        //    return xLabels[index];  // gives points of top x axis
+                        //}
+                    }
+                },
+                y: {
+                    display: true,
+                    title: {
+                        display: true,
+                        text: 'Humidity in %'
+                    },
+                    ticks: {
+                        max: 100,
+                        stepSize: 10 //defines y axis step scale
+                    }
+                }
+            }
+        }
+    }
+    const dataUrl = await canvasRenderService.renderToBuffer(configuration); // converts chart to image
+    return dataUrl;
+};
 
 /* --------------------- COAP -------------------- */
 var server = coap.createServer({ type: 'udp6' });
@@ -151,7 +224,7 @@ server.listen(5683, () => {
 /* --------------------- TEST -------------------- */
 async function testAll(){
     //Testdata because no boards ...
-    var ip_addr = [254,128,0,0,0,0,0,0,2,4,37,25,24,1,11,1];
+    var ip_addr = [254,128,0,0,0,0,0,0,2,4,37,25,24,1,11,0];
     var humidity = 0;
     var pump_activated = false;
     var dry_value = 2920;
@@ -171,16 +244,11 @@ async function testAll(){
     var pump_state = 0;
     if (pump_activated) {pump_state = 1;}
 
-    db.insertPlantNode(hex_ip_addr, humidity);
-    if (Object.keys(await db.selectSinglePlant(hex_ip_addr)).length == 0) {
-        console.log('no plant_status for new node found, creating one...')
-        db.insertPlantStatus(hex_ip_addr, pump_state, dry_value, wet_value)
-    } else {
-        console.log('a plant_status for new node found, changing it...')
-        db.changePlantStatus(hex_ip_addr, pump_state, dry_value, wet_value);
-    }
+    db.change_plant_node(hex_ip_addr, pump_state, dry_value, wet_value);
+    db.insert_plant_humidity(hex_ip_addr, humidity);
 
-    setTimeout(() => { db.selectAll(); }, 1000);
+    setTimeout(() => { db.select_all(); }, 1000);
 };
 
+db.select_all();
 //testAll();

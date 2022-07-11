@@ -161,12 +161,12 @@ module.exports = {
                 pn.pump_activated,
                 pn.dry_value,
                 pn.wet_value,
-                MAX(ph.date_time) as date_time,
+                ph.date_time,
                 ph.humidity
             FROM plant_nodes pn
             JOIN plant_humidities ph ON pn.id = ph.node
             WHERE pn.node_ip = ?
-            GROUP BY pn.node_ip
+            AND ph.date_time >= DATETIME('now', 'localtime', '-10 days')
             `, node_ip, (err, row) => {
                 if (err) {
                     console.log(`Select query error: ${err}`);
