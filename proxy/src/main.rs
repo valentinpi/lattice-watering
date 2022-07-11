@@ -402,7 +402,7 @@ fn main() {
                                     pkt_bytes.as_mut_ptr(),
                                     pkt_bytes.len(),
                                 );
-                                debug_println!("Forwarded packet to node");
+                                debug_println!("Forwarded packet to nodarded packet to node");
                             }
                         } else {
                             debug_println!("No such session available");
