@@ -87,7 +87,7 @@ unsafe extern "C" fn server_write_callback(
     buf: *mut u8,
     len: usize,
 ) -> i32 {
-    debug_println!("WRITE CALLBACK");
+    //debug_println!("WRITE CALLBACK");
 
     let socket = (*ctx).app as *mut UdpSocket;
     let addr = session.as_ref().unwrap().addr.sin6.as_ref();
@@ -105,7 +105,13 @@ unsafe extern "C" fn server_write_callback(
     );
 
     match res {
-        Ok(_) => len as i32,
+        Ok(_) => {
+            debug_println!(format!(
+                "[::]:5683 -> {}",
+                get_ipv6_string_from_bytes(addr.sin6_addr.s6_addr)
+            ));
+            len as i32
+        }
         Err(_) => {
             debug_println!("Failed to send message");
 
@@ -120,18 +126,18 @@ unsafe extern "C" fn server_read_callback(
     buf: *mut u8,
     len: usize,
 ) -> i32 {
-    debug_println!("READ CALLBACK");
+    //debug_println!("READ CALLBACK");
 
     // TODO: Try to make this variable persistent.
     let backend_socket: UdpSocket =
-        UdpSocket::bind(":::5686").expect(debug_fmt!("Could not bind socket"));
+        UdpSocket::bind("[::]:5686").expect(debug_fmt!("Could not bind socket"));
 
     backend_socket
-        .connect("::1:5683")
+        .connect("[::]:5683")
         .expect(debug_fmt!("Could not connect socket"));
 
     let addr = (*session).addr.sin6.as_ref().sin6_addr.s6_addr;
-    debug_println!(format!("Message from {}", get_ipv6_string_from_bytes(addr)).as_str());
+    //debug_println!(format!("Message from {}", get_ipv6_string_from_bytes(addr)).as_str());
 
     let slice = std::slice::from_raw_parts(buf, len);
     let coap_err = Packet::from_bytes(slice);
@@ -148,7 +154,8 @@ unsafe extern "C" fn server_read_callback(
             backend_socket
                 .send(pkt.to_bytes().unwrap().as_ref())
                 .expect(debug_fmt!("Could not send data to backend"));
-            debug_println!("Forwarded message to backend");
+            debug_println!(format!("{} -> [::]:5683", get_ipv6_string_from_bytes(addr)));
+            //debug_println!("Forwarded message to backend");
         }
         Err(_) => {
             debug_println!("Malformed CoAP package");
@@ -161,9 +168,10 @@ unsafe extern "C" fn server_read_callback(
 unsafe extern "C" fn server_event_callback(
     _ctx: *mut dtls_context_t,
     _session: *mut session_t,
-    level: dtls_alert_level_t,
-    code: u16,
+    _level: dtls_alert_level_t,
+    _code: u16,
 ) -> i32 {
+    /*
     debug_println!(format!(
         "EVENT CALLBACK - LEVEL: {} - CODE: {}",
         match level {
@@ -179,6 +187,7 @@ unsafe extern "C" fn server_event_callback(
         },
         code
     ));
+    */
 
     0 // Ignored
 }
@@ -192,7 +201,7 @@ unsafe extern "C" fn server_get_psk_info(
     result: *mut u8,
     result_length: usize,
 ) -> i32 {
-    debug_println!("PSK");
+    //debug_println!("PSK");
 
     match cred_type {
         // See also the `fw`.
@@ -218,8 +227,8 @@ unsafe extern "C" fn server_get_psk_info(
 }
 
 fn main() {
-    let mut dtls_socket = UdpSocket::bind(":::5684").expect(debug_fmt!("Could not bind socket"));
-    let backend_socket = UdpSocket::bind(":::5685").expect(debug_fmt!("Could not bind socket"));
+    let mut dtls_socket = UdpSocket::bind("[::]:5684").expect(debug_fmt!("Could not bind socket"));
+    let backend_socket = UdpSocket::bind("[::]:5685").expect(debug_fmt!("Could not bind socket"));
     dtls_socket
         .set_nonblocking(true)
         .expect(debug_fmt!("Could not enable nonblocking mode"));
@@ -277,7 +286,8 @@ fn main() {
                             assert!(!session.is_null());
                             sessions.push(session);
                             debug_println!(format!(
-                                "Created session, session count: {}",
+                                "Created session with {}, session count: {}",
+                                peer.ip().to_string(),
                                 sessions.len()
                             ));
                             session_index = sessions.len() - 1;
@@ -402,7 +412,7 @@ fn main() {
                                     pkt_bytes.as_mut_ptr(),
                                     pkt_bytes.len(),
                                 );
-                                debug_println!("Forwarded packet to node");
+                                //debug_println!("Forwarded packet to node");
                             }
                         } else {
                             debug_println!("No such session available");
