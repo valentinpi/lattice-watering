@@ -110,59 +110,48 @@ async function plant_detail_view() {
     element.innerHTML = `\
         <div class="box">
             <h3>
-                Plant
-                <br/>
-                <br/>
-                ${config.node_ip}
+                <div>Plant</div>
+                <div>${config.node_ip}</div>
             </h3>
             <img src="/img/placeholder_plant.png" alt="Plant">
-            <br/>
-            <br/>
-            Humidity: ${config.humidity}%
-            <br/>
+            <span id="humidity">Humidity: ${config.humidity}%</span>
             <form action="/pump_toggle?node_ip=${my_ip}" method="POST">
-                <br/>
                 <input type="submit" name="TOGGLE" value="Toggle Pump">
             </form>
-            <br/>
             <form action="/calibrate_sensor" method="POST">
                 <input type="hidden" name="node_ip" value="${my_ip}">
                 <input type="text" name="dry_value" value="${dry_value}" size="10">
                 <input type="text" name="wet_value" value="${wet_value}" size="10">
-                <br/>
-                <br/>
                 <input type="submit" value="Calibrate sensor" size="10">
             </form>
-            <br/>
             <form action="/configure_thresholding" method="POST">
                 <input type="hidden" name="node_ip" value="${my_ip}">
                 <input type="text" name="watering_threshold_bottom" value="${watering_threshold_bottom}" size="10">
                 <input type="text" name="watering_threshold_target" value="${watering_threshold_target}" size="10">
                 <input type="text" name="watering_threshold_timeout" value="${watering_threshold_timeout}" size="10">
-                <br/>
-                <br/>
                 <input type="submit" value="Configure thresholding" size="10">
             </form>
-            <br/>
-            <select id="watering_schedules_list">
+            <select id="watering_schedules_list" multiple size="5">
             </select>
-            <br/>
-            <a href="/" text="Go back", title="Go back to plants overview" id="plant_setting"></a>
+            <a href="/" text="Go back" title="Go back to plants overview" id="plant_setting"></a>
         </div>
         <div class="box_chart">
             <img src="/img/mychart.png" alt="Plant Chart">
         </div>`;
 
     refresh_plant_detail_view();
-
-    setTimeout(refresh_plant_detail_view, 2500);
 };
 
 async function refresh_plant_detail_view() {
     let my_url = location.search;
     let my_ip = my_url.split('=')[1];
+    let hum = document.getElementById("humidity");
     await fetch(`/plant_chart?node_ip=${my_ip}`);
-    setTimeout(refresh_plant_detail_view, 2500);
+    let res = await fetch(`/plant_detail_view?node_ip=${my_ip}`);
+    let config = await res.json();
+    console.log(config);
+    hum.innerHTML = `Humidity: ${config.humidity}%`;
+    setTimeout(refresh_plant_detail_view, 5000);
 }
 
 function plant_chart() {

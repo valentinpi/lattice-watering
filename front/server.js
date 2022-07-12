@@ -48,8 +48,10 @@ app.get('/plant_refresh', async function (_, res) {
 
 app.get('/plant_detail_view', async function (req, res) {
     let plant_ip = req.query.node_ip;
-    let plant_detail_view = (await db.select_plant_info(plant_ip)).configuration;
-    res.json(plant_detail_view);
+    let plant_detail_view = (await db.select_plant_info(plant_ip));
+    plant_detail_view.configuration.humidity = plant_detail_view.humidities[0].humidity;
+    console.log(plant_detail_view.configuration);
+    res.json(plant_detail_view.configuration);
 });
 
 app.post('/pump_toggle', function (req, res) {
