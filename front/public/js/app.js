@@ -40,7 +40,6 @@ async function refresh_plants() {
     var div2 = document.createElement('div');
         div2.classList.add('boxnonodes');
     var br = document.createElement('br');
-    var h3 = document.createElement('h3');
     var h1 = document.createElement('h1');
         h1.textContent = 'No nodes in reach';
     var h3_top = document.createElement('h3');
@@ -67,24 +66,6 @@ async function refresh_plants() {
             h3_top.textContent = 'Plant';
             h3_bottom.textContent = data[i].node_ip;
             var text_hum = document.createTextNode('Humidity: ' + data[i].humidity + '%');
- 
-            var humidity = data[i].humidity;
-            var low = 20;
-            var high = 60;
-            // toggle pump if moisture level is under 20% till it is 60%
-            // https://www.greenwaybiotech.com/blogs/gardening-articles/how-soil-moisture-affects-your-plants-growth
-
-            //if (humidity < low){
-            //    await (fetch('/pump_toggle' + '?node_ip=' + data[i].node_ip));
-            //    while (humidity<= high){
-            //        // sleep
-            //        response = await (fetch('/plantRefresh'));
-            //        await new Promise(r => setTimeout(r, 2000));
-            //        data = await response.json();
-            //        humidity = data[i].humidity;
-            //    }
-            //    await (fetch('/pump_toggle' + '?node_ip=' + data[i].node_ip));
-            //}
             a.href = 'plant_view?node_ip=' + data[i].node_ip;
         
             div.appendChild(h3_top.cloneNode(true));
@@ -109,13 +90,13 @@ async function refresh_plants() {
 async function plant_detail_view() {
     let my_url = location.search;
     let my_ip = my_url.split('=')[1];
-    await (fetch('/plant_chart' + '?node_ip=' + my_ip));
-    let response = await (fetch('/plant_detail_view' + '?node_ip=' + my_ip));
+    await fetch('/plant_chart' + '?node_ip=' + my_ip);
+    let response = await fetch('/plant_detail_view' + '?node_ip=' + my_ip);
     let data = await response.json();
 
-    // get dry and wet value from database
+    // Get dry and wet value from database
     var dry_value = data[0].dry_value;
-    var wet_value = data[0].wet_value;;
+    var wet_value = data[0].wet_value;
 
     // Creating the Box with plant and info
     var element = document.getElementById("plant_chart");
@@ -124,6 +105,7 @@ async function plant_detail_view() {
         element.removeChild(element.firstChild);
     }
 
+    // TODO: Replace these `<br/>` tags with CSS formatting.
     element.innerHTML = `\
         <div class="box">
             <h3>
@@ -151,6 +133,24 @@ async function plant_detail_view() {
                 <input type="submit" value="Calibrate sensor" size="10">
             </form>
             <br/>
+            <form action="/" method="POST">
+                <input type="hidden" name="node_ip" value="${my_ip}">
+                <input type="text" name="dry_value" value="${dry_value}" size="10">
+                <input type="text" name="wet_value" value="${wet_value}" size="10">
+                <br/>
+                <br/>
+                <input type="submit" value="Configure thresholding" size="10">
+            </form>
+            <br/>
+            <form action="/" method="POST">
+                <input type="hidden" name="node_ip" value="${my_ip}">
+                <input type="text" name="dry_value" value="${dry_value}" size="10">
+                <input type="text" name="wet_value" value="${wet_value}" size="10">
+                <br/>
+                <br/>
+                <input type="submit" value="Configure schedules" size="10">
+            </form>
+            <br/>
             <a href="/" text="Go back", title="Go back to plants overview" id="plant_setting"></a>
         </div>
         <div class="box_chart">
@@ -161,12 +161,12 @@ async function plant_detail_view() {
 };
 
 function plant_chart() {
-    // set the dimensions and margins of the graph
+    // Set the dimensions and margins of the graph
     var margin = { top: 10, right: 30, bottom: 30, left: 60 },
         width = 460 - margin.left - margin.right,
         height = 400 - margin.top - margin.bottom;
 
-    // append the svg object to the body of the page
+    // Append the svg object to the body of the page
     var svg = d3.select("#plant_chart")
         .append("svg")
         .attr("width", width + margin.left + margin.right)
@@ -175,7 +175,7 @@ function plant_chart() {
         .attr("transform",
             "translate(" + margin.left + "," + margin.top + ")");
 
-    //Read the data
+    // Read the data
     d3.csv("https://raw.githubusercontent.com/holtzy/data_to_viz/master/Example_dataset/3_TwoNumOrdered_comma.csv",
 
         // When reading the csv, I must format variables:

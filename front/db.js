@@ -79,7 +79,10 @@ module.exports = {
         `);
     },
     /* INSERTION */
-    change_plant_node: async function(node_ip, pump_activated, dry_value, wet_value, watering_threshold_bottom, watering_threshold_target, watering_threshold_timeout) {
+    // 20%-60% is a good threshold according to Kaan. See:
+    // https://www.greenwaybiotech.com/blogs/gardening-articles/how-soil-moisture-affects-your-plants-growth
+    // Note that -50000 can never be reached as the nodes send int16_t values. So the pump should never be activated due to poor or missin calibration.
+    change_plant_node: async function(node_ip, pump_activated, dry_value, wet_value, watering_threshold_bottom = -50000, watering_threshold_target = 60, watering_threshold_timeout = 5) {
         return await new Promise(function (resolve) {
             db.run(`
                 INSERT INTO plant_nodes (node_ip, pump_activated, dry_value, wet_value)

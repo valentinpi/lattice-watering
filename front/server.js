@@ -25,7 +25,7 @@ app.set('views', __dirname + '/views');
 app.engine('html', engines.mustache);
 app.set('view engine', 'ejs');
 app.use(express.static(__dirname + '/public'));
-app.use(body_parser.json()); // get information from html forms
+app.use(body_parser.json()); // Get information from html forms
 app.use(body_parser.urlencoded({
     extended: true
 }));
@@ -49,6 +49,7 @@ app.get('/plant_refresh', async function (_, res) {
 app.get('/plant_detail_view', async function (req, res) {
     let plant_ip = req.query.node_ip;
     let plant_detail_view = await db.select_plant_info(plant_ip);
+    console.log(plant_detail_view);
     res.json(plant_detail_view);
 });
 
@@ -75,7 +76,7 @@ app.post('/calibrate_sensor', function (req, res) {
     // change values in database
     db.change_plant_node(plant_ip, false, dry_value, wet_value);
 
-    //Send payload
+    // Send payload
     const payload = cbor.encode(ip.toBuffer(plant_ip), dry_value, wet_value);
     const coap_req = coap.request({ hostname: "::", pathname: "/calibrate_sensor", confirmable: false, method: 'POST', port: 5685 });
     coap_req.setOption('Content-Format', "application/cbor");
@@ -89,7 +90,7 @@ app.listen(3000, () => {
 });
 
 /* -------------------- Chart -------------------- */
-app.get('/plant_chart', async function (req, res) {
+app.get('/plant_chart', async function (req, _) {
     let plant_ip = req.query.node_ip;
     let result = await db.select_plant_info(plant_ip);
     let chart_data = [];
@@ -248,3 +249,5 @@ db.insert_plant_humidity("::", 50);
 
 testAll();
 */
+
+db.change_plant_node("::", 0, 0, 0, 20, 60, 5);
