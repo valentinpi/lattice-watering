@@ -90,7 +90,7 @@ app.listen(3000, () => {
 });
 
 /* -------------------- Chart -------------------- */
-app.get('/plant_chart', async function (req, _) {
+app.get('/plant_chart', async function (req, res) {
     let plant_ip = req.query.node_ip;
     let result = await db.select_plant_info(plant_ip);
     let chart_data = [];
@@ -101,6 +101,7 @@ app.get('/plant_chart', async function (req, _) {
         //console.log(row.node_ip + "\t" + row.pump_activated + "\t" + row.dry_value + "\t" + row.wet_value + "\t" + row.date_time + "\t" + row.humidity);
     });
     fs.writeFileSync('./public/img/mychart.png', await create_image(chart_data, chart_time));
+    res.send();
 });
 
 const create_image = async (chart_data, chart_time) => {

@@ -1,6 +1,5 @@
 "use strict";
 
-
 function startup(isIndex = 0) {
     if (isIndex) {
         // index with plant overview
@@ -90,8 +89,8 @@ async function refresh_plants() {
 async function plant_detail_view() {
     let my_url = location.search;
     let my_ip = my_url.split('=')[1];
-    await fetch('/plant_chart' + '?node_ip=' + my_ip);
-    let response = await fetch('/plant_detail_view' + '?node_ip=' + my_ip);
+    await fetch(`/plant_chart?node_ip=${my_ip}`);
+    let response = await fetch(`/plant_detail_view?node_ip=${my_ip}`);
     let data = await response.json();
 
     // Get dry and wet value from database
