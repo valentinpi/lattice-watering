@@ -89,16 +89,18 @@ async function refresh_plants() {
 async function plant_detail_view() {
     let my_url = location.search;
     let my_ip = my_url.split('=')[1];
-    await fetch(`/plant_chart?node_ip=${my_ip}`);
     let response = await fetch(`/plant_detail_view?node_ip=${my_ip}`);
-    let data = await response.json();
+    let config = await response.json();
 
     // Get dry and wet value from database
-    var dry_value = data[0].dry_value;
-    var wet_value = data[0].wet_value;
+    let dry_value = config.dry_value;
+    let wet_value = config.wet_value;
+    let watering_threshold_bottom = config.watering_threshold_bottom;
+    let watering_threshold_target = config.watering_threshold_target;
+    let watering_threshold_timeout = config.watering_threshold_timeout;
 
     // Creating the Box with plant and info
-    var element = document.getElementById("plant_chart");
+    let element = document.getElementById("plant_chart");
 
     while (element.hasChildNodes()) {
         element.removeChild(element.firstChild);
@@ -111,12 +113,12 @@ async function plant_detail_view() {
                 Plant
                 <br/>
                 <br/>
-                ${data[0].node_ip}
+                ${config.node_ip}
             </h3>
             <img src="/img/placeholder_plant.png" alt="Plant">
             <br/>
             <br/>
-            Humidity: ${data[0].humidity}%
+            Humidity: ${config.humidity}%
             <br/>
             <form action="/pump_toggle?node_ip=${my_ip}" method="POST">
                 <br/>
@@ -132,23 +134,18 @@ async function plant_detail_view() {
                 <input type="submit" value="Calibrate sensor" size="10">
             </form>
             <br/>
-            <form action="/" method="POST">
+            <form action="/configure_thresholding" method="POST">
                 <input type="hidden" name="node_ip" value="${my_ip}">
-                <input type="text" name="dry_value" value="${dry_value}" size="10">
-                <input type="text" name="wet_value" value="${wet_value}" size="10">
+                <input type="text" name="watering_threshold_bottom" value="${watering_threshold_bottom}" size="10">
+                <input type="text" name="watering_threshold_target" value="${watering_threshold_target}" size="10">
+                <input type="text" name="watering_threshold_timeout" value="${watering_threshold_timeout}" size="10">
                 <br/>
                 <br/>
                 <input type="submit" value="Configure thresholding" size="10">
             </form>
             <br/>
-            <form action="/" method="POST">
-                <input type="hidden" name="node_ip" value="${my_ip}">
-                <input type="text" name="dry_value" value="${dry_value}" size="10">
-                <input type="text" name="wet_value" value="${wet_value}" size="10">
-                <br/>
-                <br/>
-                <input type="submit" value="Configure schedules" size="10">
-            </form>
+            <select id="watering_schedules_list">
+            </select>
             <br/>
             <a href="/" text="Go back", title="Go back to plants overview" id="plant_setting"></a>
         </div>
@@ -156,8 +153,17 @@ async function plant_detail_view() {
             <img src="/img/mychart.png" alt="Plant Chart">
         </div>`;
 
-    setTimeout(plant_detail_view, 2500);
+    refresh_plant_detail_view();
+
+    setTimeout(refresh_plant_detail_view, 2500);
 };
+
+async function refresh_plant_detail_view() {
+    let my_url = location.search;
+    let my_ip = my_url.split('=')[1];
+    await fetch(`/plant_chart?node_ip=${my_ip}`);
+    setTimeout(refresh_plant_detail_view, 2500);
+}
 
 function plant_chart() {
     // Set the dimensions and margins of the graph

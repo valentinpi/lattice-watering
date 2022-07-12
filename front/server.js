@@ -48,8 +48,7 @@ app.get('/plant_refresh', async function (_, res) {
 
 app.get('/plant_detail_view', async function (req, res) {
     let plant_ip = req.query.node_ip;
-    let plant_detail_view = await db.select_plant_info(plant_ip);
-    console.log(plant_detail_view);
+    let plant_detail_view = (await db.select_plant_info(plant_ip)).configuration;
     res.json(plant_detail_view);
 });
 
@@ -92,7 +91,7 @@ app.listen(3000, () => {
 /* -------------------- Chart -------------------- */
 app.get('/plant_chart', async function (req, res) {
     let plant_ip = req.query.node_ip;
-    let result = await db.select_plant_info(plant_ip);
+    let result = (await db.select_plant_info(plant_ip)).humidities;
     let chart_data = [];
     let chart_time = [];
     result.forEach(row => {
@@ -251,4 +250,9 @@ db.insert_plant_humidity("::", 50);
 testAll();
 */
 
-db.change_plant_node("::", 0, 0, 0, 20, 60, 5);
+function test() {
+    db.change_plant_node("::", 0, 0, 0, 20, 60, 5);
+    db.insert_plant_humidity("::", 50);
+    setTimeout(test, 5000);
+};
+test();

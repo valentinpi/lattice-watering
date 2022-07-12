@@ -3,6 +3,7 @@
 var sqlite3 = require('sqlite3');
 
 const DB_FILE_NAME = 'lattice_watering.db';
+const HUMIDITY_QUERY_LIMIT = 100; // Limit the number of humidities one can request.
 
 var db = undefined;
 
@@ -176,7 +177,7 @@ module.exports = {
                 ph.humidity
             FROM plant_nodes pn
             JOIN plant_humidities ph ON pn.id = ph.node
-            GROUP BY ph.node
+            GROUP BY ph.node;
             `, (err, rows) => {
                 if (err) {
                     console.log(`Select query error: ${err}`);
@@ -192,19 +193,20 @@ module.exports = {
     select_plant_info: async function (node_ip) {
         var data = 0;
         // Return infos of a single plant identified by its node_ip
-        // AND ph.date_time >= DATETIME('now', 'localtime', '-10 days')
-        let return_data = await new Promise(function (resolve) {
+        // AND ph.date_time >= DATETIME('now', 'localtime', '-10 days').
+        // We return the current configuration, as well as humidity values.
+        let configuration = await new Promise(resolve => {
             db.all(`
             SELECT
-                pn.node_ip,
-                pn.pump_activated,
-                pn.dry_value,
-                pn.wet_value,
-                ph.date_time,
-                ph.humidity
-            FROM plant_nodes pn
-            JOIN plant_humidities ph ON pn.id = ph.node
-            WHERE pn.node_ip = ?
+                node_ip,
+                pump_activated,
+                dry_value,
+                wet_value,
+                watering_threshold_bottom,
+                watering_threshold_target,
+                watering_threshold_timeout
+            FROM plant_nodes
+            WHERE node_ip = ?;
             `, node_ip, (err, row) => {
                 if (err) {
                     console.log(`Select query error: ${err}`);
@@ -214,8 +216,28 @@ module.exports = {
                     resolve(data);
                 }
             });
-        })
-        return return_data;
+        });
+        let humidities = await new Promise(resolve => {
+            db.all(`
+            SELECT
+                ph.date_time,
+                ph.humidity
+            FROM plant_nodes pn
+            JOIN plant_humidities ph ON pn.id = ph.node
+            WHERE pn.node_ip = ?
+            ORDER BY ph.date_time DESC
+            LIMIT ?;
+            `, node_ip, HUMIDITY_QUERY_LIMIT, (err, row) => {
+                if (err) {
+                    console.log(`Select query error: ${err}`);
+                    resolve(data);
+                } else {
+                    data = row;
+                    resolve(data);
+                }
+            });
+        });
+        return {configuration: configuration[0], humidities: humidities};
     },
     /* REMOVING */
     delete_plant_watering_schedule: async function (node_ip, watering_begin, watering_end) {
