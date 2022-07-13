@@ -1,8 +1,8 @@
 "use strict";
 
-var sqlite3 = require('sqlite3');
+var sqlite3 = require("sqlite3");
 
-const DB_FILE_NAME = 'lattice_watering.db';
+const DB_FILE_NAME = "lattice_watering.db";
 const HUMIDITY_QUERY_LIMIT = 100; // Limit the number of humidities one can request.
 
 var db = undefined;
@@ -37,7 +37,7 @@ module.exports = {
                 console.log("Database creation error " + err);
                 exit(1);
             }
-            console.log('Database: ' + DB_FILE_NAME + ' created')
+            console.log("Database: " + DB_FILE_NAME + " created")
         });
         return new_db;
     },
@@ -47,7 +47,7 @@ module.exports = {
         // The watering thresholds allow us to implement the following functionality: If the humidity is below 
         // `watering_threshold_bottom`, the plant will be watered for five seconds, then we will wait for the
         // `watering_threshold_timeout` to run out and check again until `watering_threshold_target` is reached.
-        _create_table('plant_nodes', `
+        _create_table("plant_nodes", `
             CREATE TABLE IF NOT EXISTS plant_nodes (
                 id INTEGER PRIMARY KEY NOT NULL,
                 node_ip TEXT UNIQUE NOT NULL,
@@ -59,7 +59,7 @@ module.exports = {
                 watering_threshold_timeout INTEGER
             );
         `);
-        _create_table('plant_humidities', `
+        _create_table("plant_humidities", `
             CREATE TABLE IF NOT EXISTS plant_humidities (
                 id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
                 node INTEGER NOT NULL,
@@ -69,7 +69,7 @@ module.exports = {
             );
         `);
         // The watering times are in seconds.
-        _create_table('plant_watering_schedules', `
+        _create_table("plant_watering_schedules", `
             CREATE TABLE IF NOT EXISTS plant_watering_schedules (
                 id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
                 node INTEGER NOT NULL,
@@ -110,7 +110,7 @@ module.exports = {
         return await new Promise(function (resolve) {
             db.run(`
                 INSERT INTO plant_humidities (node, date_time, humidity)
-                    VALUES ((SELECT id FROM plant_nodes WHERE node_ip = ?), datetime('now','localtime'), ?);
+                    VALUES ((SELECT id FROM plant_nodes WHERE node_ip = ?), datetime("now","localtime"), ?);
             `, node_ip, humidity, (err) => {
                 if (err) {
                     console.log(`Insert query error: ${err}`);
@@ -144,7 +144,7 @@ module.exports = {
                 if (err) {
                     console.log(`Select query error ${err}`);
                 } else {
-                    console.log('Table plant_nodes: ');
+                    console.log("Table plant_nodes: ");
                     console.table(rows);
                 }
                 resolve(data);
@@ -156,7 +156,7 @@ module.exports = {
                 if (err) {
                     console.log(`Select query error ${err}`);
                 } else {
-                    console.log('Table plant_humidities: ');
+                    console.log("Table plant_humidities: ");
                     console.table(rows);
                 }
                 resolve(data);
@@ -168,7 +168,7 @@ module.exports = {
     select_plant_infos: async function () {
         var data = 0;
         // Returns all distinct plant information which sent info in the past 2 minutes
-        // WHERE date_time >= DATETIME('now', 'localtime', '-2 minutes')
+        // WHERE date_time >= DATETIME("now", "localtime", "-2 minutes")
         let return_data = await new Promise(function (resolve) {
             db.all(`
             SELECT
@@ -193,7 +193,7 @@ module.exports = {
     select_plant_info: async function (node_ip) {
         var data = 0;
         // Return infos of a single plant identified by its node_ip
-        // AND ph.date_time >= DATETIME('now', 'localtime', '-10 days').
+        // AND ph.date_time >= DATETIME("now", "localtime", "-10 days").
         // We return the current configuration, as well as humidity values.
         let configuration = await new Promise(resolve => {
             db.all(`

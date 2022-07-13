@@ -14,10 +14,10 @@ function startup(isIndex = 0) {
 
 function date_time() {
     var today = new Date();
-    var date = check_format(today.getDate()) + '.' + check_format((today.getMonth() + 1)) + '.' + today.getFullYear();
+    var date = check_format(today.getDate()) + "." + check_format((today.getMonth() + 1)) + "." + today.getFullYear();
     var time = check_format(today.getHours()) + ":" + check_format(today.getMinutes()) + ":" + check_format(today.getSeconds());
 
-    document.getElementById("display_date_time").innerHTML = time + ', ' + date;
+    document.getElementById("display_date_time").innerHTML = time + ", " + date;
     var t = setTimeout(date_time, 500);
 };
 
@@ -30,26 +30,26 @@ function check_format(i) {
 
 /* -------------------- index -------------------- */
 async function refresh_plants() {
-    let response = await (fetch('/plant_refresh'));
+    let response = await (fetch("/plant_refresh"));
     let data = await response.json();
 
     var element = document.getElementById("scrollmenu");
-    var div = document.createElement('div');
-        div.classList.add('box');
-    var div2 = document.createElement('div');
-        div2.classList.add('boxnonodes');
-    var br = document.createElement('br');
-    var h1 = document.createElement('h1');
-        h1.textContent = 'No nodes in reach';
-    var h3_top = document.createElement('h3');
-    var h3_bottom = document.createElement('h3');
-    var img = document.createElement('img');
-        img.src = '/img/placeholder_plant.png';
-        img.alt = 'Plant';
-    var a = document.createElement('a');
-        a.id = 'plant_setting';
-        a.title = 'Configure desired humidity and show statistics';
-        a.text = 'Settings ...';
+    var div = document.createElement("div");
+        div.classList.add("box");
+    var div2 = document.createElement("div");
+        div2.classList.add("boxnonodes");
+    var br = document.createElement("br");
+    var h1 = document.createElement("h1");
+        h1.textContent = "No nodes in reach";
+    var h3_top = document.createElement("h3");
+    var h3_bottom = document.createElement("h3");
+    var img = document.createElement("img");
+        img.src = "/img/placeholder_plant.png";
+        img.alt = "Plant";
+    var a = document.createElement("a");
+        a.id = "plant_setting";
+        a.title = "Configure desired humidity and show statistics";
+        a.text = "Settings ...";
 
     while (element.hasChildNodes()) {
         element.removeChild(element.firstChild);
@@ -62,10 +62,10 @@ async function refresh_plants() {
                 div.removeChild(div.firstChild);
             }
 
-            h3_top.textContent = 'Plant';
+            h3_top.textContent = "Plant";
             h3_bottom.textContent = data[i].node_ip;
-            var text_hum = document.createTextNode('Humidity: ' + data[i].humidity + '%');
-            a.href = 'plant_view?node_ip=' + data[i].node_ip;
+            var text_hum = document.createTextNode("Humidity: " + data[i].humidity + "%");
+            a.href = "plant_view?node_ip=" + data[i].node_ip;
         
             div.appendChild(h3_top.cloneNode(true));
             div.appendChild(h3_bottom.cloneNode(true));
@@ -88,7 +88,7 @@ async function refresh_plants() {
 /* ------------------ plant_view ------------------ */
 async function plant_detail_view() {
     let my_url = location.search;
-    let my_ip = my_url.split('=')[1];
+    let my_ip = my_url.split("=")[1];
     let response = await fetch(`/plant_detail_view?node_ip=${my_ip}`);
     let config = await response.json();
 
@@ -108,43 +108,48 @@ async function plant_detail_view() {
 
     // TODO: Replace these `<br/>` tags with CSS formatting.
     element.innerHTML = `\
-        <div class="box">
+        <div class="box" style="display: block; width: 100%;">
             <h3>
                 <div>Plant</div>
                 <div>${config.node_ip}</div>
             </h3>
-            <img src="/img/placeholder_plant.png" alt="Plant">
-            <span id="humidity">Humidity: ${config.humidity}%</span>
-            <form action="/pump_toggle?node_ip=${my_ip}" method="POST">
-                <input type="submit" name="TOGGLE" value="Toggle Pump">
-            </form>
-            <form action="/calibrate_sensor" method="POST">
-                <input type="hidden" name="node_ip" value="${my_ip}">
-                <input type="text" name="dry_value" value="${dry_value}" size="10">
-                <input type="text" name="wet_value" value="${wet_value}" size="10">
-                <input type="submit" value="Calibrate sensor" size="10">
-            </form>
-            <form action="/configure_thresholding" method="POST">
-                <input type="hidden" name="node_ip" value="${my_ip}">
-                <input type="text" name="watering_threshold_bottom" value="${watering_threshold_bottom}" size="10">
-                <input type="text" name="watering_threshold_target" value="${watering_threshold_target}" size="10">
-                <input type="text" name="watering_threshold_timeout" value="${watering_threshold_timeout}" size="10">
-                <input type="submit" value="Configure thresholding" size="10">
-            </form>
-            <select id="watering_schedules_list" multiple size="5">
-            </select>
+            <div>
+                <img src="/img/placeholder_plant.png" alt="Plant">
+                <span style="display: block;">
+                    <span id="humidity">Humidity: ${config.humidity}%</span>
+                    <form action="/pump_toggle?node_ip=${my_ip}" method="POST">
+                        <input type="submit" name="TOGGLE" value="Toggle Pump">
+                    </form>
+                    <form action="/calibrate_sensor" method="POST">
+                        <input type="hidden" name="node_ip" value="${my_ip}">
+                        <input type="text" name="dry_value" value="${dry_value}" size="10">
+                        <input type="text" name="wet_value" value="${wet_value}" size="10">
+                        <input type="submit" value="Calibrate sensor" size="10">
+                    </form>
+                </span>
+                <form action="/configure_thresholding" method="POST">
+                    <input type="hidden" name="node_ip" value="${my_ip}">
+                    <input type="text" name="watering_threshold_bottom" value="${watering_threshold_bottom}" size="10">
+                    <input type="text" name="watering_threshold_target" value="${watering_threshold_target}" size="10">
+                    <input type="text" name="watering_threshold_timeout" value="${watering_threshold_timeout}" size="10">
+                    <input type="submit" value="Configure thresholding" size="10">
+                </form>
+                <select id="watering_schedules_list" multiple size="5">
+                </select>
+            </div>
             <a href="/" text="Go back" title="Go back to plants overview" id="plant_setting"></a>
         </div>
-        <div class="box_chart">
-            <img src="/img/mychart.png" alt="Plant Chart">
+        <div class="box_chart" style="display: block;">
+            <img src="/img/mychart.svg" alt="Plant Chart">
         </div>`;
 
     refresh_plant_detail_view();
 };
 
 async function refresh_plant_detail_view() {
+    console.log("HI");
     let my_url = location.search;
-    let my_ip = my_url.split('=')[1];
+    let my_ip = my_url.split("=")[1];
     let hum = document.getElementById("humidity");
     await fetch(`/plant_chart?node_ip=${my_ip}`);
     let res = await fetch(`/plant_detail_view?node_ip=${my_ip}`);

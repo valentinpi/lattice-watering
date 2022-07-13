@@ -33,6 +33,7 @@ $ just gen_psk
 - Buffers are to be zeroed out asap.
 - Use `#pragma once`.
 - Use `snake_case`.
+- Use `"` instead of `'` for raw strings.
 
 ### JS Coding Conventions
 
