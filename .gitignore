@@ -13,8 +13,10 @@ front/node_modules
 front/lattice_watering.db
 front/public/img/mychart.png
 fw/bin
+fw/psk_key.h
 node_modules/*
 proxy/Cargo.lock
+proxy/src/psk_key.rs
 proxy/target
 proxy/tinydtls
 psk
