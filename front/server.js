@@ -11,6 +11,7 @@ const express = require("express");
 const fs = require("fs");
 const ip = require("ip");
 const morgan = require("morgan");
+const schedule = require("node-schedule");
 const url = require("url");
 
 // We draw the charts on the server and pass them to the frontend
@@ -54,18 +55,54 @@ app.get("/plant_detail_view", async function (req, res) {
     res.json(plant_detail_view.configuration);
 });
 
-app.post("/pump_toggle", function (req, res) {
-    var plant_ip = req.body.node_ip;
-    let payload = cbor.encode(ip.toBuffer(plant_ip));
-    // Send to proxy
+function toggle_pump(node_ip) {
+    let payload = cbor.encode(ip.toBuffer(node_ip));
     const coap_req = coap.request({ hostname: "::", pathname: "/pump_toggle", confirmable: false, method: "POST", port: 5685 });
     coap_req.setOption("Content-Format", "application/cbor");
     coap_req.write(payload);
     coap_req.end();
+}
+
+function calibrate_sensor(node_ip, dry_value, wet_value) {
+    const payload = cbor.encode(ip.toBuffer(node_ip), dry_value, wet_value);
+    const coap_req = coap.request({ hostname: "::", pathname: "/calibrate_sensor", confirmable: false, method: "POST", port: 5685 });
+    coap_req.setOption("Content-Format", "application/cbor");
+    coap_req.write(payload);
+    coap_req.end();
+}
+
+app.post("/pump_toggle", async function (req, res) {
+    var plant_ip = req.body.node_ip;
+
+    // Change values in database
+    let current_config = (await db.select_plant_info(plant_ip));
+    console.log(current_config);
+    db.change_plant_node(plant_ip, !current_config.pump_activated, current_config.dry_value, current_config.wet_value, current_config.watering_threshold_bottom, current_config.watering_threshold_target, current_config.watering_threshold_timeout);
+
+    // Send to proxy
+    toggle_pump(plant_ip);
     res.status(204).send();
 });
 
-app.post("/calibrate_sensor", function (req, res) {
+app.post("/calibrate_sensor", async function (req, res) {
+    var plant_ip = req.body.node_ip;
+    var dry_value = parseInt(req.body.dry_value, 10);
+    var wet_value = parseInt(req.body.wet_value, 10);
+    if (isNaN(dry_value) || isNaN(wet_value)) {
+        console.log("Calibration parameters are invalid");
+        return;
+    }
+
+    // Change values in database
+    let current_config = (await db.select_plant_info(plant_ip)).configuration;
+    db.change_plant_node(plant_ip, current_config.pump_activated, dry_value, wet_value, current_config.watering_threshold_bottom, current_config.watering_threshold_target, current_config.watering_threshold_timeout);
+
+    // Send payload
+    calibrate_sensor(plant_ip, dry_value, wet_value);
+    res.status(204).send();
+});
+
+app.post("/configure_thresholding", function (req, res) {
     var plant_ip = req.body.node_ip;
     var dry_value = parseInt(req.body.dry_value, 10);
     var wet_value = parseInt(req.body.wet_value, 10);
@@ -158,7 +195,7 @@ const create_image = async (chart_data, chart_time) => {
 var server = coap.createServer({ type: "udp6" });
 db.init();
 
-server.on("request", (req, _) => {
+server.on("request", async (req, _) => {
     if (req.url != "/data") {
         return;
     }
@@ -182,26 +219,20 @@ server.on("request", (req, _) => {
 
     console.log(`Received CoAP-CBOR /data POST from ${ip_addr_str}`);
 
-    /*
-    console.log(
-        `ip_addr: ${ip_addr}\n`,
-        `\bip_addr_str: ${ip_addr_str}\n`,
-        `\bhumidity: ${humidity}\n`,
-        `\bpump_activated: ${pump_activated}\n`,
-        `\bdry_value: ${dry_value}\n`,
-        `\bwet_value: ${wet_value}\n`,
-        `\brx_bytes: ${rx_bytes}\n`,
-        `\brx_count: ${rx_count}\n`,
-        `\btx_bytes: ${tx_bytes}\n`,
-        `\btx_unicast_count: ${tx_unicast_count}\n`,
-        `\btx_mcast_count: ${tx_mcast_count}\n`,
-        `\btx_success: ${tx_success}\n`,
-        `\btx_failed: ${tx_failed}`);
-    */
-    
-    db.change_plant_node(ip_addr_str, pump_activated, dry_value, wet_value, 20, 60, 5);
-    db.insert_plant_humidity(ip_addr_str, humidity);
-    //db.select_all();
+    let current_config = (await db.select_plant_info(ip_addr_str)).configuration;
+    // Probe for new registration
+    if (current_config == undefined) {
+        db.change_plant_node(ip_addr_str, pump_activated, dry_value, wet_value, 20, 60, 5);
+        db.insert_plant_humidity(ip_addr_str, humidity);
+    }
+    else {
+        if (pump_activated != current_config.pump_activated) {
+            toggle_pump(plant_ip);
+        }
+        if (dry_value != current_config.dry_value || wet_value != current_config.wet_value) {
+            calibrate_sensor(node_ip, current_config.dry_value, current_config.wet_value);
+        }
+    }
 });
 
 server.on("response", (res) => {
@@ -252,9 +283,30 @@ db.insert_plant_humidity("::", 50);
 testAll();
 */
 
+/* Test code for `request` listener for (CoAP) `server`
+console.log(
+    `ip_addr: ${ip_addr}\n`,
+    `\bip_addr_str: ${ip_addr_str}\n`,
+    `\bhumidity: ${humidity}\n`,
+    `\bpump_activated: ${pump_activated}\n`,
+    `\bdry_value: ${dry_value}\n`,
+    `\bwet_value: ${wet_value}\n`,
+    `\brx_bytes: ${rx_bytes}\n`,
+    `\brx_count: ${rx_count}\n`,
+    `\btx_bytes: ${tx_bytes}\n`,
+    `\btx_unicast_count: ${tx_unicast_count}\n`,
+    `\btx_mcast_count: ${tx_mcast_count}\n`,
+    `\btx_success: ${tx_success}\n`,
+    `\btx_failed: ${tx_failed}`);
+
+db.select_all();
+*/
+
+/*
 function test() {
     db.change_plant_node("[::]", 0, 0, 0, 20, 60, 5);
     db.insert_plant_humidity("[::]", 50);
     setTimeout(test, 5000);
 };
 test();
+*/
