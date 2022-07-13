@@ -65,13 +65,14 @@ button {
     overflow-y: hidden;
     white-space: nowrap;
     display: inline-block;
+    width: 95%;
 }
 
     .scrollmenu a {
         display: inline-block;
         color: blue;
         text-align: center;
-        padding: 3%;
+        padding: 1%;
         text-decoration: none;
         height: auto;
         width: auto;
@@ -104,7 +105,6 @@ button {
     background-color: ghostwhite;
     border: 5px solid #00CC66;
     border-radius: 16px;
-    width: 75%;
     margin: 0.5%;
 }
 
@@ -134,4 +134,45 @@ button {
     border-spacing: 0;
     border-radius: 0px 0px 16px 16px;
     padding: 0.75%;
+}
+
+#plant_detail_configuration {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    gap: 25px;
+}
+
+.plant_detail_configuration_form {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-around;
+}
+
+.plant_detail_configuration_heading {
+    margin: 10px;
+}
+
+.plant_detail_configuration_label {
+    margin: 10px;
+    text-align: left;
+}
+
+.plant_detail_configuration_textbox {
+    text-align: right;
+}
+
+.plant_detail_configuration_button {
+    margin: 10px;
+}
+
+#watering_schedules_list {
+    width: 250px;
+    height: 250px;
+}
+
+#plant_detail_configuration_explanations {
+    inline-size: 400px;
+    white-space: initial;
+    word-break: normal;
 }

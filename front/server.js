@@ -15,9 +15,10 @@ const url = require("url");
 
 // We draw the charts on the server and pass them to the frontend
 const { ChartJSNodeCanvas } = require("chartjs-node-canvas");
-const CHART_WIDTH = 1000;
-const CHART_HEIGHT = 300;
-const canvas_render_service = new ChartJSNodeCanvas({ type: "svg", width: CHART_WIDTH, height: CHART_HEIGHT });
+// Should suffice for most screens
+const CHART_WIDTH = 2000;
+const CHART_HEIGHT = 800;
+const canvas_render_service = new ChartJSNodeCanvas({ type: "png", width: CHART_WIDTH, height: CHART_HEIGHT });
 
 /* ---------------- Express Setup ---------------- */
 app.use(morgan("dev"));
@@ -50,7 +51,6 @@ app.get("/plant_detail_view", async function (req, res) {
     let plant_ip = req.query.node_ip;
     let plant_detail_view = (await db.select_plant_info(plant_ip));
     plant_detail_view.configuration.humidity = plant_detail_view.humidities[0].humidity;
-    console.log(plant_detail_view.configuration);
     res.json(plant_detail_view.configuration);
 });
 
@@ -96,13 +96,12 @@ app.get("/plant_chart", async function (req, res) {
     let result = (await db.select_plant_info(plant_ip)).humidities;
     let chart_data = [];
     let chart_time = [];
-    console.log("HERE");
     result.forEach(row => {
         chart_data.push(row.humidity);
         chart_time.push(row.date_time);
         //console.log(row.node_ip + "\t" + row.pump_activated + "\t" + row.dry_value + "\t" + row.wet_value + "\t" + row.date_time + "\t" + row.humidity);
     });
-    fs.writeFileSync("public/img/mychart.svg", await create_image(chart_data, chart_time));
+    fs.writeFileSync("public/img/mychart.png", await create_image(chart_data, chart_time));
     res.send();
 });
 
@@ -152,7 +151,6 @@ const create_image = async (chart_data, chart_time) => {
         }
     };
     const data_url = await canvas_render_service.renderToBuffer(configuration); // converts chart to image
-    console.log(data_url);
     return data_url;
 };
 

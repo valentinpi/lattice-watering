@@ -1,5 +1,8 @@
 "use strict";
 
+const PLANT_REFRESH_DELAY = 1000;
+const DATE_REFRESH_DELAY = 500;
+
 function startup(isIndex = 0) {
     if (isIndex) {
         // index with plant overview
@@ -18,7 +21,7 @@ function date_time() {
     var time = check_format(today.getHours()) + ":" + check_format(today.getMinutes()) + ":" + check_format(today.getSeconds());
 
     document.getElementById("display_date_time").innerHTML = time + ", " + date;
-    var t = setTimeout(date_time, 500);
+    setTimeout(date_time, DATE_REFRESH_DELAY);
 };
 
 function check_format(i) {
@@ -82,7 +85,7 @@ async function refresh_plants() {
         element.appendChild(div2);
     }
 
-    setTimeout(refresh_plants, 2500);
+    setTimeout(refresh_plants, PLANT_REFRESH_DELAY);
 };
 
 /* ------------------ plant_view ------------------ */
@@ -109,54 +112,142 @@ async function plant_detail_view() {
     // TODO: Replace these `<br/>` tags with CSS formatting.
     element.innerHTML = `\
         <div class="box" style="display: block; width: 100%;">
-            <h3>
-                <div>Plant</div>
-                <div>${config.node_ip}</div>
-            </h3>
-            <div>
-                <img src="/img/placeholder_plant.png" alt="Plant">
-                <span style="display: block;">
-                    <span id="humidity">Humidity: ${config.humidity}%</span>
-                    <form action="/pump_toggle?node_ip=${my_ip}" method="POST">
-                        <input type="submit" name="TOGGLE" value="Toggle Pump">
+            <h3>Plant</h3>
+            <h3>${config.node_ip}</h3>
+            <div id="plant_detail_configuration" style="display: flex; flex-direction: row;">
+                <div>
+                    <img style="width: 250px;" src="/img/placeholder_plant.png" alt="Plant">
+                    <div id="humidity">Humidity: ${config.humidity}%</div>
+                </div>
+                <div>
+                    <form class="plant_detail_configuration_form" action="/pump_toggle?node_ip=${my_ip}" method="POST">
+                        <span class="plant_detail_configuration_heading">Explicit Pump Control</span>
+                        <input class="plant_detail_configuration_button" type="submit" name="TOGGLE" value="Toggle Pump">
                     </form>
-                    <form action="/calibrate_sensor" method="POST">
+                    <form class="plant_detail_configuration_form" action="/calibrate_sensor" method="POST">
                         <input type="hidden" name="node_ip" value="${my_ip}">
-                        <input type="text" name="dry_value" value="${dry_value}" size="10">
-                        <input type="text" name="wet_value" value="${wet_value}" size="10">
-                        <input type="submit" value="Calibrate sensor" size="10">
+                        <span class="plant_detail_configuration_heading">Sensor Calibration</span>
+                        <table>
+                            <tr>
+                                <td>
+                                    <span class="plant_detail_configuration_label">Dry Value: </span>
+                                </td>
+                                <td>
+                                    <input class="plant_detail_configuration_textbox" type="text" name="dry_value" value="${dry_value}" size="10">
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <span class="plant_detail_configuration_label">Wet Value: </span>
+                                </td>
+                                <td>
+                                    <input class="plant_detail_configuration_textbox" type="text" name="wet_value" value="${wet_value}" size="10">
+                                </td>
+                            </tr>
+                        </table>
+                        <input class="plant_detail_configuration_button" name="plant_detail_calibration_button" type="submit" value="Calibrate Sensor" size="10">
                     </form>
-                </span>
-                <form action="/configure_thresholding" method="POST">
+                    <form class="plant_detail_configuration_form" action="/configure_thresholding" style="justify-content: right;" method="POST">
+                        <input type="hidden" name="node_ip" value="${my_ip}">
+                        <span class="plant_detail_configuration_heading">Thresholding Configuration</span>
+                        <table style="text-align: left;">
+                            <tr>
+                                <td>
+                                    <span class="plant_detail_configuration_label">Bottom: </span>
+                                </td>
+                                <td>
+                                    <input class="plant_detail_configuration_textbox" type="text" name="watering_threshold_bottom" value="${watering_threshold_bottom}" size="10">
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <span class="plant_detail_configuration_label">Target: </span>
+                                </td>
+                                <td>
+                                    <input class="plant_detail_configuration_textbox" type="text" name="watering_threshold_target" value="${watering_threshold_target}" size="10">
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <span class="plant_detail_configuration_label">Timeout: </span>
+                                </td>
+                                <td>
+                                    <input class="plant_detail_configuration_textbox" type="text" name="watering_threshold_timeout" value="${watering_threshold_timeout}" size="10">
+                                </td>
+                            </tr>
+                        </table>
+                        <input class="plant_detail_configuration_button" name="plant_detail_thresholding_button" type="submit" value="Configure Thresholding" size="10">
+                    </form>
+                </div>
+                <!-- No form here since we do not want to post anything just yet. -->
+                <div class="plant_detail_configuration_form" style="justify-content: right;">
                     <input type="hidden" name="node_ip" value="${my_ip}">
-                    <input type="text" name="watering_threshold_bottom" value="${watering_threshold_bottom}" size="10">
-                    <input type="text" name="watering_threshold_target" value="${watering_threshold_target}" size="10">
-                    <input type="text" name="watering_threshold_timeout" value="${watering_threshold_timeout}" size="10">
-                    <input type="submit" value="Configure thresholding" size="10">
-                </form>
-                <select id="watering_schedules_list" multiple size="5">
-                </select>
+                    <span class="plant_detail_configuration_label">Watering Schedules Overview</span>
+                    <select id="watering_schedules_list" multiple size="5">
+                    </select>
+                    <input class="plant_detail_configuration_button" name="plant_detail_delete_schedule_button" type="submit" value="Delete Schedule" size="10">
+                    <table style="text-align: left;">
+                        <tr>
+                            <td>
+                                <span class="plant_detail_configuration_label">Schedule Begin: </span>
+                            </td>
+                            <td>
+                                <input class="plant_detail_configuration_textbox" type="text" name="watering_threshold_bottom" value="" size="10">
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <span class="plant_detail_configuration_label">Schedule End: </span>
+                            </td>
+                            <td>
+                                <input class="plant_detail_configuration_textbox" type="text"  name="watering_threshold_target" value="" size="10">
+                            </td>
+                        </tr>
+                    </table>
+                    <input class="plant_detail_configuration_button" name="plant_detail_add_schedule_button" type="submit" value="Add Schedule" size="10">
+                </div>
+                <div id="plant_detail_configuration_explanations">
+                    <div>Some explanations</div>
+                    <br/>
+                    <div>Congratulations! Your Lattice-Watering system was successfully set up. Before you get started, you may want to calibrate the sensor first. You do that by first taking the current humidity, while the sensor is dry, as the dry value. For the wet value, you may stick the moisture sensor into water and measure. You can then explicitly control the pump, setup a threshold, which, if the bottom value is crossed, will start watering the plant in short bursts of five seconds and then wait for the selected timeout to run out and check again, until the target humidity is reached. You can also setup fixed time schedules, notice that these are in seconds and run daily.</div>
+                </div>
             </div>
-            <a href="/" text="Go back" title="Go back to plants overview" id="plant_setting"></a>
+            <a href="/" text="Go back" title="Go back to plants overview" id="plant_setting">Go back</a>
         </div>
-        <div class="box_chart" style="display: block;">
-            <img src="/img/mychart.svg" alt="Plant Chart">
+        <div class="box_chart">
+            <img src="/img/mychart.png" alt="Plant Chart">
         </div>`;
+
+    document.getElementsByName("plant_detail_delete_schedule_button")[0].addEventListener("click", (_) => {
+        let watering_schedules_list = document.getElementById("watering_schedules_list");
+        // To keep it simple
+        let selectedIndex = watering_schedules_list.selectedIndex;
+        if (selectedIndex == -1) {
+            return;
+        }
+        let child = watering_schedules_list.childNodes[selectedIndex];
+        watering_schedules_list.removeChild(child); 
+        console.log("REMOVING SCHEDULE");
+    });
+    document.getElementsByName("plant_detail_add_schedule_button")[0].addEventListener("click", (_) => {
+        let watering_schedules_list = document.getElementById("watering_schedules_list");
+        watering_schedules_list.appendChild(new Option("Hi!"));
+        //let children = watering_schedules_list.childNodes;
+        console.log("ADDING SCHEDULE");
+    });
 
     refresh_plant_detail_view();
 };
 
 async function refresh_plant_detail_view() {
-    console.log("HI");
     let my_url = location.search;
     let my_ip = my_url.split("=")[1];
     let hum = document.getElementById("humidity");
     await fetch(`/plant_chart?node_ip=${my_ip}`);
     let res = await fetch(`/plant_detail_view?node_ip=${my_ip}`);
     let config = await res.json();
-    console.log(config);
     hum.innerHTML = `Humidity: ${config.humidity}%`;
-    setTimeout(refresh_plant_detail_view, 5000);
+    setTimeout(refresh_plant_detail_view, PLANT_REFRESH_DELAY);
 }
 
 function plant_chart() {
