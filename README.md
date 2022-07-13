@@ -13,7 +13,7 @@
 - `proxy`: A DTLS proxy based on `tinydtls` written in Rust.
 - `psk`: PSK key used, remember to regenerate this once in a while.
 
-To replicate our project, you will need to follow the steps of the `HWSETUP.md` file to first create a border router and at least one node board. THen, you will want to flash both of these. Please look into flashing a border router, `br`, first, as the explanations there are very similar to `fw` (node firmware). Also, you will need to build the proxy that is used for translating DTLS traffic. You will also want to create new PSK keys, you can do that by running:
+To replicate our project, you will need to follow the steps of the `HWSETUP.md` file to first create a border router and at least one node board. Then, you will want to flash both of these. Please look into flashing a border router, `br`, first, as the explanations there are very similar to `fw` (node firmware). Also, you will need to build the proxy that is used for translating DTLS traffic. You will also want to create new PSK keys, you can do that by running:
 ```
 $ just gen_psk
 ```
