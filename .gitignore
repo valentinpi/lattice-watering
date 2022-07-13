@@ -11,8 +11,10 @@ doc/*/*.toc
 doc/*/*.vrb
 front/node_modules
 front/lattice_watering.db
+front/public/img/mychart.png
 fw/bin
 node_modules/*
 proxy/Cargo.lock
 proxy/target
 proxy/tinydtls
+psk
