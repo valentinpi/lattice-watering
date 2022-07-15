@@ -51,20 +51,20 @@ module.exports = {
             CREATE TABLE IF NOT EXISTS plant_nodes (
                 id INTEGER PRIMARY KEY NOT NULL,
                 node_ip TEXT UNIQUE NOT NULL,
-                pump_activated INTEGER NOT NULL,
-                dry_value INTEGER NOT NULL,
-                wet_value INTEGER NOT NULL,
-                watering_threshold_bottom INTEGER NOT NULL,
-                watering_threshold_target INTEGER NOT NULL,
-                watering_threshold_timeout INTEGER NOT NULL
+                pump_activated INTEGER,
+                dry_value INTEGER,
+                wet_value INTEGER,
+                watering_threshold_bottom INTEGER,
+                watering_threshold_target INTEGER,
+                watering_threshold_timeout INTEGER
             );
         `);
         _create_table("plant_humidities", `
             CREATE TABLE IF NOT EXISTS plant_humidities (
                 id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
                 node INTEGER NOT NULL,
-                date_time INTEGER NOT NULL,
-                humidity INTEGER NOT NULL,
+                date_time INTEGER,
+                humidity INTEGER,
                 FOREIGN KEY (node) REFERENCES plant_nodes(id)
             );
         `);
@@ -73,8 +73,8 @@ module.exports = {
             CREATE TABLE IF NOT EXISTS plant_watering_schedules (
                 id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
                 node INTEGER NOT NULL,
-                watering_begin INTEGER NOT NULL,
-                watering_end INTEGER NOT NULL,
+                watering_begin INTEGER,
+                watering_end INTEGER,
                 FOREIGN KEY (node) REFERENCES plant_nodes(id)
             );
         `);
@@ -113,21 +113,6 @@ module.exports = {
                 INSERT INTO plant_humidities (node, date_time, humidity)
                     VALUES ((SELECT id FROM plant_nodes WHERE node_ip = ?), unixepoch(CURRENT_TIMESTAMP), ?);
             `, node_ip, humidity, (err) => {
-                if (err) {
-                    console.error(`Insert query error: ${err}`);
-                    resolve(0);
-                } else {
-                    resolve(1);
-                }
-            });
-        });
-    },
-    insert_plant_watering_schedule: async function (node_ip, watering_begin, watering_end) {
-        return await new Promise(function (resolve) {
-            db.run(`
-                INSERT INTO plant_watering_schedules (node, watering_begin, watering_end)
-                    VALUES ((SELECT id FROM plant_nodes WHERE node_ip = ?), ?, ?);
-            `, node_ip, watering_begin, watering_end, node_ip, (err) => {
                 if (err) {
                     console.error(`Insert query error: ${err}`);
                     resolve(0);
@@ -197,12 +182,11 @@ module.exports = {
                     resolve(data);
                 }
             });
-        })
-        console.log(return_data);
+        });
         return return_data;
     },
     select_plant_info: async function (node_ip) {
-        var data = 0;
+        let data = 0;
         // Return infos of a single plant identified by its node_ip
         // AND ph.date_time >= DATETIME("now", "localtime", "-10 days").
         // We return the current configuration, as well as humidity values.
@@ -238,19 +222,49 @@ module.exports = {
             WHERE pn.node_ip = ?
             ORDER BY ph.date_time DESC
             LIMIT ?;
-            `, node_ip, HUMIDITY_QUERY_LIMIT, (err, row) => {
+            `, node_ip, HUMIDITY_QUERY_LIMIT, (err, rows) => {
                 if (err) {
                     console.error(`Select query error: ${err}`);
                     resolve(data);
                 } else {
-                    data = row;
+                    data = rows;
                     resolve(data);
                 }
             });
         });
         return {configuration: configuration[0], humidities: humidities};
     },
-    /* REMOVING */
+    /* PLANT WATERING SCHEDULES */
+    select_plant_watering_schedules: async function () {
+        let data = 0;
+        let result = await new Promise(function (resolve) {
+            db.run(`SELECT * FROM plant_watering_schedules;`, (err, rows) => {
+                if (err) {
+                    console.error(`Select query error: ${err}`);
+                    resolve(data);
+                } else {
+                    data = rows;
+                    resolve(data);
+                }
+            });
+        });
+        return result;
+    },
+    insert_plant_watering_schedule: async function (node_ip, watering_begin, watering_end) {
+        return await new Promise(function (resolve) {
+            db.run(`
+                INSERT INTO plant_watering_schedules (node, watering_begin, watering_end)
+                    VALUES ((SELECT id FROM plant_nodes WHERE node_ip = ?), ?, ?);
+            `, node_ip, watering_begin, watering_end, (err) => {
+                if (err) {
+                    console.error(`Insert query error: ${err}`);
+                    resolve(0);
+                } else {
+                    resolve(1);
+                }
+            });
+        });
+    },
     delete_plant_watering_schedule: async function (node_ip, watering_begin, watering_end) {
         return await new Promise(function (resolve) {
             db.run(`

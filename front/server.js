@@ -1,5 +1,9 @@
 "use strict"
 
+// NOTE: The delay in the local communication is assumed to be barely existing, of course.
+// So the frontend-website communication should be very close in practical, so that currently running
+// asynchronous events are not interrupted.
+
 // Webserver
 const app = require("express")();
 const body_parser = require("body-parser");
@@ -55,9 +59,9 @@ app.get("/plant_detail_view", async function (req, res) {
     res.json(plant_detail_view.configuration);
 });
 
-async function toggle_pump(node_ip) {
+async function pump_toggle(node_ip) {
     // Change values in database
-    let current_config = await db.select_plant_info(node_ip);
+    let current_config = (await db.select_plant_info(node_ip)).configuration;
     await db.change_plant_node(node_ip, !current_config.pump_activated, current_config.dry_value, current_config.wet_value, current_config.watering_threshold_bottom, current_config.watering_threshold_target, current_config.watering_threshold_timeout);
 
     // Send payload
@@ -86,7 +90,7 @@ async function configure_thresholding(node_ip, watering_threshold_bottom, wateri
 
 app.post("/pump_toggle", async function (req, res) {
     var plant_ip = req.body.node_ip;
-    await toggle_pump(plant_ip);
+    await pump_toggle(plant_ip);
     res.status(204).send();
 });
 
@@ -115,12 +119,69 @@ app.post("/configure_thresholding", async (req, res) => {
     res.status(204).send();
 });
 
+let watering_schedules = [];
+
+app.post("/select_watering_schedules", async (req, res) => {
+    let schedules = await db.select_plant_watering_schedules();
+    res.json(schedules);
+});
+
 app.post("/add_watering_schedule", async (req, res) => {
-    console.log("ADDING");
+    let node_ip = req.body.node_ip;
+    let watering_begin = req.body.watering_begin;
+    let watering_end = req.body.watering_end;
+
+    // NOTE: We assume the dates are well formatted.
+    let create_time_object = (timestamp) => {
+        let hour = Math.floor(timestamp / (60*60));
+        timestamp = timestamp - hour * (60 * 60);
+        let minute = Math.floor(timestamp / 60);
+        timestamp = timestamp - minute * 60;
+        let second = timestamp;
+        return {
+            hour: hour,
+            minute: minute,
+            second: second
+        }
+    };
+    watering_schedules.push({
+        job: new schedule.Job({
+            start: create_time_object(watering_begin),
+            end: create_time_object(watering_end)
+        }, () => {
+            pump_toggle(node_ip);
+        }),
+        node_ip: node_ip,
+        watering_begin: watering_begin,
+        watering_end: watering_end
+    });
+    await db.insert_plant_watering_schedule(node_ip, watering_begin, watering_end);
+    let schedules = await db.select_plant_watering_schedules();
+    console.log(watering_schedules);
+    console.log(schedules);
+    await db.select_all();
+    res.status(204).send();
 });
 
 app.post("/delete_watering_schedule", async (req, res) => {
-    console.log("DELETING");
+    let node_ip = req.body.node_ip;
+    let watering_begin = req.body.watering_begin;
+    let watering_end = req.body.watering_end;
+    for (let i = 0; i < watering_schedules.length; i++) {
+        let schedule = watering_schedules[i];
+        console.log(schedule.node_ip, node_ip, schedule.watering_begin, watering_begin, schedule.watering_end, watering_end);
+        if (schedule.node_ip == node_ip && schedule.watering_begin == watering_begin && schedule.watering_end == watering_end) {
+            watering_schedules[i].cancel();
+            watering_schedules.pop(i);
+            break;
+        }
+    }
+    await db.delete_plant_watering_schedule(node_ip, watering_begin, watering_end);
+    let schedules = await db.select_plant_watering_schedules();
+    console.log(watering_schedules);
+    console.log(schedules);
+    await db.select_all();
+    res.status(204).send();
 });
 
 app.listen(3000, () => {
@@ -139,7 +200,7 @@ app.get("/plant_chart", async (req, res) => {
         chart_time.push(new Date(row.date_time * 1000).toDateString());
     });
     fs.writeFileSync("public/img/mychart.png", await create_image(chart_data, chart_time));
-    res.send();
+    res.status(204).send();
 });
 
 const create_image = async (chart_data, chart_time) => {
@@ -228,7 +289,7 @@ server.on("request", async (req, _) => {
     else {
         db.insert_plant_humidity(ip_addr_str, humidity);
         if (pump_activated != current_config.pump_activated) {
-            toggle_pump(ip_addr_str);
+            pump_toggle(ip_addr_str);
         }
         if (dry_value != current_config.dry_value || wet_value != current_config.wet_value) {
             calibrate_sensor(ip_addr_str, current_config.dry_value, current_config.wet_value);
@@ -246,13 +307,6 @@ server.on("response", (res) => {
 server.listen(5683, () => {
     console.log("listening on port 5683 for coap requests");
 });
-
-async function threshold_watering() {
-    let status = await db.select_plant_infos();
-    console.log(status);
-    setTimeout(threshold_watering, 5000);
-}
-threshold_watering();
 
 /* --------------------- TEST -------------------- */
 /*

@@ -219,10 +219,14 @@ async function plant_detail_view() {
             <img id="img_plant_chart" src="/img/mychart.png" alt="Plant Chart">
         </div>`;
 
+    // ATTENTION: This functionality is NOT well tested.
     document.getElementsByName("plant_detail_add_schedule_button")[0].addEventListener("click", async (_) => {
         let watering_begin = parseInt(document.getElementsByName("watering_begin")[0].value);
         let watering_end = parseInt(document.getElementsByName("watering_end")[0].value);
-        if (isNaN(watering_begin) || isNaN(watering_end)) {
+        // TODO: Some cases have been checked, still: The watering times can overlap! Fix this. There
+        // are efficient datastructures for such point queries, maybe range trees? Not implementing due to time constraints, but see
+        // e.g. https://www.npmjs.com/package/tree-range-set.
+        if (isNaN(watering_begin) || isNaN(watering_end) || watering_begin < 0 || watering_begin >= 24*60*60 || watering_end < 0 || watering_end >= 24*60*60 || watering_begin > watering_end) {
             return;
         }
         let watering_schedule_string = `${watering_begin} - ${watering_end}`;
@@ -236,13 +240,17 @@ async function plant_detail_view() {
         }
         // TODO: Sort the list after adding the option.
         watering_schedules_list.appendChild(new Option(watering_schedule_string));
+        console.log(my_ip, watering_begin, watering_end)
         await fetch(`/add_watering_schedule`, {
             method: "POST",
-            body: {
-                "node_ip": my_ip,
-                "watering_begin": watering_begin,
-                "watering_end": watering_end
-            }
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                node_ip: my_ip,
+                watering_begin: watering_begin,
+                watering_end: watering_end,
+            })
         });
     });
     document.getElementsByName("plant_detail_delete_schedule_button")[0].addEventListener("click", async (_) => {
