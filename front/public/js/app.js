@@ -120,7 +120,8 @@ async function plant_detail_view() {
                     <div id="humidity">Humidity: ${config.humidity}%</div>
                 </div>
                 <div>
-                    <form class="plant_detail_configuration_form" action="/pump_toggle?node_ip=${my_ip}" method="POST">
+                    <form class="plant_detail_configuration_form" action="/pump_toggle" method="POST">
+                        <input type="hidden" name="node_ip" value="${my_ip}">
                         <span class="plant_detail_configuration_heading">Explicit Pump Control</span>
                         <input class="plant_detail_configuration_button" type="submit" name="TOGGLE" value="Toggle Pump">
                     </form>
@@ -192,7 +193,7 @@ async function plant_detail_view() {
                                 <span class="plant_detail_configuration_label">Schedule Begin: </span>
                             </td>
                             <td>
-                                <input class="plant_detail_configuration_textbox" type="text" name="watering_threshold_bottom" value="" size="10">
+                                <input class="plant_detail_configuration_textbox" type="text" name="watering_begin" value="0" size="10">
                             </td>
                         </tr>
                         <tr>
@@ -200,7 +201,7 @@ async function plant_detail_view() {
                                 <span class="plant_detail_configuration_label">Schedule End: </span>
                             </td>
                             <td>
-                                <input class="plant_detail_configuration_textbox" type="text"  name="watering_threshold_target" value="" size="10">
+                                <input class="plant_detail_configuration_textbox" type="text"  name="watering_end" value="10" size="10">
                             </td>
                         </tr>
                     </table>
@@ -215,25 +216,54 @@ async function plant_detail_view() {
             <a href="/" text="Go back" title="Go back to plants overview" id="plant_setting">Go back</a>
         </div>
         <div class="box_chart">
-            <img src="/img/mychart.png" alt="Plant Chart">
+            <img id="img_plant_chart" src="/img/mychart.png" alt="Plant Chart">
         </div>`;
 
-    document.getElementsByName("plant_detail_delete_schedule_button")[0].addEventListener("click", (_) => {
+    document.getElementsByName("plant_detail_add_schedule_button")[0].addEventListener("click", async (_) => {
+        let watering_begin = parseInt(document.getElementsByName("watering_begin")[0].value);
+        let watering_end = parseInt(document.getElementsByName("watering_end")[0].value);
+        if (isNaN(watering_begin) || isNaN(watering_end)) {
+            return;
+        }
+        let watering_schedule_string = `${watering_begin} - ${watering_end}`;
+        let watering_schedules_list = document.getElementById("watering_schedules_list");
+        let children = watering_schedules_list.childNodes;
+        for (let i = 1; i < children.length; i++) {
+            let child = children[i];
+            if (child.innerText == watering_schedule_string) {
+                return;
+            }
+        }
+        // TODO: Sort the list after adding the option.
+        watering_schedules_list.appendChild(new Option(watering_schedule_string));
+        await fetch(`/add_watering_schedule`, {
+            method: "POST",
+            body: {
+                "node_ip": my_ip,
+                "watering_begin": watering_begin,
+                "watering_end": watering_end
+            }
+        });
+    });
+    document.getElementsByName("plant_detail_delete_schedule_button")[0].addEventListener("click", async (_) => {
         let watering_schedules_list = document.getElementById("watering_schedules_list");
         // To keep it simple
         let selectedIndex = watering_schedules_list.selectedIndex;
         if (selectedIndex == -1) {
             return;
         }
-        let child = watering_schedules_list.childNodes[selectedIndex];
-        watering_schedules_list.removeChild(child); 
-        console.log("REMOVING SCHEDULE");
-    });
-    document.getElementsByName("plant_detail_add_schedule_button")[0].addEventListener("click", (_) => {
-        let watering_schedules_list = document.getElementById("watering_schedules_list");
-        watering_schedules_list.appendChild(new Option("Hi!"));
-        //let children = watering_schedules_list.childNodes;
-        console.log("ADDING SCHEDULE");
+        // For some odd reason
+        let child = watering_schedules_list.childNodes[selectedIndex+1];
+        let watering_schedule = child.innerText.split(" - ");
+        watering_schedules_list.removeChild(child);
+        await fetch(`/delete_watering_schedule`, {
+            method: "POST",
+            body: {
+                "node_ip": my_ip,
+                "watering_begin": watering_schedule[0],
+                "watering_end": watering_schedule[1]
+            }
+        });
     });
 
     refresh_plant_detail_view();
@@ -245,6 +275,9 @@ async function refresh_plant_detail_view() {
     let hum = document.getElementById("humidity");
     await fetch(`/plant_chart?node_ip=${my_ip}`);
     let res = await fetch(`/plant_detail_view?node_ip=${my_ip}`);
+    // Small browser trick: This makes the browser reload the image.
+    let img_plant_chart = document.getElementById("img_plant_chart");
+    img_plant_chart.src = `/img/mychart.png?t=${Date.now()}`;
     let config = await res.json();
     hum.innerHTML = `Humidity: ${config.humidity}%`;
     setTimeout(refresh_plant_detail_view, PLANT_REFRESH_DELAY);

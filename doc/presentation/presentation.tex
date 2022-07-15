@@ -70,6 +70,25 @@
 
 \end{frame}
 
+\begin{frame}
+    \frametitle{Evaluation}
+
+    \begin{itemize}
+        \item \emph{Production and Marketability} The system is working, but not very well tested. For production use, we require more usability tests, readily-set-up node boards etc.. Possibly ones with multiple pumps. (Like the other group did.)
+        \item \emph{Network Usage}
+        \item \emph{Storage Usage} The table with the most entries will most likely be the \texttt{plant\_humidities} table. Given one node, one entry in the table could be made up from a single byte for the node id (for the \texttt{plant\_nodes} table), up to eight bytes for the timestamp and one 16 bit humidity value. So in a day, given that we send one value every five seconds, we might store up to \((1+8+2) \cdot (24 \cdot 60 \cdot 60) / 5 = 19008\) bytes, so about \(5702400\) bytes (\(\approx 6\)MB) in a 30-day-month.
+        \item \emph{Energy Usage} Some factors that influence the reproducibility of our result:
+    \end{itemize}
+\end{frame}
+
+\begin{frame}
+    \frametitle{Evaluation}
+    \begin{itemize}
+        \item \emph{Scalability and Availability Measures} For more nodes, one can easily allow more DTLS sessions to be added to the proxy. In the frontend we took care of some edge cases which could result in a slow service, like not requesting all data from the database when we want to build the humidity graph. Given a strong enough host, we claim that up to a hundred devices can safely be handled by the system. (Which may seem ridiculous, but it might yield an interesting discussion.)
+    \end{itemize}
+
+\end{frame}
+
 \begin{frame}{Reflecting on our Work}
     The development was rather rough.
     \begin{itemize}

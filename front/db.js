@@ -10,7 +10,7 @@ var db = undefined;
 function _create_table(table_name, query) {
     db.run(query, (err) => {
         if (err) {
-            console.log(`Create table ${table_name} query error ${err}`);
+            console.error(`Create table ${table_name} query error ${err}`);
             return;
         }
         console.log(`Table: "${table_name}" in database: "${DB_FILE_NAME}" created`);
@@ -26,7 +26,7 @@ module.exports = {
                 db = this.create_db();
                 this.create_tables();
             } else if (err) {
-                console.log(`Database Access error ${err}`);
+                console.error(`Database Access error ${err}`);
                 exit(1);
             }
         });
@@ -34,7 +34,7 @@ module.exports = {
     create_db: function () {
         var new_db = new sqlite3.Database(DB_FILE_NAME, (err) => {
             if (err) {
-                console.log("Database creation error " + err);
+                console.error("Database creation error " + err);
                 exit(1);
             }
             console.log("Database: " + DB_FILE_NAME + " created")
@@ -51,20 +51,20 @@ module.exports = {
             CREATE TABLE IF NOT EXISTS plant_nodes (
                 id INTEGER PRIMARY KEY NOT NULL,
                 node_ip TEXT UNIQUE NOT NULL,
-                pump_activated INTEGER,
-                dry_value INTEGER,
-                wet_value INTEGER,
-                watering_threshold_bottom INTEGER,
-                watering_threshold_target INTEGER,
-                watering_threshold_timeout INTEGER
+                pump_activated INTEGER NOT NULL,
+                dry_value INTEGER NOT NULL,
+                wet_value INTEGER NOT NULL,
+                watering_threshold_bottom INTEGER NOT NULL,
+                watering_threshold_target INTEGER NOT NULL,
+                watering_threshold_timeout INTEGER NOT NULL
             );
         `);
         _create_table("plant_humidities", `
             CREATE TABLE IF NOT EXISTS plant_humidities (
                 id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
                 node INTEGER NOT NULL,
-                date_time TEXT,
-                humidity INTEGER,
+                date_time INTEGER NOT NULL,
+                humidity INTEGER NOT NULL,
                 FOREIGN KEY (node) REFERENCES plant_nodes(id)
             );
         `);
@@ -73,8 +73,8 @@ module.exports = {
             CREATE TABLE IF NOT EXISTS plant_watering_schedules (
                 id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
                 node INTEGER NOT NULL,
-                watering_begin INTEGER,
-                watering_end INTEGER,
+                watering_begin INTEGER NOT NULL,
+                watering_end INTEGER NOT NULL,
                 FOREIGN KEY (node) REFERENCES plant_nodes(id)
             );
         `);
@@ -86,8 +86,8 @@ module.exports = {
     change_plant_node: async function(node_ip, pump_activated, dry_value, wet_value, watering_threshold_bottom = -50000, watering_threshold_target = 60, watering_threshold_timeout = 5) {
         return await new Promise(function (resolve) {
             db.run(`
-                INSERT INTO plant_nodes (node_ip, pump_activated, dry_value, wet_value)
-                    VALUES (?, ?, ?, ?)
+                INSERT INTO plant_nodes (node_ip, pump_activated, dry_value, wet_value, watering_threshold_bottom, watering_threshold_target, watering_threshold_timeout)
+                    VALUES (?, ?, ?, ?, ?, ?, ?)
                 ON CONFLICT(node_ip) DO UPDATE SET
                     pump_activated = ?,
                     dry_value = ?,
@@ -96,9 +96,9 @@ module.exports = {
                     watering_threshold_target = ?,
                     watering_threshold_timeout = ?
                 WHERE node_ip = ?;
-            `, node_ip, pump_activated, dry_value, wet_value, pump_activated, dry_value, wet_value, watering_threshold_bottom, watering_threshold_target, watering_threshold_timeout, node_ip, (err) => {
+            `, node_ip, pump_activated, dry_value, wet_value, watering_threshold_bottom, watering_threshold_target, watering_threshold_timeout, pump_activated, dry_value, wet_value, watering_threshold_bottom, watering_threshold_target, watering_threshold_timeout, node_ip, (err) => {
                 if (err) {
-                    console.log(`Insert query error: ${err}`);
+                    console.error(`Insert query error: ${err}`);
                     resolve(0);
                 } else {
                     resolve(1);
@@ -107,13 +107,14 @@ module.exports = {
         });
     },
     insert_plant_humidity: async function (node_ip, humidity) {
+        // Store the UNIX epoch to reduce storage space
         return await new Promise(function (resolve) {
             db.run(`
                 INSERT INTO plant_humidities (node, date_time, humidity)
-                    VALUES ((SELECT id FROM plant_nodes WHERE node_ip = ?), datetime("now","localtime"), ?);
+                    VALUES ((SELECT id FROM plant_nodes WHERE node_ip = ?), unixepoch(CURRENT_TIMESTAMP), ?);
             `, node_ip, humidity, (err) => {
                 if (err) {
-                    console.log(`Insert query error: ${err}`);
+                    console.error(`Insert query error: ${err}`);
                     resolve(0);
                 } else {
                     resolve(1);
@@ -128,7 +129,7 @@ module.exports = {
                     VALUES ((SELECT id FROM plant_nodes WHERE node_ip = ?), ?, ?);
             `, node_ip, watering_begin, watering_end, node_ip, (err) => {
                 if (err) {
-                    console.log(`Insert query error: ${err}`);
+                    console.error(`Insert query error: ${err}`);
                     resolve(0);
                 } else {
                     resolve(1);
@@ -139,10 +140,10 @@ module.exports = {
     /* SELECTION */
     select_all: async function () {
         var data = 0;
-        let myPromise = new Promise(function (resolve) {
+        await new Promise(function (resolve) {
             db.all(`SELECT * FROM plant_nodes;`, (err, rows) => {
                 if (err) {
-                    console.log(`Select query error ${err}`);
+                    console.error(`Select query error ${err}`);
                 } else {
                     console.log("Table plant_nodes: ");
                     console.table(rows);
@@ -150,11 +151,10 @@ module.exports = {
                 resolve(data);
             });
         });
-        await myPromise;
-        myPromise = new Promise(function (resolve) {
+        await new Promise(function (resolve) {
             db.all(`SELECT * FROM plant_humidities;`, (err, rows) => {
                 if (err) {
-                    console.log(`Select query error ${err}`);
+                    console.error(`Select query error ${err}`);
                 } else {
                     console.log("Table plant_humidities: ");
                     console.table(rows);
@@ -162,7 +162,17 @@ module.exports = {
                 resolve(data);
             });
         });
-        await myPromise;
+        await new Promise(function (resolve) {
+            db.all(`SELECT * FROM plant_watering_schedules;`, (err, rows) => {
+                if (err) {
+                    console.error(`Select query error ${err}`);
+                } else {
+                    console.log("Table plant_watering_schedules: ");
+                    console.table(rows);
+                }
+                resolve(data);
+            });
+        });
         return data;
     },
     select_plant_infos: async function () {
@@ -180,7 +190,7 @@ module.exports = {
             GROUP BY ph.node;
             `, (err, rows) => {
                 if (err) {
-                    console.log(`Select query error: ${err}`);
+                    console.error(`Select query error: ${err}`);
                     resolve(data);
                 } else {
                     data = rows;
@@ -188,6 +198,7 @@ module.exports = {
                 }
             });
         })
+        console.log(return_data);
         return return_data;
     },
     select_plant_info: async function (node_ip) {
@@ -209,7 +220,7 @@ module.exports = {
             WHERE node_ip = ?;
             `, node_ip, (err, row) => {
                 if (err) {
-                    console.log(`Select query error: ${err}`);
+                    console.error(`Select query error: ${err}`);
                     resolve(data);
                 } else {
                     data = row;
@@ -229,7 +240,7 @@ module.exports = {
             LIMIT ?;
             `, node_ip, HUMIDITY_QUERY_LIMIT, (err, row) => {
                 if (err) {
-                    console.log(`Select query error: ${err}`);
+                    console.error(`Select query error: ${err}`);
                     resolve(data);
                 } else {
                     data = row;
@@ -247,7 +258,7 @@ module.exports = {
                 WHERE node = (SELECT id FROM plant_nodes WHERE node_ip = ?) AND watering_begin = ? AND watering_end = ?;
             `, node_ip, watering_begin, watering_end, (err) => {
                 if (err) {
-                    console.log(`Insert query error: ${err}`);
+                    console.error(`Insert query error: ${err}`);
                     resolve(0);
                 } else {
                     resolve(1);

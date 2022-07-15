@@ -2,6 +2,7 @@ br/bin
 doc/*/*.aux
 doc/*/*.fdb_latexmk
 doc/*/*.fls
+doc/*/*.lof
 doc/*/*.log
 doc/*/*.nav
 doc/*/*.out

@@ -50,12 +50,17 @@ app.get("/plant_refresh", async function (_, res) {
 
 app.get("/plant_detail_view", async function (req, res) {
     let plant_ip = req.query.node_ip;
-    let plant_detail_view = (await db.select_plant_info(plant_ip));
+    let plant_detail_view = await db.select_plant_info(plant_ip);
     plant_detail_view.configuration.humidity = plant_detail_view.humidities[0].humidity;
     res.json(plant_detail_view.configuration);
 });
 
-function toggle_pump(node_ip) {
+async function toggle_pump(node_ip) {
+    // Change values in database
+    let current_config = await db.select_plant_info(node_ip);
+    await db.change_plant_node(node_ip, !current_config.pump_activated, current_config.dry_value, current_config.wet_value, current_config.watering_threshold_bottom, current_config.watering_threshold_target, current_config.watering_threshold_timeout);
+
+    // Send payload
     let payload = cbor.encode(ip.toBuffer(node_ip));
     const coap_req = coap.request({ hostname: "::", pathname: "/pump_toggle", confirmable: false, method: "POST", port: 5685 });
     coap_req.setOption("Content-Format", "application/cbor");
@@ -63,7 +68,10 @@ function toggle_pump(node_ip) {
     coap_req.end();
 }
 
-function calibrate_sensor(node_ip, dry_value, wet_value) {
+async function calibrate_sensor(node_ip, dry_value, wet_value) {
+    let current_config = (await db.select_plant_info(node_ip)).configuration;
+    db.change_plant_node(node_ip, current_config.pump_activated, dry_value, wet_value, current_config.watering_threshold_bottom, current_config.watering_threshold_target, current_config.watering_threshold_timeout);
+
     const payload = cbor.encode(ip.toBuffer(node_ip), dry_value, wet_value);
     const coap_req = coap.request({ hostname: "::", pathname: "/calibrate_sensor", confirmable: false, method: "POST", port: 5685 });
     coap_req.setOption("Content-Format", "application/cbor");
@@ -71,16 +79,14 @@ function calibrate_sensor(node_ip, dry_value, wet_value) {
     coap_req.end();
 }
 
+async function configure_thresholding(node_ip, watering_threshold_bottom, watering_threshold_target, watering_threshold_timeout) {
+    let current_config = (await db.select_plant_info(node_ip)).configuration;
+    await db.change_plant_node(node_ip, current_config.pump_activated, current_config.dry_value, current_config.wet_value, watering_threshold_bottom, watering_threshold_target, watering_threshold_timeout);
+}
+
 app.post("/pump_toggle", async function (req, res) {
     var plant_ip = req.body.node_ip;
-
-    // Change values in database
-    let current_config = (await db.select_plant_info(plant_ip));
-    console.log(current_config);
-    db.change_plant_node(plant_ip, !current_config.pump_activated, current_config.dry_value, current_config.wet_value, current_config.watering_threshold_bottom, current_config.watering_threshold_target, current_config.watering_threshold_timeout);
-
-    // Send to proxy
-    toggle_pump(plant_ip);
+    await toggle_pump(plant_ip);
     res.status(204).send();
 });
 
@@ -89,38 +95,32 @@ app.post("/calibrate_sensor", async function (req, res) {
     var dry_value = parseInt(req.body.dry_value, 10);
     var wet_value = parseInt(req.body.wet_value, 10);
     if (isNaN(dry_value) || isNaN(wet_value)) {
-        console.log("Calibration parameters are invalid");
+        console.error("Sensor calibration parameters are invalid");
         return;
     }
-
-    // Change values in database
-    let current_config = (await db.select_plant_info(plant_ip)).configuration;
-    db.change_plant_node(plant_ip, current_config.pump_activated, dry_value, wet_value, current_config.watering_threshold_bottom, current_config.watering_threshold_target, current_config.watering_threshold_timeout);
-
-    // Send payload
-    calibrate_sensor(plant_ip, dry_value, wet_value);
+    await calibrate_sensor(plant_ip, dry_value, wet_value);
     res.status(204).send();
 });
 
-app.post("/configure_thresholding", function (req, res) {
-    var plant_ip = req.body.node_ip;
-    var dry_value = parseInt(req.body.dry_value, 10);
-    var wet_value = parseInt(req.body.wet_value, 10);
-    if (isNaN(dry_value) || isNaN(wet_value)) {
-        console.log("Calibration parameters are invalid");
+app.post("/configure_thresholding", async (req, res) => {
+    let plant_ip = req.body.node_ip;
+    let watering_threshold_bottom = parseInt(req.body.watering_threshold_bottom, 10);
+    let watering_threshold_target = parseInt(req.body.watering_threshold_target, 10);
+    let watering_threshold_timeout = parseInt(req.body.watering_threshold_timeout, 10);
+    if (isNaN(watering_threshold_bottom) || isNaN(watering_threshold_target) || isNaN(watering_threshold_timeout)) {
+        console.error("Threshold calibration parameters are invalid");
         return;
     }
-
-    // change values in database
-    db.change_plant_node(plant_ip, false, dry_value, wet_value);
-
-    // Send payload
-    const payload = cbor.encode(ip.toBuffer(plant_ip), dry_value, wet_value);
-    const coap_req = coap.request({ hostname: "::", pathname: "/calibrate_sensor", confirmable: false, method: "POST", port: 5685 });
-    coap_req.setOption("Content-Format", "application/cbor");
-    coap_req.write(payload);
-    coap_req.end();
+    configure_thresholding(plant_ip, watering_threshold_bottom, watering_threshold_target, watering_threshold_timeout);
     res.status(204).send();
+});
+
+app.post("/add_watering_schedule", async (req, res) => {
+    console.log("ADDING");
+});
+
+app.post("/delete_watering_schedule", async (req, res) => {
+    console.log("DELETING");
 });
 
 app.listen(3000, () => {
@@ -128,15 +128,15 @@ app.listen(3000, () => {
 });
 
 /* -------------------- Chart -------------------- */
-app.get("/plant_chart", async function (req, res) {
+app.get("/plant_chart", async (req, res) => {
     let plant_ip = req.query.node_ip;
     let result = (await db.select_plant_info(plant_ip)).humidities;
     let chart_data = [];
     let chart_time = [];
     result.forEach(row => {
         chart_data.push(row.humidity);
-        chart_time.push(row.date_time);
-        //console.log(row.node_ip + "\t" + row.pump_activated + "\t" + row.dry_value + "\t" + row.wet_value + "\t" + row.date_time + "\t" + row.humidity);
+        // TODO: Figure out why mult. with 1000 yields a correct result.
+        chart_time.push(new Date(row.date_time * 1000).toDateString());
     });
     fs.writeFileSync("public/img/mychart.png", await create_image(chart_data, chart_time));
     res.send();
@@ -222,15 +222,16 @@ server.on("request", async (req, _) => {
     let current_config = (await db.select_plant_info(ip_addr_str)).configuration;
     // Probe for new registration
     if (current_config == undefined) {
-        db.change_plant_node(ip_addr_str, pump_activated, dry_value, wet_value, 20, 60, 5);
+        db.change_plant_node(ip_addr_str, pump_activated, dry_value, wet_value);
         db.insert_plant_humidity(ip_addr_str, humidity);
     }
     else {
+        db.insert_plant_humidity(ip_addr_str, humidity);
         if (pump_activated != current_config.pump_activated) {
-            toggle_pump(plant_ip);
+            toggle_pump(ip_addr_str);
         }
         if (dry_value != current_config.dry_value || wet_value != current_config.wet_value) {
-            calibrate_sensor(node_ip, current_config.dry_value, current_config.wet_value);
+            calibrate_sensor(ip_addr_str, current_config.dry_value, current_config.wet_value);
         }
     }
 });
@@ -245,6 +246,13 @@ server.on("response", (res) => {
 server.listen(5683, () => {
     console.log("listening on port 5683 for coap requests");
 });
+
+async function threshold_watering() {
+    let status = await db.select_plant_infos();
+    console.log(status);
+    setTimeout(threshold_watering, 5000);
+}
+threshold_watering();
 
 /* --------------------- TEST -------------------- */
 /*
