@@ -111,7 +111,7 @@ async function plant_detail_view() {
 
     // TODO: Replace these `<br/>` tags with CSS formatting.
     element.innerHTML = `\
-        <div class="box" style="display: block; width: 100%;">
+        <div class="box" style="display: block;">
             <h1>
                 <img style="width: 35px;" src="/img/jasmine_flower.png" alt="Plant" style="display: inline;">
                 Plant
@@ -214,7 +214,7 @@ async function plant_detail_view() {
                 <div id="plant_detail_configuration_explanations">
                     <h3>Some Explanations</h3>
                     <br/>
-                    <div>Congratulations! Your Lattice-Watering system was successfully set up. Before you get started, you may want to calibrate the sensor first. You do that by first taking the current humidity, while the sensor is dry, as the dry value. For the wet value, you may stick the moisture sensor into water and measure. You can then explicitly control the pump, setup a threshold, which, if the bottom value is crossed, will start watering the plant in short bursts of five seconds and then wait for the selected timeout to run out and check again, until the target humidity is reached. You can also setup fixed time schedules, notice that these are in seconds and run daily. Also note that jobs that you cancel while they are running do not turn the pumps off automatically! So pay attention to enter correct timeframes and check change pumps if you change your configuration.</div>
+                    <div>Congratulations! Your Lattice-Watering system was successfully set up. Before you get started, you may want to calibrate the sensor first. You do that by first taking the current humidity, while the sensor is dry, as the dry value. For the wet value, you may stick the moisture sensor into water and measure. You can then explicitly control the pump, setup a threshold, which, if the bottom value is crossed, will start watering the plant in short bursts of five seconds and then wait for the selected timeout to run out and check again, until the target humidity is reached. You can also setup fixed time schedules of form "&ltbegin_time&gt - &ltend_time&gt", notice that these are in seconds and run daily. So for instance if I wanted to have my plant watered everyday from 14:40 to 15:50 like a maniac, I could enter "52800 - 57000". Also note that jobs that you cancel while they are running do not turn the pumps off automatically! So pay attention to enter correct timeframes and check the pumps if you change your configuration.</div>
                 </div>
             </div>
             <a href="/" text="Go back" title="Go back to plants overview" id="plant_setting">Go back</a>
