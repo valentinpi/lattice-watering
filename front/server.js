@@ -119,36 +119,56 @@ app.post("/configure_thresholding", async (req, res) => {
     res.status(204).send();
 });
 
-let watering_schedules = [];
+// NOTE: We assume the dates are well formatted. (syntactially and a bit semantically well at least, see `app.js`)
+let watering_schedules_create_time_object = (timestamp) => {
+    let hour = Math.floor(timestamp / (60*60));
+    timestamp = timestamp - hour * (60 * 60);
+    let minute = Math.floor(timestamp / 60);
+    timestamp = timestamp - minute * 60;
+    let second = timestamp;
+    return {
+        hour: hour,
+        minute: minute,
+        second: second
+    }
+};
 
-app.post("/select_watering_schedules", async (req, res) => {
-    let schedules = await db.select_plant_watering_schedules();
-    res.json(schedules);
-});
+let watering_schedules = [];
+// Load existing schedules
+// 16ms should suffice to load the DB and then request existing schedules. -> It could not suffice in case of a db that is too large...
+// NOTE: Perhaps make this a bit more reliable.
+setTimeout(async () => {
+    let stored_schedules = await db.select_plant_watering_schedules();
+    stored_schedules.forEach(watering_schedule => {
+        let watering_begin_time = watering_schedules_create_time_object(watering_schedule.watering_begin);
+        let watering_end_time = watering_schedules_create_time_object(watering_schedule.watering_end);
+        watering_schedules.push({
+            watering_start_job: schedule.scheduleJob(`${watering_begin_time.second} ${watering_begin_time.minute} ${watering_begin_time.hour} * * *`, () => {
+                pump_toggle(watering_schedule.node_ip);
+            }),
+            watering_end_job: schedule.scheduleJob(`${watering_end_time.second} ${watering_end_time.minute} ${watering_end_time.hour} * * *`, () => {
+                pump_toggle(watering_schedule.node_ip);
+            }),
+            node_ip: watering_schedule.node_ip,
+            watering_begin: watering_schedule.watering_begin,
+            watering_end: watering_schedule.watering_end
+        });
+    })
+}, 16);
 
 app.post("/add_watering_schedule", async (req, res) => {
     let node_ip = req.body.node_ip;
+    // TODO: Use more standardized libraries for this.
+    // TODO: Make this function much more robust.
     let watering_begin = req.body.watering_begin;
     let watering_end = req.body.watering_end;
-
-    // NOTE: We assume the dates are well formatted.
-    let create_time_object = (timestamp) => {
-        let hour = Math.floor(timestamp / (60*60));
-        timestamp = timestamp - hour * (60 * 60);
-        let minute = Math.floor(timestamp / 60);
-        timestamp = timestamp - minute * 60;
-        let second = timestamp;
-        return {
-            hour: hour,
-            minute: minute,
-            second: second
-        }
-    };
+    let watering_begin_time = watering_schedules_create_time_object(watering_begin);
+    let watering_end_time = watering_schedules_create_time_object(watering_end);
     watering_schedules.push({
-        job: new schedule.Job({
-            start: create_time_object(watering_begin),
-            end: create_time_object(watering_end)
-        }, () => {
+        watering_start_job: schedule.scheduleJob(`${watering_begin_time.second} ${watering_begin_time.minute} ${watering_begin_time.hour} * * *`, () => {
+            pump_toggle(node_ip);
+        }),
+        watering_end_job: schedule.scheduleJob(`${watering_end_time.second} ${watering_end_time.minute} ${watering_end_time.hour} * * *`, () => {
             pump_toggle(node_ip);
         }),
         node_ip: node_ip,
@@ -156,10 +176,6 @@ app.post("/add_watering_schedule", async (req, res) => {
         watering_end: watering_end
     });
     await db.insert_plant_watering_schedule(node_ip, watering_begin, watering_end);
-    let schedules = await db.select_plant_watering_schedules();
-    console.log(watering_schedules);
-    console.log(schedules);
-    await db.select_all();
     res.status(204).send();
 });
 
@@ -169,18 +185,14 @@ app.post("/delete_watering_schedule", async (req, res) => {
     let watering_end = req.body.watering_end;
     for (let i = 0; i < watering_schedules.length; i++) {
         let schedule = watering_schedules[i];
-        console.log(schedule.node_ip, node_ip, schedule.watering_begin, watering_begin, schedule.watering_end, watering_end);
         if (schedule.node_ip == node_ip && schedule.watering_begin == watering_begin && schedule.watering_end == watering_end) {
-            watering_schedules[i].cancel();
-            watering_schedules.pop(i);
+            schedule.watering_start_job.cancel();
+            schedule.watering_end_job.cancel();
+            watering_schedules.splice(i, 1);
             break;
         }
     }
     await db.delete_plant_watering_schedule(node_ip, watering_begin, watering_end);
-    let schedules = await db.select_plant_watering_schedules();
-    console.log(watering_schedules);
-    console.log(schedules);
-    await db.select_all();
     res.status(204).send();
 });
 
@@ -189,6 +201,11 @@ app.listen(3000, () => {
 });
 
 /* -------------------- Chart -------------------- */
+app.get("/select_watering_schedules", async (req, res) => {
+    let schedules = await db.select_plant_watering_schedule(req.query.node_ip);
+    res.json(schedules);
+});
+
 app.get("/plant_chart", async (req, res) => {
     let plant_ip = req.query.node_ip;
     let result = (await db.select_plant_info(plant_ip)).humidities;
@@ -266,17 +283,22 @@ server.on("request", async (req, _) => {
     let pump_activated = decoded_data[1];
     let dry_value = decoded_data[2];
     let wet_value = decoded_data[3];
-    /*
-    let rx_bytes = decoded_data[4];
-    let rx_count = decoded_data[5];
-    let tx_bytes = decoded_data[6];
-    let tx_unicast_count = decoded_data[7];
-    let tx_mcast_count = decoded_data[8];
-    let tx_success = decoded_data[9];
-    let tx_failed = decoded_data[10];
-    */
     let ip_addr = new Uint8Array(decoded_data.slice(11, 27));
     let ip_addr_str = ip.toString(Buffer.from(ip_addr), 0, 16);
+
+    /*
+    let network_stats = {
+        rx_bytes: decoded_data[4],
+        rx_count: decoded_data[5],
+        tx_bytes: decoded_data[6],
+        tx_unicast_count: decoded_data[7],
+        tx_mcast_count: decoded_data[8],
+        tx_success: decoded_data[9],
+        tx_failed: decoded_data[10]
+    };
+    console.log(`${ip_addr_str} network stats:`);
+    console.table(network_stats);
+    */
 
     console.log(`Received CoAP-CBOR /data POST from ${ip_addr_str}`);
 

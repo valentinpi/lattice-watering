@@ -112,7 +112,11 @@ async function plant_detail_view() {
     // TODO: Replace these `<br/>` tags with CSS formatting.
     element.innerHTML = `\
         <div class="box" style="display: block; width: 100%;">
-            <h3>Plant</h3>
+            <h1>
+                <img style="width: 35px;" src="/img/jasmine_flower.png" alt="Plant" style="display: inline;">
+                Plant
+                <img style="width: 35px;" src="/img/jasmine_flower.png" alt="Plant" style="display: inline;">
+            </h1>
             <h3>${config.node_ip}</h3>
             <div id="plant_detail_configuration" style="display: flex; flex-direction: row;">
                 <div>
@@ -208,9 +212,9 @@ async function plant_detail_view() {
                     <input class="plant_detail_configuration_button" name="plant_detail_add_schedule_button" type="submit" value="Add Schedule" size="10">
                 </div>
                 <div id="plant_detail_configuration_explanations">
-                    <div>Some explanations</div>
+                    <h3>Some Explanations</h3>
                     <br/>
-                    <div>Congratulations! Your Lattice-Watering system was successfully set up. Before you get started, you may want to calibrate the sensor first. You do that by first taking the current humidity, while the sensor is dry, as the dry value. For the wet value, you may stick the moisture sensor into water and measure. You can then explicitly control the pump, setup a threshold, which, if the bottom value is crossed, will start watering the plant in short bursts of five seconds and then wait for the selected timeout to run out and check again, until the target humidity is reached. You can also setup fixed time schedules, notice that these are in seconds and run daily.</div>
+                    <div>Congratulations! Your Lattice-Watering system was successfully set up. Before you get started, you may want to calibrate the sensor first. You do that by first taking the current humidity, while the sensor is dry, as the dry value. For the wet value, you may stick the moisture sensor into water and measure. You can then explicitly control the pump, setup a threshold, which, if the bottom value is crossed, will start watering the plant in short bursts of five seconds and then wait for the selected timeout to run out and check again, until the target humidity is reached. You can also setup fixed time schedules, notice that these are in seconds and run daily. Also note that jobs that you cancel while they are running do not turn the pumps off automatically! So pay attention to enter correct timeframes and check change pumps if you change your configuration.</div>
                 </div>
             </div>
             <a href="/" text="Go back" title="Go back to plants overview" id="plant_setting">Go back</a>
@@ -219,8 +223,17 @@ async function plant_detail_view() {
             <img id="img_plant_chart" src="/img/mychart.png" alt="Plant Chart">
         </div>`;
 
+    let watering_schedules_list = document.getElementById("watering_schedules_list");
+    response = await fetch(`/select_watering_schedules?node_ip=${my_ip}`);
+    let watering_schedules = await response.json();
+    console.log(watering_schedules);
+    for (let i = 0; i < watering_schedules.length; i++) {
+        let schedule = watering_schedules[i];
+        watering_schedules_list.appendChild(new Option(`${schedule.watering_begin} - ${schedule.watering_end}`));
+    }
+
     // ATTENTION: This functionality is NOT well tested.
-    document.getElementsByName("plant_detail_add_schedule_button")[0].addEventListener("click", async (_) => {
+    document.getElementsByName("plant_detail_add_schedule_button")[0].addEventListener("click", async _ => {
         let watering_begin = parseInt(document.getElementsByName("watering_begin")[0].value);
         let watering_end = parseInt(document.getElementsByName("watering_end")[0].value);
         // TODO: Some cases have been checked, still: The watering times can overlap! Fix this. There
@@ -253,24 +266,26 @@ async function plant_detail_view() {
             })
         });
     });
-    document.getElementsByName("plant_detail_delete_schedule_button")[0].addEventListener("click", async (_) => {
+    document.getElementsByName("plant_detail_delete_schedule_button")[0].addEventListener("click", async _ => {
         let watering_schedules_list = document.getElementById("watering_schedules_list");
-        // To keep it simple
         let selectedIndex = watering_schedules_list.selectedIndex;
         if (selectedIndex == -1) {
             return;
         }
-        // For some odd reason
+        // TODO: For some odd reason the zeroth entry is just text. Look this up.
         let child = watering_schedules_list.childNodes[selectedIndex+1];
         let watering_schedule = child.innerText.split(" - ");
         watering_schedules_list.removeChild(child);
         await fetch(`/delete_watering_schedule`, {
             method: "POST",
-            body: {
-                "node_ip": my_ip,
-                "watering_begin": watering_schedule[0],
-                "watering_end": watering_schedule[1]
-            }
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                node_ip: my_ip,
+                watering_begin: parseInt(watering_schedule[0]),
+                watering_end: parseInt(watering_schedule[1]),
+            })
         });
     });
 

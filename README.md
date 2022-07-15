@@ -61,3 +61,7 @@ To start the system, the `proxy` software and the `ethos` interface have to be s
 - Use TypeScript instead of JavaScript in the frontend.
 - The TinyDTLS library comes with a weak PRNG, replace it with a tough one.
 - Improve the Rust proxy server. A possible larger project could be to build a very good and easy to use DTLS library with support for multiple platforms such as Node JS, since no library currently really accomplishes that. Handle `tinydtls` events. Currently, the proxy does not discard connected devices, meaning that the `sessions` vector will have run out of space at some point. This was made so due to time constraints. Regular restarts could fix this issue in practical. The proxy should be made asynchronous aswell.
+
+### Some Sources
+
+- `front/public/img/jasmine_flower.png`: [https://st3.depositphotos.com/1768926/19425/v/450/depositphotos_194256716-stock-illustration-jasmine-flower-icon-logo-template.jpg](https://st3.depositphotos.com/1768926/19425/v/450/depositphotos_194256716-stock-illustration-jasmine-flower-icon-logo-template.jpg) (last access: 15.07.2022, we do not use the picture commercially)

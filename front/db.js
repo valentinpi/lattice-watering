@@ -185,7 +185,7 @@ module.exports = {
         });
         return return_data;
     },
-    select_plant_info: async function (node_ip) {
+    select_plant_info: async node_ip => {
         let data = 0;
         // Return infos of a single plant identified by its node_ip
         // AND ph.date_time >= DATETIME("now", "localtime", "-10 days").
@@ -235,10 +235,25 @@ module.exports = {
         return {configuration: configuration[0], humidities: humidities};
     },
     /* PLANT WATERING SCHEDULES */
-    select_plant_watering_schedules: async function () {
+    select_plant_watering_schedule: async (node_ip) => {
         let data = 0;
-        let result = await new Promise(function (resolve) {
-            db.run(`SELECT * FROM plant_watering_schedules;`, (err, rows) => {
+        let result = await new Promise(resolve => {
+            db.all(`SELECT watering_begin, watering_end FROM plant_watering_schedules WHERE node = (SELECT id FROM plant_nodes WHERE node_ip = ?);`, node_ip, (err, rows) => {
+                if (err) {
+                    console.error(`Select query error: ${err}`);
+                    resolve(data);
+                } else {
+                    data = rows;
+                    resolve(data);
+                }
+            });
+        });
+        return result;
+    },
+    select_plant_watering_schedules: async () => {
+        let data = 0;
+        let result = await new Promise(resolve => {
+            db.all(`SELECT node_ip, watering_begin, watering_end FROM plant_watering_schedules pws JOIN plant_nodes pn ON pn.id=pws.node;`, (err, rows) => {
                 if (err) {
                     console.error(`Select query error: ${err}`);
                     resolve(data);
@@ -265,14 +280,14 @@ module.exports = {
             });
         });
     },
-    delete_plant_watering_schedule: async function (node_ip, watering_begin, watering_end) {
-        return await new Promise(function (resolve) {
+    delete_plant_watering_schedule: async (node_ip, watering_begin, watering_end) => {
+        return await new Promise(resolve => {
             db.run(`
                 DELETE FROM plant_watering_schedules
                 WHERE node = (SELECT id FROM plant_nodes WHERE node_ip = ?) AND watering_begin = ? AND watering_end = ?;
             `, node_ip, watering_begin, watering_end, (err) => {
                 if (err) {
-                    console.error(`Insert query error: ${err}`);
+                    console.error(`Delete query error: ${err}`);
                     resolve(0);
                 } else {
                     resolve(1);
