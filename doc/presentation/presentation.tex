@@ -228,8 +228,7 @@
 \begin{frame}
     \frametitle{Demo}
 
-    
-
+    \includegraphics[width=\linewidth]{img/60b4cf3885600a50dd341bb2.jpg}
 \end{frame}
 
 \begin{frame}
@@ -239,16 +238,29 @@
         \item \emph{Production and Marketability} The system is working, but not very well tested. For production use, we require more usability tests, readily-set-up node boards etc.. Possibly ones with multiple pumps. (Like the other group did.)
         \item \emph{Network Usage}
         \item \emph{Storage Usage} The table with the most entries will most likely be the \texttt{plant\_humidities} table. Given one node, one entry in the table could be made up from a single byte for the node id (for the \texttt{plant\_nodes} table), up to eight bytes for the timestamp and one 16 bit humidity value. So in a day, given that we send one value every five seconds, we might store up to \((1+8+2) \cdot (24 \cdot 60 \cdot 60) / 5 = 19008\) bytes, so about \(5702400\) bytes (\(\approx 6\)MB) in a 30-day-month.
-        \item \emph{Energy Usage} Some factors that influence the reproducibility of our result:
     \end{itemize}
 \end{frame}
 
 \begin{frame}
     \frametitle{Evaluation}
     \begin{itemize}
+        \item \emph{Energy Usage} Some factors that influence the reproducibility of our result:
         \item \emph{Scalability and Availability Measures} For more nodes, one can easily allow more DTLS sessions to be added to the proxy. In the frontend we took care of some edge cases which could result in a slow service, like not requesting all data from the database when we want to build the humidity graph. Given a strong enough host, we claim that up to a hundred devices can safely be handled by the system. (Which may seem ridiculous, but it might yield an interesting discussion.)
     \end{itemize}
+\end{frame}
 
+\begin{frame}{Software Development Practices}
+    We deployed:
+    \begin{itemize}
+        \item Agile development with Kanban
+        \item Versioning and Branching with git
+        \item Communication with Discord
+        \item Splitting up in several groups and performing integration tests
+        \item Regularly writing minimal documentation
+        \item Code Conventions
+        \item Static Code Analysis
+    \end{itemize}
+    And some more techniques.
 \end{frame}
 
 \begin{frame}{Reflecting on our Work}
@@ -256,7 +268,7 @@
     \begin{itemize}
         \item Lack of documentation for specific parts, such as the humidity sensor. We are no electric engineers, despite our best efforts, and do not know all the small tricks.
         \item Initial hardware was simply failing. In our report, we outline how we tried to build a small circuit for connecting the pump, but a faulty transistor deminished our efforts.
-        \item Despite our best efforts of communicating changes on different parts and how they effect others, this still lead to some systems not working. E.g. when the DTLS proxy was developed, a false commit broke communication on another branch as DTLS there was enabled, but no proxy was yet developed.
+        \item Despite our best efforts of communicating changes on different parts and how they effect others, this still lead to some systems not working. E.g. when the DTLS proxy was developed, a false commit broke communication on another branch as DTLS there was enabled, but proxy was not yet functional.
     \end{itemize}
 
     Despite that, the system is working and mainly employs secure and standardized, open technologies.
@@ -265,7 +277,7 @@
 \begin{frame}{Possible Future Enhancements (\emph{Some} Ideas, there are Lots)}
     \begin{itemize}
         \item \texttt{hw}: A case for the controllers and their circuitry.
-        \item \texttt{front}: TypeScript instead of JavaScript, use HTTP/2.0 or even 3.0 with QUIC.
+        \item \texttt{front}: TypeScript instead of JavaScript, use HTTP/2.0 or even 3.0 over QUIC.
         \item \texttt{proxy}: Better RNG for \texttt{tinydtls} and multiple possible improvements to the proxy, see \texttt{README.md}
     \end{itemize}
 
