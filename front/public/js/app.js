@@ -296,12 +296,15 @@ async function refresh_plant_detail_view() {
     let my_url = location.search;
     let my_ip = my_url.split("=")[1];
     let hum = document.getElementById("humidity");
-    await fetch(`/plant_chart?node_ip=${my_ip}`);
-    let res = await fetch(`/plant_detail_view?node_ip=${my_ip}`);
+    await fetch(`/plant_chart?node_ip=${my_ip}`).catch(_ => {});
+    let res = await fetch(`/plant_detail_view?node_ip=${my_ip}`).catch(_ => {
+        setTimeout(refresh_plant_detail_view, 100);
+        return;
+    });
+    let config = await res.json();
     // Small browser trick: This makes the browser reload the image.
     let img_plant_chart = document.getElementById("img_plant_chart");
     img_plant_chart.src = `/img/mychart.png?t=${Date.now()}`;
-    let config = await res.json();
     hum.innerHTML = `Humidity: ${config.humidity}%`;
     setTimeout(refresh_plant_detail_view, PLANT_REFRESH_DELAY);
 }
