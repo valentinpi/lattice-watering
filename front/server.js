@@ -25,6 +25,9 @@ const CHART_WIDTH = 2000;
 const CHART_HEIGHT = 800;
 const canvas_render_service = new ChartJSNodeCanvas({ type: "png", width: CHART_WIDTH, height: CHART_HEIGHT });
 
+// In seconds, specifies how long a plant should be watering in bursts if is not wet enough.
+const THRESHOLDING_WATERING_TIME = 5000;
+
 /* ---------------- Express Setup ---------------- */
 app.use(morgan("dev"));
 app.set("views", __dirname + "/views");
@@ -277,6 +280,8 @@ const create_image = async (chart_data, chart_time) => {
 var server = coap.createServer({ type: "udp6" });
 db.init();
 
+let current_threshold_watering_jobs = [];
+
 server.on("request", async (req, _) => {
     if (req.url != "/data") {
         return;
@@ -319,6 +324,32 @@ server.on("request", async (req, _) => {
         }
         if (dry_value != current_config.dry_value || wet_value != current_config.wet_value) {
             calibrate_sensor(ip_addr_str, current_config.dry_value, current_config.wet_value);
+        }
+        // Start thresholding jobs
+        if (humidity < current_config.watering_threshold_bottom) {
+            let contained = current_threshold_watering_jobs.some(ip => { return ip == ip_addr_str; });
+            if (contained) {
+                current_threshold_watering_jobs.push(ip_addr_str);
+                (async () => {
+                    while (true) {
+                        pump_toggle(ip_addr_str);
+                        // Sleep a bit
+                        await new Promise(resolve => {
+                            setTimeout(resolve, THRESHOLDING_WATERING_TIME);
+                        });
+                        pump_toggle(ip_addr_str);
+                        let current_humidity = (await db.select_plant_info(ip_addr_str)).humidities[0].humidity;
+                        if (current_humidity >= current_config.watering_threshold_target) {
+                            let job_index = current_threshold_watering_jobs.indexOf(i_addr_str);
+                            current_threshold_watering_jobs.pop(job_index);
+                            return;
+                        }
+                        await new Promise(resolve => {
+                            setTimeout(resolve, current_config.watering_threshold_timeout);
+                        });
+                    }
+                })();
+            }
         }
     }
 });
