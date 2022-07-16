@@ -8,7 +8,7 @@
    - https://github.com/namib-project/tinydtls-rs/blob/main/tinydtls-sys/src/lib.rs
 */
 
-#![feature(core_ffi_c, c_size_t)]
+#![feature(c_size_t)]
 #![allow(improper_ctypes_definitions)]
 
 pub mod psk_key;
