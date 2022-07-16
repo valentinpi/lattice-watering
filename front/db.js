@@ -74,11 +74,11 @@ module.exports = {
                 if (err && err.code == "SQLITE_CANTOPEN") {
                     db = _create_db();
                     await _create_tables();
-                    resolve(0);
                 } else if (err) {
                     console.error(`Database Access error ${err}`);
                     exit(1);
                 }
+                resolve(0);
             });
         });
     },
