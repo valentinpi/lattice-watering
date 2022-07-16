@@ -25,7 +25,7 @@ const CHART_WIDTH = 2000;
 const CHART_HEIGHT = 800;
 const canvas_render_service = new ChartJSNodeCanvas({ type: "png", width: CHART_WIDTH, height: CHART_HEIGHT });
 
-// In seconds, specifies how long a plant should be watering in bursts if is not wet enough.
+// In milliseconds, specifies how long a plant should be watering in bursts if is not wet enough.
 const THRESHOLDING_WATERING_TIME = 5000;
 
 /* ---------------- Express Setup ---------------- */
@@ -328,7 +328,7 @@ server.on("request", async (req, _) => {
         // Start thresholding jobs
         if (humidity < current_config.watering_threshold_bottom) {
             let contained = current_threshold_watering_jobs.some(ip => { return ip == ip_addr_str; });
-            if (contained) {
+            if (!contained) {
                 current_threshold_watering_jobs.push(ip_addr_str);
                 (async () => {
                     while (true) {
@@ -340,12 +340,12 @@ server.on("request", async (req, _) => {
                         pump_toggle(ip_addr_str);
                         let current_humidity = (await db.select_plant_info(ip_addr_str)).humidities[0].humidity;
                         if (current_humidity >= current_config.watering_threshold_target) {
-                            let job_index = current_threshold_watering_jobs.indexOf(i_addr_str);
+                            let job_index = current_threshold_watering_jobs.indexOf(ip_addr_str);
                             current_threshold_watering_jobs.pop(job_index);
                             return;
                         }
                         await new Promise(resolve => {
-                            setTimeout(resolve, current_config.watering_threshold_timeout);
+                            setTimeout(resolve, current_config.watering_threshold_timeout * 1000);
                         });
                     }
                 })();

@@ -64,6 +64,7 @@ To start the system, the `proxy` software and the `ethos` interface have to be s
 - The website does not have a very modern look, which is okay, but it is not responsive aswell.
 - ISSUE: The chart in the website sometimes stops refreshing, especially when toggling the pump.
 - ISSUE: The Jobs and the DB can become out of sync, leading to strange toggling cycles. If you shut down the frontend during a watering schedule, you should consider deleting the database.
+- ISSUE: The thresholding and scheduling mechanisms will conflict if used simultaneously. Fix that.
 
 ### Some Sources
 
