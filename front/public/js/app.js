@@ -16,9 +16,9 @@ function startup(isIndex = 0) {
 };
 
 function date_time() {
-    var today = new Date();
-    var date = check_format(today.getDate()) + "." + check_format((today.getMonth() + 1)) + "." + today.getFullYear();
-    var time = check_format(today.getHours()) + ":" + check_format(today.getMinutes()) + ":" + check_format(today.getSeconds());
+    let today = new Date();
+    let date = check_format(today.getDate()) + "." + check_format((today.getMonth() + 1)) + "." + today.getFullYear();
+    let time = check_format(today.getHours()) + ":" + check_format(today.getMinutes()) + ":" + check_format(today.getSeconds());
 
     document.getElementById("display_date_time").innerHTML = time + ", " + date;
     setTimeout(date_time, DATE_REFRESH_DELAY);
@@ -36,21 +36,21 @@ async function refresh_plants() {
     let response = await (fetch("/plant_refresh"));
     let data = await response.json();
 
-    var element = document.getElementById("scrollmenu");
-    var div = document.createElement("div");
+    let element = document.getElementById("scrollmenu");
+    let div = document.createElement("div");
         div.style = "width: 25%";
         div.classList.add("box");
-    var div2 = document.createElement("div");
+    let div2 = document.createElement("div");
         div2.classList.add("boxnonodes");
-    var br = document.createElement("br");
-    var h1 = document.createElement("h1");
+    let br = document.createElement("br");
+    let h1 = document.createElement("h1");
         h1.textContent = "No nodes in reach";
-    var h3_top = document.createElement("h3");
-    var h3_bottom = document.createElement("h3");
-    var img = document.createElement("img");
+    let h3_top = document.createElement("h3");
+    let h3_bottom = document.createElement("h3");
+    let img = document.createElement("img");
         img.src = "/img/placeholder_plant.png";
         img.alt = "Plant";
-    var a = document.createElement("a");
+    let a = document.createElement("a");
         a.id = "plant_setting";
         a.title = "Configure desired humidity and show statistics";
         a.text = "Settings ...";
@@ -61,14 +61,14 @@ async function refresh_plants() {
 
     // Add boxes for every distinct plant_ip in table in db
     if (data.length > 0) {
-        for (var i = 0; i < data.length; i++) {
+        for (let i = 0; i < data.length; i++) {
             while (div.hasChildNodes()) {
                 div.removeChild(div.firstChild);
             }
 
             h3_top.textContent = "Plant";
             h3_bottom.textContent = data[i].node_ip;
-            var text_hum = document.createTextNode("Humidity: " + data[i].humidity + "%");
+            let text_hum = document.createTextNode("Humidity: " + data[i].humidity + "%");
             a.href = "plant_view?node_ip=" + data[i].node_ip;
         
             div.appendChild(h3_top.cloneNode(true));
@@ -311,12 +311,12 @@ async function refresh_plant_detail_view() {
 
 function plant_chart() {
     // Set the dimensions and margins of the graph
-    var margin = { top: 10, right: 30, bottom: 30, left: 60 },
+    let margin = { top: 10, right: 30, bottom: 30, left: 60 },
         width = 460 - margin.left - margin.right,
         height = 400 - margin.top - margin.bottom;
 
     // Append the svg object to the body of the page
-    var svg = d3.select("#plant_chart")
+    let svg = d3.select("#plant_chart")
         .append("svg")
         .attr("width", width + margin.left + margin.right)
         .attr("height", height + margin.top + margin.bottom)
@@ -327,7 +327,7 @@ function plant_chart() {
     // Read the data
     d3.csv("https://raw.githubusercontent.com/holtzy/data_to_viz/master/Example_dataset/3_TwoNumOrdered_comma.csv",
 
-        // When reading the csv, I must format variables:
+        // When reading the csv, I must format letiables:
         function (d) {
             return { date: d3.timeParse("%Y-%m-%d")(d.date), value: d.value }
         },
@@ -336,7 +336,7 @@ function plant_chart() {
         function (data) {
 
             // Add X axis --> it is a date format
-            var x = d3.scaleTime()
+            let x = d3.scaleTime()
                 .domain(d3.extent(data, function (d) { return d.date; }))
                 .range([0, width]);
             svg.append("g")
@@ -344,7 +344,7 @@ function plant_chart() {
                 .call(d3.axisBottom(x));
 
             // Add Y axis
-            var y = d3.scaleLinear()
+            let y = d3.scaleLinear()
                 .domain([0, d3.max(data, function (d) { return +d.value; })])
                 .range([height, 0]);
             svg.append("g")

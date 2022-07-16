@@ -20,6 +20,7 @@ const url = require("url");
 
 // We draw the charts on the server and pass them to the frontend
 const { ChartJSNodeCanvas } = require("chartjs-node-canvas");
+const { exit } = require("process");
 // Should suffice for most screens
 const CHART_WIDTH = 2000;
 const CHART_HEIGHT = 800;
@@ -41,8 +42,8 @@ app.use(body_parser.urlencoded({
 
 /* ------------------- Frontend ------------------ */
 app.get("/plant_view", (req, res) => {
-    var node_url = new url.URL(`localhost:3000/${req.url}`);
-    var node_ip = node_url.node_ip;
+    let node_url = new url.URL(`localhost:3000/${req.url}`);
+    let node_ip = node_url.node_ip;
     res.render("./plant_view.html", { node_ip: node_ip });
 });
 
@@ -92,15 +93,15 @@ async function configure_thresholding(node_ip, watering_threshold_bottom, wateri
 }
 
 app.post("/pump_toggle", async (req, res) => {
-    var plant_ip = req.body.node_ip;
+    let plant_ip = req.body.node_ip;
     await pump_toggle(plant_ip);
     res.status(204).send();
 });
 
 app.post("/calibrate_sensor", async (req, res) => {
-    var plant_ip = req.body.node_ip;
-    var dry_value = parseInt(req.body.dry_value, 10);
-    var wet_value = parseInt(req.body.wet_value, 10);
+    let plant_ip = req.body.node_ip;
+    let dry_value = parseInt(req.body.dry_value, 10);
+    let wet_value = parseInt(req.body.wet_value, 10);
     if (isNaN(dry_value) || isNaN(wet_value)) {
         console.error("Sensor calibration parameters are invalid");
         return;
@@ -137,29 +138,6 @@ let watering_schedules_create_time_object = (timestamp) => {
 };
 
 let watering_schedules = [];
-// Load existing schedules
-// 100ms should suffice to load the DB and then request existing schedules. -> It could not suffice in case of a db that is too large...
-// NOTE: Perhaps make this a bit more reliable.
-setTimeout(async () => {
-    let stored_schedules = await db.select_plant_watering_schedules();
-    stored_schedules.forEach(watering_schedule => {
-        let watering_begin_time = watering_schedules_create_time_object(watering_schedule.watering_begin);
-        let watering_end_time = watering_schedules_create_time_object(watering_schedule.watering_end);
-        watering_schedules.push({
-            watering_start_job: schedule.scheduleJob(`${watering_begin_time.second} ${watering_begin_time.minute} ${watering_begin_time.hour} * * *`, () => {
-                console.log("START JOB");
-                pump_toggle(watering_schedule.node_ip);
-            }),
-            watering_end_job: schedule.scheduleJob(`${watering_end_time.second} ${watering_end_time.minute} ${watering_end_time.hour} * * *`, () => {
-                console.log("END JOB");
-                pump_toggle(watering_schedule.node_ip);
-            }),
-            node_ip: watering_schedule.node_ip,
-            watering_begin: watering_schedule.watering_begin,
-            watering_end: watering_schedule.watering_end
-        });
-    });
-}, 100);
 
 app.post("/add_watering_schedule", async (req, res) => {
     let node_ip = req.body.node_ip;
@@ -201,10 +179,6 @@ app.post("/delete_watering_schedule", async (req, res) => {
     }
     await db.delete_plant_watering_schedule(node_ip, watering_begin, watering_end);
     res.status(204).send();
-});
-
-app.listen(3000, () => {
-    console.log("Listening on port 3000 for frontend requests");
 });
 
 /* -------------------- Chart -------------------- */
@@ -277,9 +251,7 @@ const create_image = async (chart_data, chart_time) => {
 };
 
 /* --------------------- COAP -------------------- */
-var server = coap.createServer({ type: "udp6" });
-db.init();
-
+let server = coap.createServer({ type: "udp6" });
 let current_threshold_watering_jobs = [];
 
 server.on("request", async (req, _) => {
@@ -326,6 +298,8 @@ server.on("request", async (req, _) => {
             calibrate_sensor(ip_addr_str, current_config.dry_value, current_config.wet_value);
         }
         // Start thresholding jobs
+        // NOTE: For thresholding, 20%-60% is a good threshold according to Kaan. See: https://www.greenwaybiotech.com/blogs/gardening-articles/how-soil-moisture-affects-your-plants-growth
+        // Note that -50000 can never be reached as the nodes send int16_t values. So the pump should never be activated due to poor or missing calibration.
         if (humidity < current_config.watering_threshold_bottom) {
             let contained = current_threshold_watering_jobs.some(ip => { return ip == ip_addr_str; });
             if (!contained) {
@@ -361,32 +335,63 @@ server.on("response", (res) => {
     })
 });
 
-server.listen(5683, () => {
-    console.log("Listening on port 5683 for CoAP requests");
-});
+(async () => {
+    await db.init();
+    await db.select_all();
+
+    // Load existing schedules
+    {
+        let stored_schedules = await db.select_plant_watering_schedules();
+        stored_schedules.forEach(watering_schedule => {
+            let watering_begin_time = watering_schedules_create_time_object(watering_schedule.watering_begin);
+            let watering_end_time = watering_schedules_create_time_object(watering_schedule.watering_end);
+            watering_schedules.push({
+                watering_start_job: schedule.scheduleJob(`${watering_begin_time.second} ${watering_begin_time.minute} ${watering_begin_time.hour} * * *`, () => {
+                    console.log("START JOB");
+                    pump_toggle(watering_schedule.node_ip);
+                }),
+                watering_end_job: schedule.scheduleJob(`${watering_end_time.second} ${watering_end_time.minute} ${watering_end_time.hour} * * *`, () => {
+                    console.log("END JOB");
+                    pump_toggle(watering_schedule.node_ip);
+                }),
+                node_ip: watering_schedule.node_ip,
+                watering_begin: watering_schedule.watering_begin,
+                watering_end: watering_schedule.watering_end
+            });
+        });
+    }
+
+    app.listen(3000, () => {
+        console.log("Listening on port 3000 for frontend requests");
+    });
+
+    server.listen(5683, () => {
+        console.log("Listening on port 5683 for CoAP requests");
+    });
+})();
 
 /* --------------------- TEST -------------------- */
 /*
 async function test_all(){
     //Testdata because no boards ...
-    var ip_addr = [254,128,0,0,0,0,0,0,2,4,37,25,24,1,11,0];
-    var humidity = 0;
-    var pump_activated = false;
-    var dry_value = 2920;
-    var wet_value = 50;
-    var dec_ip_addr = "";
-    for (var i = 0; i < 8; i++) {
+    let ip_addr = [254,128,0,0,0,0,0,0,2,4,37,25,24,1,11,0];
+    let humidity = 0;
+    let pump_activated = false;
+    let dry_value = 2920;
+    let wet_value = 50;
+    let dec_ip_addr = "";
+    for (let i = 0; i < 8; i++) {
         dec_ip_addr += ip_addr[i*2];
         dec_ip_addr += ip_addr[i*2+1];
         if(!(i==7)) {dec_ip_addr += ":";}
     }
-    var hex_ip_addr = "";
-    for (var i = 0; i < 8; i++) {
+    let hex_ip_addr = "";
+    for (let i = 0; i < 8; i++) {
         hex_ip_addr += ip_addr[i*2].toString(16);
         hex_ip_addr += ip_addr[i*2+1].toString(16);
         if(!(i==7)) {hex_ip_addr += ":";}
     }
-    var pump_state = 0;
+    let pump_state = 0;
     if (pump_activated) {pump_state = 1;}
 
     db.change_plant_node(hex_ip_addr, pump_state, dry_value, wet_value);
