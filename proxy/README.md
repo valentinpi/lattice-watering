@@ -11,3 +11,4 @@ To execute the proxy, assuming you have installed Rust e.g. via `rustup`, simply
 ```
 $ cargo run --release
 ```
+Note that at the moment, you should run this with a Rust `nightly` toolchain.
