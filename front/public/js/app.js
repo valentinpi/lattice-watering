@@ -38,6 +38,7 @@ async function refresh_plants() {
 
     var element = document.getElementById("scrollmenu");
     var div = document.createElement("div");
+        div.style = "width: 25%";
         div.classList.add("box");
     var div2 = document.createElement("div");
         div2.classList.add("boxnonodes");
@@ -226,7 +227,6 @@ async function plant_detail_view() {
     let watering_schedules_list = document.getElementById("watering_schedules_list");
     response = await fetch(`/select_watering_schedules?node_ip=${my_ip}`);
     let watering_schedules = await response.json();
-    console.log(watering_schedules);
     for (let i = 0; i < watering_schedules.length; i++) {
         let schedule = watering_schedules[i];
         watering_schedules_list.appendChild(new Option(`${schedule.watering_begin} - ${schedule.watering_end}`));

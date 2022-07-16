@@ -37,22 +37,22 @@ app.use(body_parser.urlencoded({
 }));
 
 /* ------------------- Frontend ------------------ */
-app.get("/plant_view", function (req, res) {
+app.get("/plant_view", (req, res) => {
     var node_url = new url.URL(`localhost:3000/${req.url}`);
     var node_ip = node_url.node_ip;
     res.render("./plant_view.html", { node_ip: node_ip });
 });
 
-app.get("/", function (_, res) {
+app.get("/", (_, res) => {
     res.render("./index.html");
 });
 
-app.get("/plant_refresh", async function (_, res) {
+app.get("/plant_refresh", async (_, res) => {
     let plantRefresh = await db.select_plant_infos();
     res.json(plantRefresh);
 });
 
-app.get("/plant_detail_view", async function (req, res) {
+app.get("/plant_detail_view", async (req, res) => {
     let plant_ip = req.query.node_ip;
     let plant_detail_view = await db.select_plant_info(plant_ip);
     plant_detail_view.configuration.humidity = plant_detail_view.humidities[0].humidity;
@@ -88,13 +88,13 @@ async function configure_thresholding(node_ip, watering_threshold_bottom, wateri
     await db.change_plant_node(node_ip, current_config.pump_activated, current_config.dry_value, current_config.wet_value, watering_threshold_bottom, watering_threshold_target, watering_threshold_timeout);
 }
 
-app.post("/pump_toggle", async function (req, res) {
+app.post("/pump_toggle", async (req, res) => {
     var plant_ip = req.body.node_ip;
     await pump_toggle(plant_ip);
     res.status(204).send();
 });
 
-app.post("/calibrate_sensor", async function (req, res) {
+app.post("/calibrate_sensor", async (req, res) => {
     var plant_ip = req.body.node_ip;
     var dry_value = parseInt(req.body.dry_value, 10);
     var wet_value = parseInt(req.body.wet_value, 10);
@@ -135,7 +135,7 @@ let watering_schedules_create_time_object = (timestamp) => {
 
 let watering_schedules = [];
 // Load existing schedules
-// 16ms should suffice to load the DB and then request existing schedules. -> It could not suffice in case of a db that is too large...
+// 100ms should suffice to load the DB and then request existing schedules. -> It could not suffice in case of a db that is too large...
 // NOTE: Perhaps make this a bit more reliable.
 setTimeout(async () => {
     let stored_schedules = await db.select_plant_watering_schedules();
@@ -144,17 +144,19 @@ setTimeout(async () => {
         let watering_end_time = watering_schedules_create_time_object(watering_schedule.watering_end);
         watering_schedules.push({
             watering_start_job: schedule.scheduleJob(`${watering_begin_time.second} ${watering_begin_time.minute} ${watering_begin_time.hour} * * *`, () => {
+                console.log("START JOB");
                 pump_toggle(watering_schedule.node_ip);
             }),
             watering_end_job: schedule.scheduleJob(`${watering_end_time.second} ${watering_end_time.minute} ${watering_end_time.hour} * * *`, () => {
+                console.log("END JOB");
                 pump_toggle(watering_schedule.node_ip);
             }),
             node_ip: watering_schedule.node_ip,
             watering_begin: watering_schedule.watering_begin,
             watering_end: watering_schedule.watering_end
         });
-    })
-}, 16);
+    });
+}, 100);
 
 app.post("/add_watering_schedule", async (req, res) => {
     let node_ip = req.body.node_ip;
@@ -166,9 +168,11 @@ app.post("/add_watering_schedule", async (req, res) => {
     let watering_end_time = watering_schedules_create_time_object(watering_end);
     watering_schedules.push({
         watering_start_job: schedule.scheduleJob(`${watering_begin_time.second} ${watering_begin_time.minute} ${watering_begin_time.hour} * * *`, () => {
+            console.log("START JOB");
             pump_toggle(node_ip);
         }),
         watering_end_job: schedule.scheduleJob(`${watering_end_time.second} ${watering_end_time.minute} ${watering_end_time.hour} * * *`, () => {
+            console.log("END JOB");
             pump_toggle(node_ip);
         }),
         node_ip: node_ip,
@@ -197,7 +201,7 @@ app.post("/delete_watering_schedule", async (req, res) => {
 });
 
 app.listen(3000, () => {
-    console.log("listening on port 3000 for frontend requests");
+    console.log("Listening on port 3000 for frontend requests");
 });
 
 /* -------------------- Chart -------------------- */
@@ -327,7 +331,7 @@ server.on("response", (res) => {
 });
 
 server.listen(5683, () => {
-    console.log("listening on port 5683 for coap requests");
+    console.log("Listening on port 5683 for CoAP requests");
 });
 
 /* --------------------- TEST -------------------- */
