@@ -19,6 +19,7 @@
         "chart.js": "^3.8.0",
         "chartjs-node-canvas": "^4.1.6",
         "coap": "^1.0.11",
+        "compression": "^1.7.4",
         "connect-flash": "^0.1.1",
         "consolidate": "^0.16.0",
         "d3": "^7.6.1",

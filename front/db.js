@@ -71,7 +71,6 @@ module.exports = {
     init: async () => {
         await new Promise(resolve => {
             db = new sqlite3.Database(DB_FILE_NAME, sqlite3.OPEN_READWRITE, async (err) => {
-                console.log("HERE");
                 if (err && err.code == "SQLITE_CANTOPEN") {
                     db = _create_db();
                     await _create_tables();

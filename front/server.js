@@ -9,6 +9,7 @@ const app = require("express")();
 const body_parser = require("body-parser");
 const cbor = require("cbor");
 const coap = require("coap");
+const compression = require('compression')
 const db = require("./db");
 const engines = require("consolidate");
 const express = require("express");
@@ -20,7 +21,6 @@ const url = require("url");
 
 // We draw the charts on the server and pass them to the frontend
 const { ChartJSNodeCanvas } = require("chartjs-node-canvas");
-const { exit } = require("process");
 // Should suffice for most screens
 const CHART_WIDTH = 2000;
 const CHART_HEIGHT = 800;
@@ -30,6 +30,7 @@ const canvas_render_service = new ChartJSNodeCanvas({ type: "png", width: CHART_
 const THRESHOLDING_WATERING_TIME = 5000;
 
 /* ---------------- Express Setup ---------------- */
+app.use(compression());
 app.use(morgan("dev"));
 app.set("views", __dirname + "/views");
 app.engine("html", engines.mustache);
@@ -337,7 +338,6 @@ server.on("response", (res) => {
 
 (async () => {
     await db.init();
-    await db.select_all();
 
     // Load existing schedules
     {
