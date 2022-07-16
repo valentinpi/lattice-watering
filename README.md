@@ -65,4 +65,6 @@ To start the system, the `proxy` software and the `ethos` interface have to be s
 
 ### Some Sources
 
-- `front/public/img/jasmine_flower.png`: [https://st3.depositphotos.com/1768926/19425/v/450/depositphotos_194256716-stock-illustration-jasmine-flower-icon-logo-template.jpg](https://st3.depositphotos.com/1768926/19425/v/450/depositphotos_194256716-stock-illustration-jasmine-flower-icon-logo-template.jpg) (last access: 15.07.2022, we do not use the picture commercially)
+[1] `https://github.com/5G-I3/Impact-Industrial-IoT-2020` (last access: 16.07.2022 14:40)
+[2]  "MQTT-SN, CoAP, and RTP in wireless IoT real-time communications", "Herrero, Rolando", 2022, Springer, DOI: 10.1007/s00530-020-00674-5
+[2] `front/public/img/jasmine_flower.png`: [https://st3.depositphotos.com/1768926/19425/v/450/depositphotos_194256716-stock-illustration-jasmine-flower-icon-logo-template.jpg](https://st3.depositphotos.com/1768926/19425/v/450/depositphotos_194256716-stock-illustration-jasmine-flower-icon-logo-template.jpg) (last access: 15.07.2022 21:45, we do not use the picture commercially)
