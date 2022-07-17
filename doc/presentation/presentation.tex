@@ -123,10 +123,25 @@
     We developed two firmwares and two softwares in total. We list them with the programming languages used:
 
     \begin{itemize}
-        \item \texttt{fw} (C, Makefile): This firmware runs on every board and controls the sensory, as well as the pumps. It uses SixLoWPAN and CoAP with DTLS to send the sensor data to the host.
-        \item \texttt{br} (C, Makefile): A border router based on RIOTOS. It translates the SixLoWPAN traffic and routes it to the computer over a USB cable. It also uses \texttt{ethos} (Ethernet over Serial), a small technology developed by the RIOTOS project.
-        \item \texttt{proxy} (Rust): Translates DTLS traffic to UDP traffic. Thus, we have transport security in the SixLoWPAN network.
-        \item \texttt{front} (JS, HTML, CSS, SQL): The frontend has two parts: A node.js backend and a website. The backend stores the sensor data in a SQLite database, and the website allows the user to manually start pumps, look at humidity data over time, calibrate sensory and more.
+        \item \texttt{fw} (C, Makefile): \\
+            This firmware runs on every board associated with a plant. These boards are connected to an humidity sensor and a pump. They use SixLoWPAN and CoAP with DTLS to send the sensor data to the host.
+            
+        \item \texttt{br} (C, Makefile): \\
+            A border router based on RIOTOS. It translates the SixLoWPAN traffic and routes it to the computer over a USB cable. It also uses \texttt{ethos} (Ethernet over Serial), a small technology developed by the RIOTOS project.
+            
+        \item \texttt{proxy} (Rust): \\
+            Translates DTLS traffic to UDP traffic. Thus, we have transport security in the SixLoWPAN network.
+    \end{itemize}
+\end{frame}
+
+\begin{frame}
+    \frametitle{Software Architecture}
+    
+    \begin{itemize}
+        \item \texttt{front} (JS, HTML, CSS, SQL): \\
+            The frontend has two parts: A node.js backend and a website. \\
+            The backend stores the sensor data in a SQLite database and shares the data with clients connected to the website. \\
+            The website allows the user to manually start pumps, look at the current humidity as well as data over time, calibrate sensory and more.
     \end{itemize}
 \end{frame}
 
