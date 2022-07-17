@@ -13,7 +13,12 @@
 - `proxy`: A DTLS proxy based on `tinydtls` written in Rust.
 - `psk`: PSK key used, remember to regenerate this once in a while.
 
-To replicate our project, you will need to follow the steps of the `HWSETUP.md` file to first create a border router and at least one node board. Then, you will want to flash both of these. Please look into flashing a border router, `br`, first, as the explanations there are very similar to `fw` (node firmware). Also, you will need to build the proxy that is used for translating DTLS traffic. You will also want to create new PSK keys, you can do that by running:
+To replicate our project, you will need to follow the steps of the `HWSETUP.md` file to first create a border router and at least one node board. Then, you will want to flash both of these with the firmwares we provided. Note that you need RIOT and the appropriate tools for your platform. We also use `clang-format`, `just` and some other utilities. Especially, you need to clone RIOT in a folder above this one. So you would do:
+```
+$ git clone https://github.com/valentinpi/lattice-watering
+$ git clone https://github.com/RIOT-OS/RIOT
+```
+Please look into flashing a border router, `br`, first, as the explanations there are very similar to `fw` (node firmware). Also, you will need to build the proxy that is used for translating DTLS traffic with Rust. We recommend `rustup` to install `rustc` `nightly`, `cargo` and `just`. You will also want to create new PSK keys, you can do that by running:
 ```
 $ just gen_psk
 ```
@@ -41,15 +46,15 @@ $ just gen_psk
 - Use `snake_case`.
 - Always use `let` instead of `var`.
 
-### Design Decisions
+### Some Design Decisions
 
-- CoAP instead of MQTT-SN due to... TODO:
+- CoAP instead of MQTT-SN due to several factors. For one, MQTT-SN loss close to the host would be significantly larger following [1] and performance is rather similar [1], [2]. This is due to MQTT-SN sending out retransmissions much more uncoordinated, to put it shortly. The number of hops is also much larger, leading to higher power consumption. Also, RIOT offers DTLS encryption via GCOAPS, which is quite handy and lowers application complexity, whilst MQTT-SN is not encrypted. Whilst we can encrypt the payload or setup a DTLS socket to do MQTT-SN over, the former would still be a nonstandard solution and we tried to go for open standards, and the latter would induce more code complexity. Also, since the group is more familiar with HTTP-similar solutions, we did not go with ICN protocols such as NDN or its variation HoPP.
 - `nanocbor` for commands as it has very low footprint and is non-proprietary.
-- We wanted to use `wolfssl` since it uses a GNU license, but it is not supported by `gnrc_dtls`, so we use `tinydtls`
+- We wanted to use `wolfssl` since it uses a GNU license, but it is not supported by `gnrc_dtls`, so we use `tinydtls`.
 - The SAMR21-XPRO boards have no HW RNG, so we use a PRNG. We went with `prng_sha256prng`, since it might provide better security than `prng_sha1prng` at a possibly slightly higher computational cost. Security in IoT should not be overlooked.
 - We do not use the LED nor an additional HDC1000 sensor due to energy usage.
 - We use SQLite as it suffices for our use case. We do not need a multi-user highly concurrent database, only if we were to attach several thousand sensors, and even then: Every five seconds the packets are sent, and the host is more than strong enough to handle such a load, not even speaking of the possible package loss in the meantime.
-- To make authentication easy, we use PSKs (Pre-Shared Secrets) to build DTLS connections, such that only peers who have the same secret can communicate with one another. In our threat model, we assume that no board will be compromised. Sadly, the `tinydtls` RIOT implementation apprently only supports 16 byte large keys.
+- To make authentication easy, we use PSKs (Pre-Shared Secrets) to build DTLS connections, such that only peers who have the same secret can communicate with one another. In our threat model, we assume that no board will be compromised. Sadly, the `tinydtls` RIOT implementation apprently only supports 16 byte large keys and ECC support is currently lacking, see https://github.com/RIOT-OS/RIOT/issues/18292.
 - Due to very poor support of DTLS in node.js at the time, we implemented our own DTLS proxy in RIOT native. This was needed as the implementations and proxies we found were not working, as well as OpenSSL, and writing an OpenSSL proxy would have taken too much time.
 
 ### Starting the System
@@ -70,4 +75,4 @@ To start the system, the `proxy` software and the `ethos` interface have to be s
 
 [1] `https://github.com/5G-I3/Impact-Industrial-IoT-2020` (last access: 16.07.2022 14:40)
 [2]  "MQTT-SN, CoAP, and RTP in wireless IoT real-time communications", "Herrero, Rolando", 2022, Springer, DOI: 10.1007/s00530-020-00674-5
-[2] `front/public/img/jasmine_flower.png`: [https://st3.depositphotos.com/1768926/19425/v/450/depositphotos_194256716-stock-illustration-jasmine-flower-icon-logo-template.jpg](https://st3.depositphotos.com/1768926/19425/v/450/depositphotos_194256716-stock-illustration-jasmine-flower-icon-logo-template.jpg) (last access: 15.07.2022 21:45, we do not use the picture commercially)
+[3] `front/public/img/jasmine_flower.png`: [https://st3.depositphotos.com/1768926/19425/v/450/depositphotos_194256716-stock-illustration-jasmine-flower-icon-logo-template.jpg](https://st3.depositphotos.com/1768926/19425/v/450/depositphotos_194256716-stock-illustration-jasmine-flower-icon-logo-template.jpg) (last access: 15.07.2022 21:45, we do not use the picture commercially)
