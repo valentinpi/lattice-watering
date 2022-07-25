@@ -1,4 +1,6 @@
-\documentclass[10pt, a4paper]{article}
+% For help on this document class, see:
+% https://ftp.tu-chemnitz.de/pub/tex/macros/latex/contrib/acmart/acmart.pdf
+\documentclass[acmtog, language=english, nonacm]{acmart}
 
 \usepackage[T1]{fontenc}
 \usepackage{fullpage}
@@ -7,32 +9,29 @@
 \usepackage{tikz}
 \usepackage[european]{circuitikz}
 \usepackage{titlesec}
-\usepackage{xcolor}
 
+\setlength{\headheight}{11.0pt}
 \setlength{\parindent}{0pt}
 
 \titleformat{\section}{\normalsize\bfseries}{\thesection}{1em}{}
 \titleformat{\subsection}{\normalsize\bfseries}{\thesubsection}{1em}{}
 \titleformat{\subsubsection}{\normalsize\bfseries}{\thesubsubsection}{1em}{}
 
+\title{Software Project Report: \textsc{Lattice Watering}}
+\author{Valentin Pickel}
+\email{valentinpickel@gmx.de}
+\author{Jonas Heinemann}
+\author{Christian Müller}
+\author{Kaan Dönmez}
+\affiliation{%
+    \department[0]{Institute for Computer Science}%
+    \institution{Freie Universität Berlin}%
+    \city{Berlin}%
+    \country{Germany}}
+
+
 \begin{document}
-    \begin{center}
-        \large \textsc{Lattice Watering}
-
-        \vspace{0.15cm}
-
-        Christian Müller, Jonas Heinemann, Kaan Dönmez, Valentin Pickel
-
-        \vspace{0.15cm}
-
-        Report for the Software Project on Internet Communications, Summer Term 2022
-
-        Institute for Computer Science, Freie Universität Berlin, Submission Date: July 18, 2022
-
-        \vspace*{\baselineskip}
-
-        \rule[0.5\baselineskip]{\linewidth}{0.5pt}
-    \end{center}
+    \maketitle
 
     \section{Introduction}
 
@@ -54,15 +53,16 @@
 
     Communication was done via the proprietary communication platform \emph{Discord}, which was preferred over a decentralized solution like \emph{Element/Matrix} due to all course members already using it.
 
-    \begin{figure}[!hbtp]
+    \begin{figure*}[!hbtp]
         \centering
         \includegraphics[width=\linewidth]{img/kanban_board.png}
+        \Description{Figure of Kanban board we used.}
         \caption{The kanban project board. (State: 13th June, 18:32)}
-    \end{figure}
+    \end{figure*}
 
     \section{Hardware}
 
-    \begin{figure}[htbp!]
+    \begin{figure*}[htbp!]
         \centering
         \begin{circuitikz}
             \ctikzset{multipoles/dipchip/width=3}
@@ -94,16 +94,17 @@
             \node at ($(B.bpin 24)+(7, -1.5)$) {\texttt{P}};
             \draw ($(B.bpin 24)+(7, -2)$) -- (mos.source);
         \end{circuitikz}
+        \Description{Figure of the original circuit idea for the pump.}
         \caption{Original circuit idea for the pump. This is a rough sketch, and does not exactly represent the circuitry involved. \((\texttt{P}, \texttt{S}, \texttt{G}, \texttt{D}) = (\text{Pump}, \text{Source}, \text{Gate}, \text{Drain})\). We credit Hauke Petersen with the design of this circuit.}
-    \end{figure}
+    \end{figure*}
 
     We shall not go into the details of the electronics of that circuit and why it would work under ideal conditions. We built the circuit, but as it turns out the transistor we had available failed. So we obtained some predesigned motor boards.
 
     \section{Network Structure}
 
-    \begin{figure}[!hbtp]
+    \begin{figure*}[!hbtp]
         \centering
-        \begin{tikzpicture}[>=stealth, semithick, scale=0.9]
+        \begin{tikzpicture}[>=stealth, semithick]
             \draw[rounded corners=5pt] (-1, -1) rectangle (1, 1);
             \draw[draw=none] (-1, 0) -- (1, 1) node[pos=0.5] {Host/PC};
             \draw (-1, 0) -- (1, 0);
@@ -145,14 +146,15 @@
             \node at (0, -2.5) {\texttt{sixlowpan}};
             \node at (0, -3) {\texttt{fc00:0:0:1::/64}};
         \end{tikzpicture}
+        \Description{Figure of the network topology. We can see that the border router acts between the host and the SixLoWPAN network.}
         \caption{The Network Topology. The device interfaces are named after our code. The \texttt{tap0} device is named after the typical Linux entry. The network stack is based on COAP, DTLS, UDP, 6LoWPAN IPHC and FRAG, RPL, IPv6. The global IP addresses of the nodes inside the \texttt{fc00:0:0:0:0:0:0:1::/64} network are chosen by appending the Layer 2 addresses to the network prefix. The DAG structure of the RPL network is shown schematically.}
-    \end{figure}
+    \end{figure*}
 
     \section{Application Structure}
 
-    \begin{figure}[!hbtp]
+    \begin{figure*}[!hbtp]
         \centering
-        \begin{tikzpicture}[>=stealth, semithick, scale=0.9]
+        \begin{tikzpicture}[>=stealth, semithick, scale=0.95]
             \draw (0, 0) rectangle (2, -2) node[pos=0.5] {\texttt{node}};
             \draw[draw=gray!75] (4, 0) rectangle (4+2, -2) node[pos=0.5] {\textcolor{gray!75}{\texttt{br}}};
             \draw (7, 1) rectangle (8+9, -3) node[pos=0.5] {};
@@ -174,12 +176,13 @@
             \draw[dashed] (11.5, -0.5) -- (14, -0.5);
             \draw[dashed] (11.5, -1.5) -- (14, -1.5);
         \end{tikzpicture}
+        \Description{Figure of the DTLS proxy. It shows how the proxy takes DTLS traffic from nodes, translates them to general CoAP and forwards them to the host.}
         \caption{The DTLS proxy. Secure channels are represented by thick lines, insecure channels by thin lines. We have denoted the UDP ports. The \texttt{br} is greyed out as it only routes the packets. Note that each node has its own DTLS session registered in the proxy, the index \texttt{i} is for illustration. There can be at most 16 as of writing. Also the \texttt{proxy} has two sockets for communication with the backend, simply due to constraints with the C FFI in Rust which we were not able to fix by this time.}
-    \end{figure}
+    \end{figure*}
 
-    \begin{figure}[!hbtp]
+    \begin{figure*}[!hbtp]
         \centering
-        \begin{tikzpicture}[>=stealth, semithick, scale=0.9]
+        \begin{tikzpicture}[>=stealth, semithick, scale=0.95]
             \small
             \newcommand{\column}[3]{
                 \draw[#1] (0, #3) rectangle (6.5, #3-0.5);
@@ -219,8 +222,9 @@
             \node[above right] at (6.5, -0.75) {1};
             \node[below left] at (8, -1.25) {\(n\)};
         \end{tikzpicture}
+        \Description{Figure of our database schema. It shows all three tables. - One for storing general node information, one for humiditiy values and one for the watering schedules.}
         \caption{The SQLite database schema. The left table persists the current configurations for each node. The network structure guarantees the uniqueness of the IPs, so it suffices to use them as an identifier in our use case. One may consider replacing this with an application-specific ID which would have to persist on the nodes themselves, e.g. via EEPROM. One can find this exact structure in \texttt{front/db.js}.}
-    \end{figure}
+    \end{figure*}
 
     In total, we have developed \emph{five} different applications which all work together.
     \begin{itemize}
@@ -247,5 +251,5 @@
 
     \section{Closing Words}
 
-    \listoffigures
+    %\listoffigures
 \end{document}
