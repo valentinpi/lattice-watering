@@ -242,7 +242,7 @@
             \node[below left] at (8, -1.25) {\(n\)};
         \end{tikzpicture}
         \Description{Figure of our database schema. It shows all three tables. - One for storing general node information, one for humiditiy values and one for the watering schedules.}
-        \caption{The SQLite database schema. The left table persists the current configurations for each node. The network structure guarantees the uniqueness of the IPs, so it suffices to use them as an identifier in our use case. One may consider replacing this with an application-specific ID which would have to persist on the nodes themselves, e.g. via EEPROM. One can find this exact structure in \texttt{front/db.js}.}
+        \caption{The SQLite database schema. The upper left table persists some of the current configurations and the current status for each node. The network structure guarantees the uniqueness of the IPs, so it suffices to use them as an identifier in our use case. One may consider replacing this with an application-specific ID as we have described above, which may for one have to persist on the nodes themselves, e.g. via EEPROM. One can find this exact structure in \texttt{front/db.js}. The other two tables store the humidity values over time of the plants such that we can access them later on, and the current fixed-time watering schedules. Remember that we offer threshold-based and schedule-based watering.}
         \label{fig:db_scheme}
     \end{figure*}
 
@@ -254,6 +254,8 @@
         \item \texttt{front}: The backend software serves the webpage for the frontend and manages the database.
         \item \texttt{www}: The website written in JavaScript, which may or may not be considered a seperate application, offers the user
     \end{itemize}
+
+    The frontend also stores the humidity data and the current status of nodes according to the data regularly transmitted on the \texttt{/data} route. \cref{fig:db_scheme} shows the database scheme. We use SQLite, a very small and fast single user database, which suffices for our usecase. For something larger we may need multiple users and thus a different database, which should not be too difficult given the complexity of our current database operations.
 
     \label{subsec:dtls} \subsection{DTLS}
 
@@ -278,8 +280,8 @@
 
     \begin{figure}[!hbtp]
         \centering
-        \begin{tikzpicture}[>=stealth, semithick, scale=0.5]
-            \scriptsize
+        \begin{tikzpicture}[>=stealth, semithick, scale=0.45]
+            \tiny
             \draw (0, 0) rectangle (2, -2) node[pos=0.5] {\texttt{node}};
             \draw[draw=gray!75] (4, 0) rectangle (4+2, -2) node[pos=0.5] {\textcolor{gray!75}{\texttt{br}}};
             \draw (7, 1) rectangle (8+9, -3) node[pos=0.5] {};
