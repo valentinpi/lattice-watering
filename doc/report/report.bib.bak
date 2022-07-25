@@ -1,0 +1,36 @@
+@Misc{npm-dtls,
+  title = {{\texttt{dtls}}},
+  url   = {https://www.npmjs.com/package/dtls},
+}
+
+@Misc{npm-openssl-dtls,
+  title = {{\texttt{openssl-dtls}}},
+  url   = {https://www.npmjs.com/package/openssl-dtls},
+}
+
+@Misc{npm-node-mbed-dtls,
+  title = {{\texttt{node-mbed-dtls}}},
+  url   = {https://www.npmjs.com/package/node-mbed-dtls},
+}
+
+@Misc{npm-werift-dtls,
+  title = {{\texttt{werift-dtls}}},
+  url   = {https://www.npmjs.com/package/werift-dtls},
+}
+
+@Misc{npm-nodejs-dtls,
+  title = {{\texttt{nodejs-dtls}}},
+  url   = {https://www.npmjs.com/package/nodejs-dtls},
+}
+
+@Misc{npm-nodertc-dtls,
+  title = {{\texttt{@nodertc/dtls}}},
+  url   = {https://www.npmjs.com/package/@nodertc/dtls},
+}
+
+@Misc{npm-node-dtls-proxy,
+  title = {{\texttt{node-dtls-proxy}}},
+  url   = {https://www.npmjs.com/package/node-dtls-proxy},
+}
+
+@Comment{jabref-meta: databaseType:bibtex;}

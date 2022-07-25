@@ -1,0 +1,44 @@
+\begin{thebibliography}{1}
+
+\bibitem{npm-dtls}
+{\texttt{dtls}}.
+\newblock NPM Package: \url{https://www.npmjs.com/package/dtls} [last access
+  25th July 18:37].
+
+\bibitem{npm-openssl-dtls}
+{\texttt{openssl-dtls}}.
+\newblock NPM Package: \url{https://www.npmjs.com/package/openssl-dtls} [last
+  access 25th July 18:45].
+
+\bibitem{npm-node-mbed-dtls}
+{\texttt{node-mbed-dtls}}.
+\newblock NPM Package: \url{https://www.npmjs.com/package/node-mbed-dtls} [last
+  access 25th July 19:32].
+
+\bibitem{npm-werift-dtls}
+{\texttt{werift-dtls}}.
+\newblock NPM Package: \url{https://www.npmjs.com/package/werift-dtls} [last
+  access 25th July 19:33].
+
+\bibitem{npm-nodejs-dtls}
+{\texttt{nodejs-dtls}}.
+\newblock NPM Package: \url{https://www.npmjs.com/package/nodejs-dtls} [last
+  access 25th July 19:35].
+
+\bibitem{npm-nodertc-dtls}
+{\texttt{@nodertc/dtls}}.
+\newblock NPM Package: \url{https://www.npmjs.com/package/@nodertc/dtls} [last
+  access 25th July 19:41].
+
+\bibitem{npm-node-dtls-proxy}
+{\texttt{node-dtls-proxy}}.
+\newblock NPM Package: \url{https://www.npmjs.com/package/node-dtls-proxy}
+  [last access 25th July 19:43].
+
+\bibitem{github-goldy}
+{\texttt{goldy}}.
+\newblock GitHub Repository:
+  \url{https://github.com/ibm-security-innovation/goldy} [last access 25th July
+  19:44].
+
+\end{thebibliography}

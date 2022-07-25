@@ -2,6 +2,7 @@
 % https://ftp.tu-chemnitz.de/pub/tex/macros/latex/contrib/acmart/acmart.pdf
 \documentclass[acmtog, language=english, nonacm]{acmart}
 
+\usepackage{cleveref}
 \usepackage[T1]{fontenc}
 \usepackage{fullpage}
 \usepackage[utf8]{inputenc}
@@ -47,20 +48,34 @@
 
     For a detailled overview of the code hierarchy, one can look into the file \texttt{README.md} inside of the project directory.
     
-    \emph{git} was used as our version control system, with a repository setup on \emph{GitHub}. Our team members usually did not have fixed tasks, but utilize the agile method of \emph{Kanban}. On GitHub, a kanban board was setup, in which members can add new issues and tasks to three categories: \emph{Backlog}, \emph{In Progress} and \emph{Done}. This allowed our work to proceed in a assembly line-type way, in the sense that there are certain tasks that are saved up for later. However, in the nature of things, some members prefer to work closer to the IoT devices themselves, whilst others work e.g. with the web frontend. It is important to mention that we used \emph{agile} methods, as we all had different experiences in the field of IoT communication we were studying, so agile methods and rapid prototyping seemed like good methods for this project.
+    \emph{git} was used as our version control system, with a repository setup on \emph{GitHub}. Our team members usually did not have fixed tasks, but utilize the agile method of \emph{Kanban} with the popular free software license by the \emph{MIT}. On GitHub, a Kanban board, see \cref{fig:kanban_board}, was setup, in which members can add new issues and tasks to three categories: \emph{Backlog}, \emph{In Progress} and \emph{Done}. This allowed our work to proceed in a assembly line-type way, in the sense that there are certain tasks that are saved up for later. However, in the nature of things, some members prefer to work closer to the IoT devices themselves, whilst others work e.g. with the web frontend. It is important to mention that we used \emph{agile} methods, as we all had different experiences in the field of IoT communication we were studying, so agile methods and rapid prototyping seemed like good methods for this project.
 
-    Our methods of work also include \emph{code conventions}, which are described in the \texttt{README.md} file. Such include using formatting tools and static analyzers, as well as code practices. Although they are quite few in this project, they reflect that we should take care of code quality at all times, and using matured automatic tools for that eases a normally adiministrative task.
+    We consider it noteworthy that for uniformity in code, we set up some \emph{coding conventions}, which are described in the \texttt{README.md} file. Such include not just whether to use the standardized integer types from \texttt{inttypes.h} in C, but also the use of formatting tools and static analyzers. Although they are quite few in this project, we hope they reflect that we tried take care of code quality at all times, and using matured automatic tools for that eases a normally adiministrative task. But we also missed out on a few things. Like developing many more tests and using continuous integration. But at this scale these tools did not seem necessary anyways.
 
-    Communication was done via the proprietary communication platform \emph{Discord}, which was preferred over a decentralized solution like \emph{Element/Matrix} due to all course members already using it.
+    Communication was done via the proprietary communication platform \emph{Discord}, which was preferred over a decentralized solution like \emph{Element/Matrix} due to all course members already using it. We may improve on that in a future project.
 
-    \begin{figure*}[!hbtp]
+    \begin{figure}[!hbtp]
         \centering
         \includegraphics[width=\linewidth]{img/kanban_board.png}
         \Description{Figure of Kanban board we used.}
         \caption{The kanban project board. (State: 13th June, 18:32)}
-    \end{figure*}
+        \label{fig:kanban_board}
+    \end{figure}
 
     \section{Hardware}
+
+    One major motivation for us was to work close to hardware. The boards and sensory we used came mostly from suggestions by Hauke Petersen, a scientific coworker in the department and lead developer of RIOT OS. In our network, see \cref{sec:network_structure}, we essentially use three types of devices: A host computer which is quite powerful, a border router that translates traffic of a SixLoWPAN network, that is the name for a set of protocols used in low power radio based communication networks, and so-called nodes. The latter two types of boards use class 2 embedded devices with about 32kB of SRAM memory. A sharp eye may criticize that the border router is also quite a weak board, but during development we tried to mitigate this possible problem by reducing its role in the communication network to a pure routing one. In total, we have the following hardware list:
+    \begin{enumerate}
+        \item One personal computer with the software set up.
+        \item Two SAMR21-XPRO boards, one border router and one node.
+        \item Two micro USB cables, optionally a battery connector or powerbank.
+        \item One DRV8833 motor driver board.
+        \item One electronic pump, see the file mentioned below. It should come with a long tube.
+        \item One capacitive moisture sensor, see the file mentioned below.
+        \item Nine female jumper cables.
+        \item Five male jumper cables.
+    \end{enumerate}
+    This entire list can be found in \texttt{HWSETUP.md} inside of the repository, with descriptions on how to connect the jumper cables. In the repository, one can also find instructions on how to setup the software. However, we assume that the reader is already familiar with RIOTOS and has the appropriate toolchains and \texttt{udev} rules set up.
 
     \begin{figure*}[htbp!]
         \centering
@@ -96,11 +111,24 @@
         \end{circuitikz}
         \Description{Figure of the original circuit idea for the pump.}
         \caption{Original circuit idea for the pump. This is a rough sketch, and does not exactly represent the circuitry involved. \((\texttt{P}, \texttt{S}, \texttt{G}, \texttt{D}) = (\text{Pump}, \text{Source}, \text{Gate}, \text{Drain})\). We credit Hauke Petersen with the design of this circuit.}
+        \label{fig:circuit_idea}
     \end{figure*}
 
-    We shall not go into the details of the electronics of that circuit and why it would work under ideal conditions. We built the circuit, but as it turns out the transistor we had available failed. So we obtained some predesigned motor boards.
+    As for the hardware itself, we want to share only one more story during development. There was a very specific problem at the start of the project, which halted development shortly, but we managed to catch up as we were quite early when we tried to obtain hardware. The problem is that connecting the pump to the node boards themselves, the ones of model \texttt{SAMR21-XPRO}, the pump induces a current of 200mA. This is too much for the GPIO pins to handle, as one can read in the manual for the board, which we have provided in the \texttt{man} folder of the repository.
 
-    \section{Network Structure}
+    Together with Hauke, we discussed possible solutions to this problem, of which at first the most promising one can be seen in \cref{fig:circuit_idea}. We can see that in this schematic the pump is connected to the board via the GPIO connection and both the 5 volt and ground pins. We shall not go into the details of the electronics of that circuit and why it would work under ideal conditions. According to Hauke this is rather a matter of experience. What the may note is that the essential idea is that current flows between the \texttt{5V0} and \texttt{GND} pins to drive the pump if and only if as soon as an electric signal on the \texttt{PB03} pin is raised and thus the transistor is switched. We built the circuit, but as it turns out the transistor we had available failed. So Hauke proposed that we obtain some predesigned motor boards, which are documented in \texttt{HWSETUP.md}. Those boards already have this circuit idea embedded in one board, meaning that there are some resistors and a transistor built onto one board and we just have to connecting everything properly.
+
+    \begin{figure}[!hbtp]
+        \centering
+        \includegraphics[angle=180, width=\linewidth]{img/almost_fully_connected_node.jpg}
+        \Description{Picture of an almost fully connected node.}
+        \caption{An almost fully connected node. We can see that it is quite a cable salad, in the final presentation we gave we suggested to put everything in a casing so that it looks more compact. On the right we can see the driver board that connects the pump and the board, and on the left the capacitive moisture sensor that one would put into soil to measure humidity. It is not \emph{fully} connected, because for one we would place t he moisture sensor into soil, the pump into water, whilst connecting it with the plastic tube shown on the right, and then we would connect the board to a power source. This could be a battery connector, here the large case on the right that can hold up to four AA batteries, or a simple micro USB cable.}
+        \label{fig:almost_fully_connected_node}
+    \end{figure}
+
+    To get a feeling for what an almost fully connected node looks like, one may refer to \cref{fig:almost_fully_connected_node}.
+
+    \label{sec:network_structure} \section{Network Structure}
 
     \begin{figure*}[!hbtp]
         \centering
@@ -148,13 +176,15 @@
         \end{tikzpicture}
         \Description{Figure of the network topology. We can see that the border router acts between the host and the SixLoWPAN network.}
         \caption{The Network Topology. The device interfaces are named after our code. The \texttt{tap0} device is named after the typical Linux entry. The network stack is based on COAP, DTLS, UDP, 6LoWPAN IPHC and FRAG, RPL, IPv6. The global IP addresses of the nodes inside the \texttt{fc00:0:0:0:0:0:0:1::/64} network are chosen by appending the Layer 2 addresses to the network prefix. The DAG structure of the RPL network is shown schematically.}
+        \label{fig:network_structure}
     \end{figure*}
 
     \section{Application Structure}
 
-    \begin{figure*}[!hbtp]
+    \begin{figure}[!hbtp]
         \centering
-        \begin{tikzpicture}[>=stealth, semithick, scale=0.95]
+        \begin{tikzpicture}[>=stealth, semithick, scale=0.5]
+            \scriptsize
             \draw (0, 0) rectangle (2, -2) node[pos=0.5] {\texttt{node}};
             \draw[draw=gray!75] (4, 0) rectangle (4+2, -2) node[pos=0.5] {\textcolor{gray!75}{\texttt{br}}};
             \draw (7, 1) rectangle (8+9, -3) node[pos=0.5] {};
@@ -178,7 +208,8 @@
         \end{tikzpicture}
         \Description{Figure of the DTLS proxy. It shows how the proxy takes DTLS traffic from nodes, translates them to general CoAP and forwards them to the host.}
         \caption{The DTLS proxy. Secure channels are represented by thick lines, insecure channels by thin lines. We have denoted the UDP ports. The \texttt{br} is greyed out as it only routes the packets. Note that each node has its own DTLS session registered in the proxy, the index \texttt{i} is for illustration. There can be at most 16 as of writing. Also the \texttt{proxy} has two sockets for communication with the backend, simply due to constraints with the C FFI in Rust which we were not able to fix by this time.}
-    \end{figure*}
+        \label{fig:dtls_proxy}
+    \end{figure}
 
     \begin{figure*}[!hbtp]
         \centering
@@ -224,6 +255,7 @@
         \end{tikzpicture}
         \Description{Figure of our database schema. It shows all three tables. - One for storing general node information, one for humiditiy values and one for the watering schedules.}
         \caption{The SQLite database schema. The left table persists the current configurations for each node. The network structure guarantees the uniqueness of the IPs, so it suffices to use them as an identifier in our use case. One may consider replacing this with an application-specific ID which would have to persist on the nodes themselves, e.g. via EEPROM. One can find this exact structure in \texttt{front/db.js}.}
+        \label{fig:db_scheme}
     \end{figure*}
 
     In total, we have developed \emph{five} different applications which all work together.
@@ -237,19 +269,25 @@
 
     To enable DTLS for our application, we had to first include the \texttt{gcoap\_dtls} package in RIOT with a PRNG (Pseudo Random Number Generator) and an appropriate library, in this case \texttt{tinydtls}. However, Node.JS support for DTLS is in quite a rough state as this time, as none of the libraries we were trying out worked with. To be precise, we tried the following libraries:
 
-    - dtls -> Das hattest du inkludiert, aber darin ist gar nix drinnen. S. https://www.npmjs.com/package/dtls
-- openssl-dtls https://www.npmjs.com/package/openssl-dtls
-- node-mbed-dtls https://www.npmjs.com/package/node-mbed-dtls
-- werift-dtls -> Eventuell funktioniert das jetzt, ich sollte das nochmal anschauen https://www.npmjs.com/package/werift-dtls
-- nodejs-dtls -> Enthält nur einen Client. https://www.npmjs.com/package/nodejs-dtls
-- @nodertc/dtls -> Enthält nur einen Client. https://www.npmjs.com/package/@nodertc/dtls
+    \begin{itemize}
+        \item \texttt{dtls} \cite{npm-dtls}: This NPM package just does not contain anything. 
+        \item \texttt{openssl-dtls} \cite{npm-openssl-dtls}: Node FFI bindings that work, but during development, OpenSSL did not work with the ciphersuite \texttt{TLS\_PSK\_WITH\_AES\_128\_CCM\_8}, which is used by \texttt{tinydtls}. The cipher negotiation fails for to us unknown reasons.
+        \item \texttt{node-mbed-dtls} \cite{npm-node-mbed-dtls}: Based on \texttt{mbed-dtls}, but with the same issue as with \texttt{openssl-dtls}.
+        \item \texttt{werift-dtls} \cite{npm-werift-dtls}: Crashes upon receival of a Client Hello packet, also very poorly documented code. As it seems, it is part of a bigger set of tools for WebRTC.
+        \item \texttt{nodejs-dtls} \cite{npm-nodejs-dtls}: Only contains a DTLS client.
+        \item \texttt{@nodertc/dtls} \cite{npm-nodertc-dtls}: Only contains a DTLS client. Development for a server seems to be ongoing on the \texttt{main} branch on GitHub, but with no recent activity
+        \item \texttt{node-dtls-proxy} \cite{npm-node-dtls-proxy}: Crashes upon receival of a Client Hello packet.
+        \item \texttt{goldy} \cite{github-goldy}: Cipher negotiation with a node fails, also it seems that the proxy only forwards traffic between two peers, but we want to be dynamic in that multiple nodes can connect to the server and we do not need to start a proxy for each one seperately.
+    \end{itemize}
 
-    - node-dtls-proxy https://www.npmjs.com/package/node-dtls-proxy
-- goldy https://github.com/ibm-security-innovation/goldy
+    There was also a short unsuccessful attempt at writing a very small proxy using python-dtls, but this was conceptually flawed, as the proxy needs to know where to route the packets from the frontend. In the end, as the board uses \texttt{tinydtls}, we decided to use Rust to write a small proxy using \texttt{tinydtls-sys}. \cref{fig:dtls_proxy} shows the structure of the proxy, which acts in the middle of the communication between the frontend and the nodes. Note that the proxy is running on the host computer.
 
-    There was also a short unsuccessful attempt at writing a very small proxy using python-dtls, but this was conceptually flawed, as the proxy needs to know where to route the packets from the frontend. In the end, as the board uses \texttt{tinydtls}, we decided to use Rust to write a small proxy using \texttt{tinydtls-sys}.
+    When a board wants to send data through the \texttt{/data} CoAP POST method of the host, it first tries to establish a secure DTLS session. For that, it sends a Client Hello packet and then does cipher negotation such that the future communication partners know how to encrypt and decrypt packages. One special property of our communication is that we use \emph{Pre-Shared Keys} (PSKs). Via an \emph{identity message}, the server tells the node which pre-shared key to use. We only have one, so we called our identity \texttt{default}. The PSKs themselves are just random data, here 16 bytes, as RIOT does not support longer keys. We automatically generate them using a script, and recommend that inside of \texttt{README.md}.
 
+    \bibliographystyle{unsrt}
     \section{Closing Words}
+
+    \bibliography{report}
 
     %\listoffigures
 \end{document}
