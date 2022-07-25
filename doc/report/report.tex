@@ -263,7 +263,7 @@
 
     To enable DTLS for our application, we had to first include the \texttt{gcoap\_dtls} package in our \texttt{fw} in RIOT with a \emph{Pseudo Random Number Generator} (PRNG) and an appropriate library, in our case \texttt{tinydtls}. We did not use WolfSSL as it is currently not supported by the \texttt{gcoap} RIOT abstraction for CoAP.
     
-    Sadly introducing DTLS to our communication turned out to give us some of the worst trouble we had in the project, because Node.JS support for DTLS is in quite a rough state as this time, as none of the libraries we were trying out worked with. Note that there is an official issue for introducing DTLS to Node, but the developers there are not very active at the moment: \cref{node-dtls-issue}. And it is not clear if this will be resolved anytime soon, as the new protocol QUIC emerged. To be precise, we tried the following libraries:
+    Sadly introducing DTLS to our communication turned out to give us some of the worst trouble we had in the project, because Node.JS support for DTLS is in quite a rough state as this time, as none of the libraries we were trying out worked with. Note that there is an official issue for introducing DTLS to Node, but the developers there are not very active at the moment: \cite{node-dtls-issue}. And it is not clear if this will be resolved anytime soon, as the new protocol QUIC emerged. To be precise, we tried the following libraries:
 
     \begin{itemize}
         \item \texttt{dtls} \cite{npm-dtls}: This NPM package just does not contain anything. 
