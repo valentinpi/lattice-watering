@@ -30,27 +30,26 @@
     \city{Berlin}%
     \country{Germany}}
 
-
 \begin{document}
     \maketitle
 
     \section{Introduction}
 
-    We may start from scratch by reminiscing the the first meeting of all course participants on April 4th. This software project course should dive into the ecosystem internet. To do so, a rough split was set between the worlds of the \emph{Internet of Things} (IoT), which deals with low power devices in large networks plagued with packet loss, and the conventional internet and its vastly more potent desktop computers and servers. Especially, us students should become aware of design decisions with respect to the communication solutions that our software should utilize. The project \emph{Lattice Watering} eyes out the first of both worlds.
+    \emph{31th of July 2022} - We may start from scratch by reminiscing the the first meeting of all course participants on April 4th. This software project course should dive into the ecosystem Internet. Before collecting ideas, a rough split was set between the worlds of the \emph{Internet of Things} (IoT), which deals with low power devices in large networks plagued with packet loss, and the conventional internet and its vastly more potent desktop computers and servers. Especially, us students should become aware of design decisions with respect to the communication solutions that our software should utilize. The project \emph{Lattice Watering} eyes out the first of both worlds.
 
     \subsection{Idea Outline}
 
-    After suggesting the building an IoT application for watering plants automatically on May 2nd, the software project \emph{Lattice Watering} and its group formed on the 9th of May, comprising of the aforementioned members. The term \emph{Lattice} is a reference to the studies of crystal/grid-like molecular structures in physics settings, which are often represented by two-dimensional structures called lattices. The first idea was not just to automate the watering of the plants, but also to let the boards drive around on a large grid. As it turns out, the hardware requirements for such a project would be too difficult to implement, so after some discussion we stuck to the original idea of a plant watering application, not changing the initial name.
+    After suggesting the building an IoT application for watering plants automatically on May 2nd, the software project \emph{Lattice Watering} and its group formed on the 9th of May, comprising of the authors of this report. The term \emph{Lattice} is a reference to the studies of crystal/grid-like molecular structures in physics settings, which are often represented by two-dimensional structures called lattices. The first idea was not just to automate the watering of plants, but also to let the boards drive around on a large grid. As it turns out, the hardware requirements for such a project would be too difficult to implement, so after some discussion we stuck to the original idea of an automatic plant watering application, not changing the initial name.
 
-    In a nutshell, the idea is to be able to use a normal desktop computer to control several smaller microcontrollers, that are scattered widely. This may happen by setting automatic rules, or by the microcontrollers automatically turning on the water pumps as soon as humidity levels, which are measured by sensory, drop beyond a certain threshold. The latter aspect can be configured in a web frontend that is designed by us. Besides watering the plants, we also collect statistics like the humidity levels or network usage.
+    In a nutshell, the idea is to be able to use a normal desktop computer to control several smaller microcontrollers that are scattered widely. This may happen by setting automatic schedules or by the microcontrollers automatically turning on the water pumps as soon as humidity levels, which are measured by a sensor, drop beyond a certain threshold. Both aspects can be configured in a web frontend that is designed by us. Besides watering the plants, we also collect statistics like the humidity levels or network usage.
 
     \subsection{Team Organization and Applied Practices}
 
-    For a detailled overview of the code hierarchy, one can look into the file \texttt{README.md} inside of the project directory.
-    
-    \emph{git} was used as our version control system, with a repository setup on \emph{GitHub}. Our team members usually did not have fixed tasks, but utilize the agile method of \emph{Kanban} with the popular free software license by the \emph{MIT}. On GitHub, a Kanban board, see \cref{fig:kanban_board}, was setup, in which members can add new issues and tasks to three categories: \emph{Backlog}, \emph{In Progress} and \emph{Done}. This allowed our work to proceed in a assembly line-type way, in the sense that there are certain tasks that are saved up for later. However, in the nature of things, some members prefer to work closer to the IoT devices themselves, whilst others work e.g. with the web frontend. It is important to mention that we used \emph{agile} methods, as we all had different experiences in the field of IoT communication we were studying, so agile methods and rapid prototyping seemed like good methods for this project.
+    \emph{git} was used as our version control system, with a remote repository setup on \emph{GitHub} with the popular free software license by the \emph{MIT}. Our team members usually did not have fixed tasks, but utilized the agile method of \emph{Kanban}. On GitHub, a Kanban board \cref{fig:kanban_board} was setup, in which members can add new issues and tasks to three categories: \emph{Backlog}, \emph{In Progress} and \emph{Done}. This allowed our work to proceed in an assembly line-type of way, in the sense that there tasks are written down and saved up for when members are idling. However, in the nature of things, some members prefer to work closer to the IoT devices themselves, whilst others work e.g. with the web frontend. This means that tasks like reworking the frontend design are less accessible to backend developers, for instance. It is important to mention that we used \emph{agile} methods, as we all had different experiences in the field of IoT communication we were studying, so agile methods and rapid prototyping seemed like good methods for this project.
 
-    We consider it noteworthy that for uniformity in code, we set up some \emph{coding conventions}, which are described in the \texttt{README.md} file. Such include not just whether to use the standardized integer types from \texttt{inttypes.h} in C, but also the use of formatting tools and static analyzers. Although they are quite few in this project, we hope they reflect that we tried take care of code quality at all times, and using matured automatic tools for that eases a normally adiministrative task. But we also missed out on a few things. Like developing many more tests and using continuous integration. But at this scale these tools did not seem necessary anyways.
+    In the repository, we usually worked in several branches and merged branches together when changes were ready to be integrated in other branches. To make the switches between different parts of the codebase easier, we regularly wrote minimal documentations such that we some parts of our codebase are always explained, whilst not investing too much time in the maintenance of small parts. We also tried to perform rationale management by explaining design decisions, which is why we have a small subsection for that inside of the \texttt{README.md} file. We did not use a project plan. The team regularly meet up on Monday to discuss current affairs, in the last two weeks before the presentation on the 18th of July we also performed \emph{integration tests}, meaning that we connected all systems together and overviewed its functionality, especially with several boards, more on that in \cref{sec:network_structure}.
+
+    We consider it noteworthy that for uniformity in code, we set up some \emph{coding conventions}, which are described in the \texttt{README.md} file. Such include not just whether to use the standardized integer types from \texttt{inttypes.h} in C, but also the use of code formatting tools and static analyzers. Although they are few in this project, we hope that our use of them reflects that we tried take care of code quality at all times, and using matured automatic tools for that eases normally adiministrative tasks. But we also missed out on a few things. Like developing tests and using continuous integration. But at this scale these tools did not seem necessary.
 
     Communication was done via the proprietary communication platform \emph{Discord}, which was preferred over a decentralized solution like \emph{Element/Matrix} due to all course members already using it. We may improve on that in a future project.
 
@@ -146,7 +145,8 @@
 
     \begin{figure*}[!hbtp]
         \centering
-        \begin{tikzpicture}[>=stealth, semithick]
+        \small
+        \begin{tikzpicture}[>=stealth, semithick, scale=0.75]
             \draw[rounded corners=5pt] (-1, -1) rectangle (1, 1);
             \draw[draw=none] (-1, 0) -- (1, 1) node[pos=0.5] {Host/PC};
             \draw (-1, 0) -- (1, 0);
@@ -189,13 +189,13 @@
             \node at (0, -3) {\texttt{fc00:0:0:1::/64}};
         \end{tikzpicture}
         \Description{Figure of the network topology. We can see that the border router acts between the host and the SixLoWPAN network.}
-        \caption{The Network Topology. The device interfaces are named after our code. The \texttt{tap0} device is named after the typical Linux entry. The network stack is based on COAP, DTLS, UDP, 6LoWPAN IPHC and FRAG, RPL, IPv6. The global IP addresses of the nodes inside the \texttt{fc00:0:0:0:0:0:0:1::/64} network are chosen by appending the Layer 2 addresses to the network prefix. The DAG structure of the RPL network is shown schematically.}
+        \caption{The Network Topology. The device interfaces are named after our code. The \texttt{tap0} device is named after the typical Linux entry. The network stack is based on COAP, DTLS, UDP, 6LoWPAN IPHC and FRAG, RPL, IPv6. The global IP addresses of the nodes inside the \texttt{fc00:0:0:0:0:0:0:1::/64} network are chosen by appending the layer 2 addresses to the network prefix. The DAG structure of the RPL network is shown schematically.}
         \label{fig:network_structure}
     \end{figure*}
 
     As for the other protocols used, our communication principle was to design it as energy efficient and with as small and as few regularly sent packets as possible. Thus we ruled out any form of state based communication besides DTLS as we cannot compromise on security: For one, an attacker might be interested in damaging expensive plants to hurt the owner financially and emotionally. Our threat model assumes that no node is compromised, which is why we used Pre-Shared Keys, see \cref{subsec:dtls} for more details.
 
-    So in the standard ISO/OSI model we skip layers five and six, besides what protocol management introduces in form of certain saved cookies by the DTLS protocol, and turn to layers four and seven. The former is not very interesting: We just use UDP. For all communication between the nodes and the host, we use non-confirmable CoAP packets. The exact methods between that can be called using CoAP on the node or on the host are described in the file \texttt{METHODS.md}. Note that since each node uses DTLS with the host, meaning that they both share a secure session, these RPC calls are all secured and unique to one communication. More precisely, in RIOT we use the abstraction GCoAP or GCoAP-DTLS, which allows us to define method listeners directly and send out packages quite easily, whilst possibly introducing a slight bit more of packet duplication, as we do not directly use RIOT OS Packet Buffers.
+    So in the standard ISO/OSI model we skip layers five and six, besides what protocol management introduces in form of certain saved cookies by the DTLS protocol, and turn to layers four and seven. The former is not very interesting: We use UDP-based application protocols. For all communication between the nodes and the host, we use non-confirmable CoAP packets that are DTLS encrypted. The exact methods between that can be called using CoAP on the node or on the host are described in the file \texttt{METHODS.md}. Note that since each node uses DTLS with the host, meaning that they both share a secure session, these RPC calls are all secured and unique to one communication. More precisely, in RIOT we use the abstraction GCoAP or GCoAP-DTLS, which allows us to define method listeners directly and send out packages quite easily, whilst possibly introducing a slight bit more of packet duplication, as we do not directly use RIOT OS Packet Buffers.
 
     \section{Application Structure}
 
@@ -257,7 +257,9 @@
 
     The frontend also stores the humidity data and the current status of nodes according to the data regularly transmitted on the \texttt{/data} route. \cref{fig:db_scheme} shows the database scheme. We use SQLite, a very small and fast single user database, which suffices for our usecase. For something larger we may need multiple users and thus a different database, which should not be too difficult given the complexity of our current database operations.
 
-    \label{subsec:dtls} \subsection{DTLS}
+    \subsection{Embedded Work: \texttt{fw} and \texttt{br}}
+
+    \label{subsec:proxy_and_dtls} \subsection{\texttt{proxy} and DTLS}
 
     The \texttt{Datagram Transport Layer Security} protocol aims to introduce security of communication to the unsecured UDP protocol. DTLS (RFC 4347) behaves similiar to TLS in that before a communication may take place, a participant first has to negotiate secure ciphers for communication, but not in that the packets are assured to arrive in the correct order or fully. However, the protocol guarantees this for the transmitted payload data.
 
@@ -276,7 +278,7 @@
         \item \texttt{goldy} \cite{github-goldy}: Cipher negotiation with a node fails, also it seems that the proxy only forwards traffic between two peers, but we want to be dynamic in that multiple nodes can connect to the server and we do not need to start a proxy for each one seperately.
     \end{itemize}
 
-    There was also a short unsuccessful attempt at writing a very small proxy using python-dtls, but this was conceptually flawed, as the proxy needs to know where to route the packets from the frontend. In the end, as the board uses \texttt{tinydtls}, we decided to use Rust to write a small proxy using \texttt{tinydtls-sys}. \cref{fig:dtls_proxy} shows the structure of the proxy, which acts in the middle of the communication between the frontend and the nodes. Note that the proxy is running on the host computer.
+    There was also a short unsuccessful attempt at writing a very small proxy using python-dtls, but this was conceptually flawed, as the proxy needs to know where to route the packets from the frontend. In the end, as the board uses \texttt{tinydtls}, we decided to use Rust to write a small proxy using \texttt{tinydtls-sys}. \cref{fig:dtls_proxy} shows the structure of the proxy, which acts in the middle of the communication between the frontend and the nodes. Note that the proxy is running on the host computer. We chose Rust as the developer that assigned himself this task wanted to get to practice it more, and it seemed to be a suitable language due to Rust safety guarantees. Although one may argue that Rust is more difficult to learn, but the proxy complexity is not that high. Because Rust bindings exist for RIOT, we could also have developed the firmwares in Rust, but not every team member is familiar with the language and we did not have that much time.
 
     \begin{figure}[!hbtp]
         \centering
@@ -310,9 +312,27 @@
 
     When a board wants to send data through the \texttt{/data} CoAP POST method of the host, it first tries to establish a secure DTLS session. For that, it sends a Client Hello packet and then does cipher negotation such that the future communication partners know how to encrypt and decrypt packages. One special property of our communication is that we use \emph{Pre-Shared Keys} (PSKs). Via an \emph{identity message}, the server tells the node which pre-shared key to use. We only have one, so we called our identity \texttt{default}. The PSKs themselves are just random data, here 16 bytes, as RIOT does not support longer keys. We automatically generate them using a script, and recommend that inside of \texttt{README.md}.
 
-    \bibliographystyle{unsrt}
-    \section{Evaluation Closing Words}
+    \subsection{For the Browser: \texttt{front} and \texttt{www}}
 
+    \subsection{Features}
+
+    \section{Evaluation and Closing Words}
+
+    \subsection{Discussion on Production-Readiness Marketability}
+
+    \subsubsection{Scalability}
+
+    \subsubsection{Network Statistics}
+
+    \subsubsection{Energy Statistics}
+
+    \subsection{Reflection on our Deployed Practices}
+
+    \subsection{Possible Future Enhancements}
+
+    \subsection{Conclusion}
+
+    \bibliographystyle{acm}
     \bibliography{report}
 
     %\listoffigures
