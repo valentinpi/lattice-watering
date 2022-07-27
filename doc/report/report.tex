@@ -336,11 +336,11 @@ gnrc_rpl_root_init(0, &ieee802154_ip, true, true);
 
     \subsection{For the Browser: \texttt{front} and \texttt{www}}
 
-    A small backend using Node.JS and SQLite and a website were developed. The methods the backend offers are only documented in code, but not in a seperate file, as these are internal functionalities.
+    A small backend using \texttt{Node.JS} and a website were developed. The backend operates a database with \texttt{SQLite} to store all data received and the corresponding IPv6-Addresses. The methods the backend offers are only documented in code, but not in a seperate file, as these are internal functionalities. It will register newly connected IPv6-Addresses if not already present as nodes in the plant\_nodes table and its current humidity and time value in the plant\_humidities table. The frontend will show all registered nodes in an overview depicting their current humidity and IPv6-Addresses. This could be changed to show only nodes registered in the last \texttt{X}-minutes to portray only active and currently used plant nodes. All database accesses are done by the backend and only the backend which will send the information to the frontend if requested. We used async functions whenever a database request was issued since \texttt{Javascript} would not wait for the query to finish and use a \texttt{null} as the output. Async functions allowed us to make promises to only continue working after the query has been finished. 
 
-    The backend uses packages such as \texttt{coap} and \texttt{express} to establish the communication to the node and to the website served.
+    The backend uses packages such as \texttt{coap} and \texttt{express} to establish the communication to the node and to the website served. \texttt{chartjs} is used to generate a static image which is served to the frontend. The frontend to backend communication is done by HTML GET and POST requests. After every function call we send status 204 back to the frontend which stops the browser from loading a different or current site.
     
-    The websites HTML and CSS were written manually. We use small HTML templates that are inserted using DOM operations for dynamic behavior.
+    The websites HTML and CSS were written manually. We use small HTML templates that are inserted using DOM operations for dynamic behavior and \texttt{Javascript} to issue database requests and the current time.
 
     \section{Evaluation and Closing Words}
 
