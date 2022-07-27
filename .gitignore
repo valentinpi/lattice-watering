@@ -1,6 +1,8 @@
 br/bin
 doc/*/*.aux
 doc/*/*.bbl
+doc/*/*.bib.bak
+doc/*/*.bib.sav.tmp
 doc/*/*.blg
 doc/*/*.fdb_latexmk
 doc/*/*.fls

@@ -35,23 +35,23 @@
 
     \section{Introduction}
 
-    \emph{31th of July 2022} - We may start from scratch by reminiscing the the first meeting of all course participants on April 4th. This software project course should dive into the ecosystem Internet. Before collecting ideas, a rough split was set between the worlds of the \emph{Internet of Things} (IoT), which deals with low power devices in large networks plagued with packet loss, and the conventional internet and its vastly more potent desktop computers and servers. Especially, us students should become aware of design decisions with respect to the communication solutions that our software should utilize. The project \emph{Lattice Watering} eyes out the first of both worlds.
+    \emph{31st of July 2022} - We may start from scratch by reminiscing the the first meeting of all course participants on April 4th. This software project course should dive into the ecosystem Internet. Before collecting project ideas, a rough split was set between the worlds of the \emph{Internet of Things} (IoT), which deals with low power devices in large networks plagued with packet loss, and the conventional internet and its vastly more potent devices ranging from desktop computers to large-scale servers. Especially, us students should become aware of the aspects that matter when making design decisions with respect to communication solutions. The project \emph{Lattice Watering} eyes out the first of both worlds.
 
     \subsection{Idea Outline}
 
-    After suggesting the building an IoT application for watering plants automatically on May 2nd, the software project \emph{Lattice Watering} and its group formed on the 9th of May, comprising of the authors of this report. The term \emph{Lattice} is a reference to the studies of crystal/grid-like molecular structures in physics settings, which are often represented by two-dimensional structures called lattices. The first idea was not just to automate the watering of plants, but also to let the boards drive around on a large grid. As it turns out, the hardware requirements for such a project would be too difficult to implement, so after some discussion we stuck to the original idea of an automatic plant watering application, not changing the initial name.
+    After suggesting the building of an IoT application for watering plants automatically on May 2nd, the software project \emph{Lattice Watering} and its group formed on the 9th of May, comprising of the authors of this report. The term \emph{Lattice} is a reference to the studies of crystal/grid-like molecular structures in physics settings, which are often represented by two-dimensional structures called lattices. The first idea was not just to automate the watering of plants, but also to let the boards drive around on a large grid, hence \emph{Lattice Watering}. As it turned out, the hardware requirements for such a project would be too immense, so after some discussion we stuck to the original idea of an automatic plant watering application, whilst not changing the initial name. The latter decision was made in coordination with the team after some discussion. We thought that the name provides a neat little story for the project.
 
-    In a nutshell, the idea is to be able to use a normal desktop computer to control several smaller microcontrollers that are scattered widely. This may happen by setting automatic schedules or by the microcontrollers automatically turning on the water pumps as soon as humidity levels, which are measured by a sensor, drop beyond a certain threshold. Both aspects can be configured in a web frontend that is designed by us. Besides watering the plants, we also collect statistics like the humidity levels or network usage.
+    In a nutshell, the idea is to be able to use a normal desktop computer to control several smaller microcontrollers that are scattered widely. This may happen in multiple ways. We decided that a user should be able to setup automatic (timed) schedules or humdity thresholds, such that pumps would automatically turn on when the plant is too dry. Both functionalities should be configurable in a web frontend that is designed by us. Besides watering the plants, we also collect statistics like the humidity levels or network usage.
 
     \subsection{Team Organization and Applied Practices}
 
-    \emph{git} was used as our version control system, with a remote repository setup on \emph{GitHub} with the popular free software license by the \emph{MIT}. Our team members usually did not have fixed tasks, but utilized the agile method of \emph{Kanban}. On GitHub, a Kanban board \cref{fig:kanban_board} was setup, in which members can add new issues and tasks to three categories: \emph{Backlog}, \emph{In Progress} and \emph{Done}. This allowed our work to proceed in an assembly line-type of way, in the sense that there tasks are written down and saved up for when members are idling. However, in the nature of things, some members prefer to work closer to the IoT devices themselves, whilst others work e.g. with the web frontend. This means that tasks like reworking the frontend design are less accessible to backend developers, for instance. It is important to mention that we used \emph{agile} methods, as we all had different experiences in the field of IoT communication we were studying, so agile methods and rapid prototyping seemed like good methods for this project.
+    \emph{git} was used as our version control system, with a remote repository setup on \emph{GitHub} with the popular free software license by the \emph{MIT}. Our team members usually did not have fixed tasks, but utilized the agile method of \emph{Kanban}. On GitHub, a Kanban board \cref{fig:kanban_board} was setup, in which members can add new issues and tasks to three categories: \emph{Backlog}, \emph{In Progress} and \emph{Done}. This allowed our work to proceed in an assembly line-type of way, in the sense that there tasks are written down and saved up for when members are idling. However, in the nature of things, some members prefer to work closer to the IoT devices themselves, whilst others work e.g. with the web frontend. This means that tasks like reworking the frontend design are less accessible to backend developers, for instance. It is important to mention that we used \emph{agile} methods, as we all had different experiences in the field of IoT communication we were studying, so agile methods and rapid prototyping seemed like good methods for this project. We did not use a project plan.
 
-    In the repository, we usually worked in several branches and merged branches together when changes were ready to be integrated in other branches. To make the switches between different parts of the codebase easier, we regularly wrote minimal documentations such that we some parts of our codebase are always explained, whilst not investing too much time in the maintenance of small parts. We also tried to perform rationale management by explaining design decisions, which is why we have a small subsection for that inside of the \texttt{README.md} file. We did not use a project plan. The team regularly meet up on Monday to discuss current affairs, in the last two weeks before the presentation on the 18th of July we also performed \emph{integration tests}, meaning that we connected all systems together and overviewed its functionality, especially with several boards, more on that in \cref{sec:network_structure}.
+    In the repository, we usually worked in several branches and merged branches together when changes were ready to be integrated in other branches. To make the switches between different parts of the codebase easier, we regularly wrote minimal documentations such that we some parts of our codebase are always explained, whilst not investing too much time in the maintenance of small parts. We also tried to perform rationale management by explaining design decisions, which is why we have a small subsection for that inside of the \texttt{README.md} file. The team regularly meet up on Monday to discuss current affairs, in the last two weeks before the presentation on the 18th of July we also performed \emph{integration tests}, meaning that we connected all systems together and overviewed its functionality, especially with several boards \cref{sec:network_structure}.
 
     We consider it noteworthy that for uniformity in code, we set up some \emph{coding conventions}, which are described in the \texttt{README.md} file. Such include not just whether to use the standardized integer types from \texttt{inttypes.h} in C, but also the use of code formatting tools and static analyzers. Although they are few in this project, we hope that our use of them reflects that we tried take care of code quality at all times, and using matured automatic tools for that eases normally adiministrative tasks. But we also missed out on a few things. Like developing tests and using continuous integration. But at this scale these tools did not seem necessary.
-
-    Communication was done via the proprietary communication platform \emph{Discord}, which was preferred over a decentralized solution like \emph{Element/Matrix} due to all course members already using it. We may improve on that in a future project.
+    
+    The tools we used further include \texttt{clang-format}, \texttt{just}, \texttt{make}, \texttt{npm}, Visual Studio Code and \texttt{gdb}. Communication was done via the proprietary communication platform \emph{Discord}, which was preferred over a decentralized solution like \emph{Element/Matrix} due to all course members already using it. We may improve on that in a future project.
 
     \begin{figure}[!hbtp]
         \centering
@@ -63,7 +63,7 @@
 
     \label{sec:hardware} \section{Hardware}
 
-    One major motivation for us was to work close to hardware. The boards and sensory we used came mostly from suggestions by Hauke Petersen, a scientific coworker in the department and lead developer of RIOT OS. In our network, see \cref{sec:network_structure}, we essentially use three types of devices: A host computer which is quite powerful, a border router that translates traffic of a SixLoWPAN network, that is the name for a set of protocols used in low power radio based communication networks, and so-called nodes. The latter two types of boards use class 2 embedded devices (see RFC 7228) with about 32kB of SRAM memory. A sharp eye may criticize that the border router is also quite a weak board, but during development we tried to mitigate this possible problem by reducing its role in the communication network to a pure routing one. In total, we have the following hardware list:
+    One major motivation for us was to work close to hardware. The boards and sensory we used came mostly from suggestions by Hauke Petersen, a scientific coworker in the department and lead developer of RIOT OS. In our network \cref{sec:network_structure}, we essentially use three types of devices: A host computer which is quite powerful, a border router that translates traffic of a SixLoWPAN network, that is the name for a set of protocols used in low power radio based communication networks, and so-called nodes. The latter two types of boards use class 2 embedded devices (see RFC 7228) with about 32kB of SRAM memory. A sharp eye may criticize that the border router is also quite a weak board, but during development we tried to mitigate this possible problem by reducing its role in the communication network to a pure routing one. In total, we have the following hardware list:
     \begin{enumerate}
         \item One personal computer with the software set up.
         \item Two SAMR21-XPRO boards, one border router and one node.
@@ -113,7 +113,7 @@
         \label{fig:circuit_idea}
     \end{figure*}
 
-    As for the hardware itself, we want to share only one more story during development. There was a very specific problem at the start of the project, which halted development shortly, but we managed to catch up as we were quite early when we tried to obtain hardware. The problem is that connecting the pump to the node boards themselves, the ones of model \texttt{SAMR21-XPRO}, the pump induces a current of 200mA. This is too much for the GPIO pins to handle, as one can read in the manual for the board, which we have provided in the \texttt{man} folder of the repository.
+    As for the hardware itself, we want to share only one story. There was a very specific problem at the start of the project, which halted development shortly, but we managed to catch up as we were quite early when we tried to obtain hardware. The problem was that when connecting the pump to the node boards themselves, the ones of model \texttt{SAMR21-XPRO}, the pump induces a current of \(\qty{200}{\milli\ampere}\). This is too much for the GPIO pins to handle, as one can read in the manual for the board, which we have provided in the \texttt{man} folder of the repository.
 
     Together with Hauke, we discussed possible solutions to this problem, of which at first the most promising one can be seen in \cref{fig:circuit_idea}. We can see that in this schematic the pump is connected to the board via the GPIO connection and both the 5 volt and ground pins. We shall not go into the details of the electronics of that circuit and why it would work under ideal conditions. According to Hauke this is rather a matter of experience. What the may note is that the essential idea is that current flows between the \texttt{5V0} and \texttt{GND} pins to drive the pump if and only if as soon as an electric signal on the \texttt{PB03} pin is raised and thus the transistor is switched. We built the circuit, but as it turns out the transistor we had available failed. So Hauke proposed that we obtain some predesigned motor boards, which are documented in \texttt{HWSETUP.md}. Those boards already have this circuit idea embedded in one board, meaning that there are some resistors and a transistor built onto one board and we just have to connecting everything properly.
 
@@ -141,7 +141,21 @@
     
     To perform routing inside of the lossy IoT network, we use the \texttt{Routing Protocol for Low-Power and Lossy Networks} (RPL). RFC 6550 describes it. The short idea is that we may create routing topologies for far areas by designating some network entities as roots such that the nodes can build up graph theoretic tree structures, which are just \emph{Directed Acylic Graphs} (DAGs). The routing now happens in the way that a node has exactly one entity it can route a packet to. Note that the RFC also suggests some useful topologies for these routing schemes, such as a \emph{Destination-Oriented DAG} (DODAG), where there is only one root. This is useful in our case, as it simplifies the routing by quite a lot.
 
-    These three technologies presented two extremes for us during development. For one, setting up \texttt{ethos} and the border router routing table, to route between the IEEE802154 and Ethernet interfaces, yielded unneeded error searches while we were trying to apply the knowledge from the tutorials that were given on the RIOT OS page. The most usual error was that packets just were not routed between the nodes and the host. We checked that by using the ICMP modules from RIOT from shell and sending pings between our fixed IP addresses, see above. Using a snooping tool such as \emph{Wireshark} on the host, we also checked the traffic in hopes of finding out our issues. We cannot replicate all that went wrong during this phase. The professor suggested that we should make proposals on how to improve the RIOT tutorials, but due to stress we have not yet done so. Perhaps the underlying issue also was that the team was just not familiar enough with RIOT and the protocols involved. That is the first extreme: Huge difficulties whilst setting up \texttt{ethos} and IPv6 routing. The second extreme was the very pleasant experience in setting up RPL, which just consisted of designating the border router as a DAG root and then just loading the appropriate modules into both \texttt{br} and \texttt{fw}.
+    These three technologies presented two extremes for us during development. For one, setting up \texttt{ethos} and the border router routing table, to route between the IEEE802154 and Ethernet interfaces, yielded unneeded error searches while we were trying to apply the knowledge from the tutorials that were given on the RIOT OS page. The most usual error was that packets just were not routed between the nodes and the host. We checked that by using the ICMP modules from RIOT from shell and sending pings between our fixed IP addresses, see above. Using a snooping tool such as \emph{Wireshark} on the host, we also checked the traffic in hopes of finding out our issues. We cannot replicate all that went wrong during this phase. The professor suggested that we should make proposals on how to improve the RIOT tutorials, but due to stress we have not yet done so. Perhaps the underlying issue also was that the team was just not familiar enough with RIOT and the protocols involved. That is the first extreme: Huge difficulties whilst setting up \texttt{ethos} and IPv6 routing. The second extreme was the very pleasant experience in setting up RPL, which just consisted of designating the border router as a DAG root and then just loading the appropriate modules into both \texttt{br} and \texttt{fw}. The former can be done just using:
+
+    \begin{minipage}{\linewidth}
+        \begin{verbatim}
+gnrc_rpl_init(netif_ieee802154->pid);
+gnrc_rpl_root_init(0, &ieee802154_ip, true, true);
+        \end{verbatim}
+    \end{minipage}
+
+    The combination of \emph{ethos} and the more-or-less hardcoded network structure was on purpose as it is the most convenient and least complicated way of setting it up. The only thing to keep in mind was to update the firewall rules on our Linux devices, for instance via \texttt{nft}:
+    \begin{verbatim}
+# nft --handle list ruleset
+# sudo nft add rule inet filter input \
+           position 9 udp dport 5684 accept
+    \end{verbatim}
 
     \begin{figure*}[!hbtp]
         \centering
@@ -193,9 +207,13 @@
         \label{fig:network_structure}
     \end{figure*}
 
-    As for the other protocols used, our communication principle was to design it as energy efficient and with as small and as few regularly sent packets as possible. Thus we ruled out any form of state based communication besides DTLS as we cannot compromise on security: For one, an attacker might be interested in damaging expensive plants to hurt the owner financially and emotionally. Our threat model assumes that no node is compromised, which is why we used Pre-Shared Keys, see \cref{subsec:dtls} for more details.
+    As for the other protocols used, our communication principle was to design it as energy efficient and with as small and as few regularly sent packets as possible. Thus we ruled out any form of state based communication besides DTLS as we cannot compromise on security: For one, an attacker might be interested in damaging expensive plants to hurt the owner financially and emotionally. Our threat model assumes that no node is compromised, which is why we used Pre-Shared Keys, see \cref{subsec:proxy_and_dtls} for more details.
 
-    So in the standard ISO/OSI model we skip layers five and six, besides what protocol management introduces in form of certain saved cookies by the DTLS protocol, and turn to layers four and seven. The former is not very interesting: We use UDP-based application protocols. For all communication between the nodes and the host, we use non-confirmable CoAP packets that are DTLS encrypted. The exact methods between that can be called using CoAP on the node or on the host are described in the file \texttt{METHODS.md}. Note that since each node uses DTLS with the host, meaning that they both share a secure session, these RPC calls are all secured and unique to one communication. More precisely, in RIOT we use the abstraction GCoAP or GCoAP-DTLS, which allows us to define method listeners directly and send out packages quite easily, whilst possibly introducing a slight bit more of packet duplication, as we do not directly use RIOT OS Packet Buffers.
+    So in the standard ISO/OSI model we skip layers five and six, besides what protocol management introduces in form of certain saved cookies by the DTLS protocol, and turn to layers four and seven. The former is not very interesting: We use UDP-based application protocols. For all communication between the nodes and the host, we use non-confirmable CoAP packets that are DTLS encrypted. The exact methods between that can be called using CoAP on the node or on the host are described in the file \texttt{METHODS.md}. Note that since each node uses DTLS with the host, meaning that they both share a secure session, these RPC calls are all secured and unique to one communication. More precisely, in RIOT we use the abstraction GCoAP or GCoAP-DTLS, which allows us to define method listeners directly and send out packages quite easily, whilst possibly introducing a slight bit more of packet duplication, as we do not directly use RIOT OS Packet Buffers. Instead of CoAP, there is also MQTT-SN, a different application-layer protocol. We did not choose it, as for one RIOT does not provide such a good integration with DTLS as with GCoAP, which essentially only requires the developer to register the needed keys, but also one can read in articles that packet loss may be quite huge with MQTT-SN, as \cite{Waehlisch_2021} points out. \cite{Herrero_2020} also gives evidence of CoAP being able to handle traffic floods much better. MQTT-SN might perform slightly better while saving a few bytes, but the difference is not huge. Also, we are much more familiar with the HTTP-like structure of CoAP, so working with it was quite pleasant.
+
+    We note that all of the traffic between the host and the nodes is encoded in the CBOR format, which is a binary, more compact, alternative to JSON.
+
+    The frontend is made up of a Node.JS backend and a small webpage for controlling individual boards. More on that in the next section. We only note that the communication between the Node.JS server and the webpage is based on HTTP and TCP, which is quite usual. Sadly, we still use HTTP 1.1 there, as the Node framework \texttt{express} does not support newer versions, but at least the traffic is \texttt{gzip}-compressed.
 
     \section{Application Structure}
 
@@ -257,7 +275,11 @@
 
     The frontend also stores the humidity data and the current status of nodes according to the data regularly transmitted on the \texttt{/data} route. \cref{fig:db_scheme} shows the database scheme. We use SQLite, a very small and fast single user database, which suffices for our usecase. For something larger we may need multiple users and thus a different database, which should not be too difficult given the complexity of our current database operations.
 
-    \subsection{Embedded Work: \texttt{fw} and \texttt{br}}
+    \subsection{Embedded Work: \texttt{br} and \texttt{fw}}
+
+    Both firmwares are kept very simple. Both are based on RIOT OS with its default GNRC protocol stack. We considered using other stacks such as OpenWSN and OpenThread, but GNRC was preferred due to its simplicity and its prevalence in RIOTs examples.
+
+    The \texttt{br} firmware sets up a small border router as a RPL root, with a route between the \texttt{sixlowpan} and \texttt{ethos} networks and with a watchdog. It also responds to ICMP packets for pings. The \texttt{fw} firmware is slightly more complicated in that it also sets up some sensory, GCoAP routes and DTLS encryption. For the evaluation of the firmwares we refer to the very last section.
 
     \label{subsec:proxy_and_dtls} \subsection{\texttt{proxy} and DTLS}
 
@@ -314,23 +336,64 @@
 
     \subsection{For the Browser: \texttt{front} and \texttt{www}}
 
-    \subsection{Features}
+    A small backend using Node.JS and SQLite and a website were developed. The methods the backend offers are only documented in code, but not in a seperate file, as these are internal functionalities.
+
+    The backend uses packages such as \texttt{coap} and \texttt{express} to establish the communication to the node and to the website served.
+    
+    The websites HTML and CSS were written manually. We use small HTML templates that are inserted using DOM operations for dynamic behavior.
 
     \section{Evaluation and Closing Words}
 
+    We shall give some thoughts about the final result of the project and some highly non-scientific evaluation results.
+
     \subsection{Discussion on Production-Readiness Marketability}
 
-    \subsubsection{Scalability}
+    As explained in the section on hardware, the node devices that are arguably the most important parts of the system as they themselves water the plants and take measurements are quite unorganized. For a product look, one needs to consider putting each node in a case and fastening the connections, possibly by soldering more of the cables. Especially during the final weeks we had boards failing to connect the pump due to loose contacts over the jumper cables.
 
-    \subsubsection{Network Statistics}
+    Regarding production-readiness, the product needs much more testing, especially in automation. Whilst we claim to have developed some measures for implementation robustness, we do not claim a very good correctness. An Over-The-Air update system has also not been developed, although as the professor has pointed out, this is quite an open problem in IoT.
+
+    \subsubsection{Software Robustness}
+
+    Our implementation has a few properties that make it a bit more robust in terms of security and scalability:
+    \begin{itemize}
+        \item Only a certain amount of devices can open up a session with the DTLS proxy. A malicious client is simply blocked if there are too many nodes are registered.
+        \item We have taken care of minimizing packet size as much as possible. The average packet in the \texttt{sixlowpan} network is about 116 bytes large \cref{subsubsec:network_statistics}.
+        \item A watchdog is running on each node, restarting the node when it does not get updated after a while. This even helped us during debugging, when strange bugs lead to the board freezing. The main reason for deploying a watchdog is simply the scenario when a plant is being watered and the watchdog freezes for some reason. It needs to be restarted then.
+        \item When the frontend loads data for visualization, it does not load \emph{all} data from \texttt{plant\_humidities}, but only a certain amount. This could be improved even further by only loading the very last datum upon startup.
+    \end{itemize}
+
+    \label{subsubsec:network_statistics} \subsubsection{Network Statistics}
+
+    Please note that we do not claim full correctness or reproducibility for the following statistics. They are non-scientific and should just reflect our experience with the devices.
+
+    Leaving a system of one node, a border router and a host running for about an hour, calibrating the sensory once and toggling the pump twice, we collected the following data: The node transferred 92537 bytes in 795 unicast packets and 71 packets with no failures, whilst receiving 14886 bytes in 192 packets.
+
+    Surely more devices could lead to much more packets being exchanged, for instance due to IPv6 neighbor advertisements or discovery and due to RPL routing activities. We also had no transfer failure, which is highly unlikely when the distances get larger and the network thus becomes lossier.
 
     \subsubsection{Energy Statistics}
 
+    Please note our starting words in \cref{subsubsec:network_statistics}.
+
+    Letting a single node run on a battery connector with four AA batteries yields a lifetime of about five days. There are several factors that influence this result, such as, again, more devices in the network and their induced routing activity; but also the interval of sending data might be too high, the fact deep sleep functionalities were not used, the PRNG used might be too much of a computational load, the watering frequency as the pump consumes a lot of power and others. Strategies for improving the battery life also consist of rechargable, batteries or even solar panels as the plants need light anyways.
+
     \subsection{Reflection on our Deployed Practices}
+
+    Development was not always easy, as during early phases we often got stuck with the hardware and RIOT. One remarkable difficulty was in setting up the humidity sensor. As we did not find a good way of interpreting the digital values coming from the analog connection with the sensor and it needing to apparently connect to the wrong pin, - See \texttt{HWSETUP.md}: Its VCC port must be connected to ID for some reason. - we even had to transfer this task over to the user, which is quite unsatisfying. Communication problems like merges that break certain branches of our repository did not make our lives easier. During the last two weeks of development quite a lot was not ready in the frontend, like the scheduling functionality, but we caught up on that.
 
     \subsection{Possible Future Enhancements}
 
+    We list a few possible enhancements in the code.
+    \begin{itemize}
+        \item Port \texttt{br} and \texttt{fw} over to Rust.
+        \item Either one figures out what the problem with the strange fluctuations of the capacitive sensor are, or one switches it out for a more reliable one.
+        \item Let the proxy use a more secure RNG for \texttt{tinydtls} than the default implementation.
+        \item The frontend should be ported to TypeScript.
+        \item The website looks a bit outdated, one should revisit its design.
+    \end{itemize}
+
     \subsection{Conclusion}
+
+    We explored a small part of the world of RIOT OS when discovering its network stack and also learned about the difficulty of making several softwares and their developments working together. The final product, by our very non-scientific tests, seems to possess some desirable qualities such as being secure, fast, bandwidth-saving and energy-efficient. As for the functionality of the system itself, we may remind us that sadly the thresholding mechanism for watering still does not work fluently, but the scheduling mechanism does. It has been tested several times. Coupling that with properties such as the automatic registration of new devices and the collection of statistics whilst possessing very slowly increasing storage requirements, we may note that the system is working quite well and provides one possible way of watering ones plants.
 
     \bibliographystyle{acm}
     \bibliography{report}
