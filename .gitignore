@@ -1,6 +1,7 @@
 br/bin
 doc/*/*.aux
 doc/*/*.bbl
+doc/*/*.bcf
 doc/*/*.bib.bak
 doc/*/*.bib.sav.tmp
 doc/*/*.blg
@@ -10,6 +11,7 @@ doc/*/*.lof
 doc/*/*.log
 doc/*/*.nav
 doc/*/*.out
+doc/*/*.run.xml
 doc/*/*.snm
 doc/*/*.synctex.gz
 doc/*/*.toc
